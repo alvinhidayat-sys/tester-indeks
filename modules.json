@@ -100,7 +100,7 @@
       "short": "Kinerja Distribusi OMYO",
       "cardTitle": "Kinerja Distribusi OMYO",
       "pageTitle": "Kinerja Distribusi OMYO",
-      "desc": "Monitoring kinerja distribusi: Pelayanan Gangguan & Command Center, rating dan kepuasan pelanggan, serta rekapitulasi Laporan Dibatalkan (tipe batal & kategori batal by Comcen).",
+      "desc": "Monitoring kinerja distribusi: Pelayanan Gangguan & Command Center, rating dan kepuasan pelanggan, serta Laporan Dibatalkan (rekap tipe batal & kategori batal by Comcen per Distribusi / Area / Posko).",
       "icon": "omyo",
       "requiresLogin": false,
       "featured": false,
