@@ -4,7 +4,7 @@
     "fullName": "Performance, Revenue, Integrated Staff & Monitoring Asset",
     "org": "PLN Nusa Daya Unit Pelaksana Sulawesi 1",
     "unit": "Unit Layanan Manado, Tahuna & Kotamobagu",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "home": "/home",
     "defaultTheme": "dark",
     "themes": [
@@ -93,9 +93,35 @@
       }
     },
     {
-      "id": "yantek",
-      "featured": true,
+      "id": "omyo",
       "order": 5,
+      "route": "/omyo",
+      "title": "Kinerja Distribusi OMYO",
+      "short": "Kinerja Distribusi OMYO",
+      "cardTitle": "Kinerja Distribusi OMYO",
+      "pageTitle": "Kinerja Distribusi OMYO",
+      "desc": "Monitoring kinerja distribusi: Pelayanan Gangguan & Command Center, rating dan kepuasan pelanggan, serta rekapitulasi Laporan Dibatalkan (tipe batal & kategori batal by Comcen).",
+      "icon": "omyo",
+      "requiresLogin": false,
+      "featured": false,
+      "sourceFile": "6_kinerja_distribusi_omyo.html",
+      "database": {
+        "type": "google-sheet-gviz-csv",
+        "spreadsheetId": "199yFxZpD1S4AVoaRdjI_g8vv9hGmQVcXVImnik9MLjc",
+        "sheets": [
+          "p2b",
+          "sutg",
+          "cc_p2b",
+          "cc_sutg"
+        ],
+        "note": "Laporan Dibatalkan: baris dengan APKT_STATUS \"Dibatalkan\" pada sheet p2b & sutg; kolom TIPE_BATAL & ALASAN_BATAL."
+      }
+    },
+    {
+      "id": "yantek",
+      "featured": false,
+      "order": 6,
+      "route": "/yantek/analisis",
       "title": "Detail dan Analisis Kinerja Yantek Distribusi",
       "short": "Yantek Distribusi",
       "cardTitle": "Detail dan Analisis Kinerja Yantek Distribusi",
@@ -134,30 +160,6 @@
           }
         }
       ]
-    },
-    {
-      "id": "omyo",
-      "order": 6,
-      "route": "/omyo",
-      "title": "Kinerja Distribusi OMYO",
-      "short": "Kinerja Distribusi OMYO",
-      "cardTitle": "Kinerja Distribusi OMYO",
-      "pageTitle": "Kinerja Distribusi OMYO",
-      "desc": "Monitoring kinerja distribusi: Pelayanan Gangguan & Command Center, rating dan kepuasan pelanggan.",
-      "icon": "omyo",
-      "requiresLogin": false,
-      "featured": false,
-      "sourceFile": "6_kinerja_distribusi_omyo.html",
-      "database": {
-        "type": "google-sheet-gviz-csv",
-        "spreadsheetId": "199yFxZpD1S4AVoaRdjI_g8vv9hGmQVcXVImnik9MLjc",
-        "sheets": [
-          "p2b",
-          "sutg",
-          "cc_p2b",
-          "cc_sutg"
-        ]
-      }
     },
     {
       "id": "biop",
