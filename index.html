@@ -4,14 +4,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#ecdcb8;--paper:#fbf2dc;--ink:#3a2a1c;--mut:#7a6247;--pri:#9c3f22;--acc:#d49a2a;--olv:#5f6535;--line:#c8ae7e}
+:root{--hw:clamp(190px,21vw,260px);--bg:#ecdcb8;--paper:#fbf2dc;--ink:#3a2a1c;--mut:#7a6247;--pri:#9c3f22;--acc:#d49a2a;--olv:#5f6535;--line:#c8ae7e}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.55 Lora,Georgia,"Times New Roman",serif;color:var(--ink);background:radial-gradient(circle at 15% 0,#f6ead0,transparent 60%),repeating-linear-gradient(45deg,rgba(120,80,30,.045) 0 2px,transparent 2px 6px),var(--bg)}
-header{background:var(--ink);color:#f6e7c1;padding:18px 22px;border-bottom:6px double var(--acc)}
+header{position:relative;z-index:1;background:var(--ink);color:#f6e7c1;padding:18px calc(var(--hw) + 44px) 18px 22px;border-bottom:6px double var(--acc)}
 header h1{margin:0;font:400 26px "Special Elite","Courier New",monospace;letter-spacing:.5px}
 header p{margin:3px 0 0;opacity:.85;font-size:13px;font-style:italic}
-main{max-width:1240px;margin:0 auto;padding:16px}
-.card{background:var(--paper);border:2px solid var(--ink);border-radius:3px;padding:14px;margin-bottom:16px;box-shadow:4px 4px 0 var(--line)}
+main{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:16px}
+.card{background:rgba(251,242,220,.78);border:2px solid var(--ink);border-radius:3px;padding:14px;margin-bottom:16px;box-shadow:4px 4px 0 var(--line)}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 label{display:flex;flex-direction:column;font-size:12.5px;color:var(--mut);gap:3px;font-style:italic}
 input,select,button{font:inherit;font-size:14px;padding:7px 10px;border:2px solid var(--ink);border-radius:3px;background:#fff9ea;color:var(--ink)}
@@ -20,7 +20,7 @@ button:active{transform:translate(2px,2px);box-shadow:none}button.alt{background
 :is(button,select,input):focus-visible{outline:3px solid var(--acc);outline-offset:1px}
 .tabs button{background:var(--paper);color:var(--ink)}.tabs button.on{background:var(--ink);color:#f6e7c1}
 .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
-.kpi button{background:var(--paper);color:var(--mut);text-align:left;padding:10px 12px;border-style:dashed;box-shadow:3px 3px 0 var(--line);font-weight:400;font-size:13px}
+.kpi button{background:rgba(251,242,220,.82);color:var(--mut);text-align:left;padding:10px 12px;border-style:dashed;box-shadow:3px 3px 0 var(--line);font-weight:400;font-size:13px}
 .kpi button:hover{background:#fff6de;border-style:solid}
 .kpi b{display:block;font:400 25px "Special Elite","Courier New",monospace;color:var(--pri)}
 .wrap{overflow:auto;max-height:68vh}table{border-collapse:collapse;width:100%;min-width:680px}
@@ -59,8 +59,21 @@ tr.sub td{background:#f0dfb2;font-weight:700;cursor:pointer}tr.sub:hover td{back
 .vb .vl{font-size:11px;color:var(--mut);white-space:nowrap}
 #chD{margin-top:10px;padding:10px 12px;border:2px dashed var(--line);background:#fff9ea;font-size:13.5px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
 #chD[hidden]{display:none}#chD button{padding:5px 12px}
+.hero{position:absolute;top:50%;right:22px;transform:translateY(-50%);width:var(--hw);aspect-ratio:16/9;border:2px solid var(--acc);border-radius:4px;overflow:hidden;background:#1d1409;box-shadow:3px 3px 0 rgba(0,0,0,.45);pointer-events:none}
+.hero[hidden]{display:none}.hero video{display:block;width:100%;height:100%;object-fit:cover}
+#fl{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+#fl span{position:absolute;top:100%;display:block;font-family:"Special Elite","Courier New",monospace;font-weight:400;line-height:1;opacity:0;will-change:transform,opacity;animation:flUp var(--d) linear var(--dl) infinite}
+#fl b{display:block;font-weight:400;animation:flSw var(--s) ease-in-out var(--dl) infinite alternate}
+@keyframes flUp{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}12%{opacity:var(--o)}88%{opacity:var(--o)}100%{transform:translate3d(var(--x),-130vh,0) rotate(var(--r));opacity:0}}
+@keyframes flSw{from{transform:translateX(-16px)}to{transform:translateX(16px)}}
+@media(prefers-reduced-motion:reduce){#fl span,#fl b{animation:none}}
 @media(max-width:640px){
-header{padding:14px}.brand b{font-size:28px}header p{font-size:12px}
+:root{--hw:clamp(100px,34vw,150px)}
+header{padding:14px}.hero{top:14px;right:14px;transform:none;border-width:1.5px;box-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.brand{min-height:calc(var(--hw)*9/16 + 6px)}
+}
+@media(max-width:640px){
+header{padding:14px}.brand b{font-size:clamp(20px,6.4vw,26px)}header p{font-size:12px}
 main{padding:10px}.card{padding:10px;margin-bottom:12px}.row{gap:8px}
 select,button,input{font-size:16px;min-height:42px}
 label{flex:1 1 100%}label select{width:100%}
@@ -82,7 +95,8 @@ tr.sub{background:#f0dfb2}
 #chD{flex-direction:column;align-items:stretch}#chD button{width:100%}
 }
 </style></head><body>
-<header><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1>Rekap Durasi Create CTT</h1><p>Data APKT dicocokkan dengan Data AP2T per ID Pelanggan, diperbarui otomatis setiap 2 menit</p></header>
+<header><div class="hero" id="hr"><video id="hv" src="journey.mp4" poster="journey-poster.jpg" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video></div><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1>Rekap Durasi Create CTT</h1><p>Data APKT dicocokkan dengan Data AP2T per ID Pelanggan, diperbarui otomatis setiap 2 menit</p></header>
+<div id="fl" aria-hidden="true"></div>
 <main>
 <div class="card"><div class="row">
 <label>Bulan<select id="fM"></select></label>
@@ -245,4 +259,35 @@ function lab(el){el.querySelectorAll('table').forEach(t=>{const h=[...t.querySel
 ['out','mi'].forEach(i=>new MutationObserver(()=>lab($(i))).observe($(i),{childList:true}));
 fitBrand();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBrand);
 sync();setInterval(sync,D.iv*60000);
-</script></body></html>
+</script>
+<script>
+(function(){
+const v=document.getElementById('hv'),hr=document.getElementById('hr');
+if(v){v.muted=true;v.defaultMuted=true;
+ const go=()=>{const r=v.play();if(r&&r.catch)r.catch(()=>{})};
+ go();v.addEventListener('canplay',go);v.addEventListener('ended',()=>{v.currentTime=0;go()});
+ v.addEventListener('pause',()=>{if(!document.hidden)go()});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)go()});
+ ['touchstart','pointerdown','click','scroll','keydown'].forEach(ev=>addEventListener(ev,go,{once:true,passive:true}));
+ v.addEventListener('error',()=>{if(hr)hr.hidden=true})}
+const L=document.getElementById('fl');if(!L)return;
+const rd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const still=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+const COL=['#9c3f22','#d49a2a','#5f6535','#7a6247'];
+function build(){
+ L.textContent='';
+ const m=innerWidth<=640,n=m?11:20;
+ for(let i=0;i<n;i++){
+  const sp=document.createElement('span'),b=document.createElement('b'),sz=m?rd(26,64):rd(34,96);
+  b.textContent=pick(['1','2','3']);
+  sp.style.cssText='left:'+rd(-2,96).toFixed(1)+'%;font-size:'+sz.toFixed(0)+'px;color:'+pick(COL)+
+   ';--o:'+rd(.28,.45).toFixed(2)+';--d:'+rd(16,34).toFixed(1)+'s;--dl:-'+rd(0,34).toFixed(1)+'s;--s:'+rd(3,6.5).toFixed(1)+
+   's;--x:'+rd(-140,140).toFixed(0)+'px;--r:'+rd(-80,80).toFixed(0)+'deg';
+  if(still)sp.style.cssText+=';top:'+rd(4,92).toFixed(0)+'%;opacity:.3';
+  sp.appendChild(b);L.appendChild(sp)}
+}
+build();
+let w=innerWidth;addEventListener('resize',()=>{const m1=w<=640,m2=innerWidth<=640;w=innerWidth;if(m1!==m2)build()});
+})();
+</script>
+</body></html>
