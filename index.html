@@ -7,9 +7,9 @@
 :root{--hw:clamp(190px,21vw,260px);--bg:#ecdcb8;--paper:#fbf2dc;--ink:#3a2a1c;--mut:#7a6247;--pri:#9c3f22;--acc:#d49a2a;--olv:#5f6535;--line:#c8ae7e}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.55 Lora,Georgia,"Times New Roman",serif;color:var(--ink);background:radial-gradient(circle at 15% 0,#f6ead0,transparent 60%),repeating-linear-gradient(45deg,rgba(120,80,30,.045) 0 2px,transparent 2px 6px),var(--bg)}
-header{position:relative;z-index:1;background:var(--ink);color:#f6e7c1;padding:18px calc(var(--hw) + 44px) 18px 22px;border-bottom:6px double var(--acc)}
+header{position:sticky;top:0;z-index:8;background:var(--ink);color:#f6e7c1;padding:18px calc(var(--hw) + 44px) 18px 22px;border-bottom:6px double var(--acc);box-shadow:0 8px 14px -8px rgba(58,42,28,calc(.6*var(--p,0)))}
 header h1{margin:0;font:400 26px "Special Elite","Courier New",monospace;letter-spacing:.5px}
-header p{margin:3px 0 0;opacity:.85;font-size:13px;font-style:italic}
+header p{margin:3px 0 0;opacity:calc(.85*var(--fd,1));font-size:13px;font-style:italic}
 main{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:16px}
 .card{background:rgba(251,242,220,.78);border:2px solid var(--ink);border-radius:3px;padding:14px;margin-bottom:16px;box-shadow:4px 4px 0 var(--line)}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
@@ -35,11 +35,12 @@ tr.tot td{background:var(--ink);color:#f6e7c1;font-weight:700}
 #md{position:fixed;inset:0;background:rgba(58,42,28,.6);display:flex;align-items:center;justify-content:center;padding:14px;z-index:9}#md[hidden]{display:none}
 #md .box{background:var(--paper);border:3px double var(--ink);width:min(1000px,100%);max-height:88vh;display:flex;flex-direction:column;padding:14px;gap:10px}
 #md h2{margin:0;font:400 20px "Special Elite","Courier New",monospace}#mi{flex:1}#mf{font-size:12.5px;color:var(--mut);font-style:italic}
-.brand{display:flex;flex-direction:column;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid rgba(246,231,193,.35)}
+.brand{position:relative;display:flex;flex-direction:column;padding-bottom:10px;margin-bottom:12px;transform-origin:0 0}
+.brand::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(246,231,193,.35);opacity:var(--fd,1)}
 .brand b,.brand span{align-self:flex-start;white-space:nowrap}
 .brand b{font:700 36px/1.1 Lora,Georgia,serif;letter-spacing:.01em}
 .brand span{font:600 14px/1.2 Lora,Georgia,serif;letter-spacing:.04em;color:var(--acc);margin-top:3px}
-.brand+h1{font-size:20px}
+.brand+h1{font-size:20px;white-space:nowrap;width:max-content;max-width:100%;transform-origin:0 0}
 tr.sub td{background:#f0dfb2;font-weight:700;cursor:pointer}tr.sub:hover td{background:#e8d49e}tr.u td:first-child{color:var(--mut)}
 .clg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--mut);font-style:italic;margin:10px 0 6px}
 .clg i{display:inline-block;width:11px;height:11px;border:1px solid var(--ink);margin-right:5px;vertical-align:-1px}
@@ -59,7 +60,7 @@ tr.sub td{background:#f0dfb2;font-weight:700;cursor:pointer}tr.sub:hover td{back
 .vb .vl{font-size:11px;color:var(--mut);white-space:nowrap}
 #chD{margin-top:10px;padding:10px 12px;border:2px dashed var(--line);background:#fff9ea;font-size:13.5px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
 #chD[hidden]{display:none}#chD button{padding:5px 12px}
-.hero{position:absolute;top:50%;right:22px;transform:translateY(-50%);width:var(--hw);aspect-ratio:16/9;overflow:hidden;background:var(--ink);pointer-events:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 9%,#000 91%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 9%,#000 91%,transparent);mask-composite:intersect}
+.hero{position:absolute;top:50%;right:22px;transform:translateY(-50%);transform-origin:100% 0;will-change:transform;width:var(--hw);aspect-ratio:16/9;overflow:hidden;background:var(--ink);pointer-events:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 9%,#000 91%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 9%,#000 91%,transparent);mask-composite:intersect}
 .hero[hidden]{display:none}.hero video{display:block;width:100%;height:100%;object-fit:cover;mix-blend-mode:lighten}
 #fl{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
 #fl span{position:absolute;top:100%;display:block;font-family:"Special Elite","Courier New",monospace;font-weight:400;line-height:1;opacity:0;will-change:transform,opacity;animation:flUp var(--d) linear var(--dl) infinite}
@@ -73,7 +74,7 @@ header{padding:14px}.hero{top:14px;right:14px;transform:none}
 .brand{min-height:calc(var(--hw)*9/16 + 6px)}
 }
 @media(max-width:640px){
-header{padding:14px}.brand b{font-size:clamp(20px,6.4vw,26px)}header p{font-size:12px}
+header{padding:14px}.brand b{font-size:clamp(20px,6.4vw,26px)}header p{font-size:12px}.brand+h1{font-size:clamp(16px,5.2vw,20px)}
 main{padding:10px}.card{padding:10px;margin-bottom:12px}.row{gap:8px}
 select,button,input{font-size:16px;min-height:42px}
 label{flex:1 1 100%}label select{width:100%}
@@ -87,7 +88,9 @@ td{display:flex;justify-content:space-between;gap:12px;white-space:normal;text-a
 td:last-child{border-bottom:0}td:first-child{font-weight:700}
 td::before{content:attr(data-l);flex:0 0 45%;text-align:left;color:var(--mut);font-style:italic;font-weight:400}
 tr.tot{background:var(--ink)}tr.tot td{color:#f6e7c1;border-color:rgba(246,231,193,.3)}tr.tot td::before{color:#e3cf9f}
-#md{padding:0;align-items:flex-end}#md .box{width:100%;max-height:92vh;border-radius:10px 10px 0 0;padding:12px}
+#md{padding:0;align-items:flex-end}#md .box{width:100%;max-height:92vh;max-height:92dvh;border-radius:10px 10px 0 0;padding:12px}
+.cards{grid-template-columns:1fr;gap:14px}.mc .mb{padding:12px 14px 14px}.mc h2{font-size:19px}.mc p{font-size:13px}
+.intro{font-size:13px;margin:0 0 12px}.btnlink{display:inline-flex;align-items:center;min-height:42px}.hnote{margin-top:14px}
 #md .row{flex:1 1 100%}#md .row button{flex:1}#md h2{font-size:17px}
 tr.sub{background:#f0dfb2}
 .cb{grid-template-columns:30% 1fr auto;gap:6px;font-size:13px;min-height:38px;padding:3px 4px}.cb .cv{min-width:44px}
@@ -98,7 +101,9 @@ tr.sub{background:#f0dfb2}
 .btnlink{display:inline-block;text-decoration:none;font-weight:600;font-size:14px;border:2px solid var(--ink);border-radius:3px;background:var(--paper);color:var(--pri);padding:7px 12px;box-shadow:2px 2px 0 var(--ink)}
 .btnlink:active{transform:translate(2px,2px);box-shadow:none}.btnlink:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
 .intro{margin:2px 0 16px;font-style:italic;color:var(--mut)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
+@media(max-width:640px){.cards{grid-template-columns:1fr;gap:14px}}
 .mc{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);background:rgba(251,242,220,.88);border:2px solid var(--ink);border-radius:3px;box-shadow:5px 5px 0 var(--line);overflow:hidden;transition:transform .15s,box-shadow .15s}
 .mc:hover,.mc:focus-visible{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--acc);outline:none}
 .mc svg{display:block;width:100%;height:auto;border-bottom:2px solid var(--ink)}
@@ -128,10 +133,8 @@ summary{cursor:pointer;font-style:italic;color:var(--mut)}
 #cbOut tr.u td:first-child{color:var(--mut);font-size:12.5px}#cbOut tr.u td:nth-child(2){padding-left:22px}
 #cbOut tr.u:hover td{background:#fff6de}
 .cbn{margin:8px 0 0}
-.atw{margin-bottom:14px}.atw b{display:block;margin-bottom:6px;font:400 15px "Special Elite","Courier New",monospace}
-.atw table{min-width:0;width:auto}.atw td.n,.atw th.n{text-align:right}
 @media(max-width:640px){#cb .btns{flex:1 1 100%}#cb .btns button{flex:1 1 44%}
-#cbOut table{min-width:0}#cbOut td{border-right:0}#cbOut td.b{border-left:0}#cbOut td.pc{min-width:0}#cbOut tr.u td:nth-child(2){padding-left:0}.atw table{width:100%}}
+#cbOut table{min-width:0}#cbOut td{border-right:0}#cbOut td.b{border-left:0}#cbOut td.pc{min-width:0}#cbOut tr.u td:nth-child(2){padding-left:0}}
 </style></head><body>
 <header><div class="hero" id="hr"><video id="hv" src="journey.mp4" poster="journey-poster.jpg" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video></div><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1 id="ht">Dashboard Durasi Command Center</h1><p id="hp">Pilih menu untuk melihat rekap durasi layanan pengaduan pelanggan</p></header>
 <div id="fl" aria-hidden="true"></div>
@@ -142,6 +145,8 @@ summary{cursor:pointer;font-style:italic;color:var(--mut)}
 <a class="mc" href="#marking"><svg viewBox="0 0 320 180" role="img" aria-label="Beberapa laporan di peta dikelompokkan menjadi satu penanda gangguan atau pemadaman"><rect width="320" height="180" fill="#efdcae"/><g fill="#e3cf9f" stroke="#c8ae7e" stroke-width="2"><rect x="10" y="10" width="60" height="40"/><rect x="190" y="120" width="70" height="50"/><rect x="10" y="130" width="60" height="40"/></g><g stroke="#fbf2dc" stroke-width="10" fill="none" stroke-linecap="round"><path d="M0 70Q90 52 170 80T320 62"/><path d="M130 0Q140 90 120 180"/></g><path d="M170 24H312" stroke="#3a2a1c" stroke-width="3"/><g stroke="#3a2a1c" stroke-width="3" stroke-linecap="round"><path d="M188 24V46M242 24V46M296 24V46M180 32H196M234 32H250M288 32H304"/></g><ellipse cx="92" cy="104" rx="76" ry="58" fill="#d49a2a" fill-opacity=".18" stroke="#9c3f22" stroke-width="3.5" stroke-dasharray="9 6"/><g stroke="#3a2a1c" stroke-width="2.5" fill="#5f6535"><circle cx="52" cy="82" r="9"/><circle cx="96" cy="64" r="9"/><circle cx="128" cy="100" r="9"/><circle cx="70" cy="130" r="9"/><circle cx="112" cy="138" r="9"/><circle cx="86" cy="100" r="9"/></g><path d="M170 104H212" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round"><circle cx="248" cy="104" r="34" fill="#9c3f22"/><path d="M254 82L238 108H249L244 126L261 100H250Z" fill="#fbf2dc" stroke-width="2"/></g><text x="248" y="156" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="11" fill="#7a6247">1 kelompok marking</text></svg><div class="mb"><h2>Durasi Manual Marking</h2><p>Durasi Operator Command Center mengelompokkan laporan imbas padam meluas / pemadaman dengan laporan lainnya, atau laporan gangguan TM / Pemeliharaan TM.</p><span class="go">Buka rekap →</span></div></a>
 <a class="mc" href="#dispatch"><svg viewBox="0 0 320 180" role="img" aria-label="Laporan masuk APKT diteruskan operator command center ke petugas di lapangan"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><path d="M0 152H320" stroke="#3a2a1c" stroke-width="3"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="12" y="62" width="54" height="40" rx="3" fill="#fbf2dc"/><path d="M12 64L39 86L66 64" fill="none"/><circle cx="148" cy="78" r="20" fill="#fbf2dc"/><path d="M110 152Q110 112 148 112Q186 112 186 152Z" fill="#5f6535"/><path d="M122 74A26 26 0 0 1 174 74" fill="none" stroke-width="6"/><rect x="116" y="72" width="11" height="24" rx="5" fill="#9c3f22"/><rect x="169" y="72" width="11" height="24" rx="5" fill="#9c3f22"/><path d="M174 92Q174 106 156 106" fill="none"/><circle cx="153" cy="106" r="4" fill="#d49a2a"/><rect x="226" y="108" width="52" height="38" fill="#d49a2a"/><path d="M278 118H298L310 132V146H278Z" fill="#fbf2dc"/><circle cx="244" cy="148" r="9" fill="#3a2a1c"/><circle cx="296" cy="148" r="9" fill="#3a2a1c"/><circle cx="262" cy="74" r="14" fill="#fbf2dc"/><path d="M246 70A16 14 0 0 1 278 70Z" fill="#d49a2a"/><path d="M243 70H281" fill="none"/><path d="M252 108V92Q262 86 272 92V108" fill="#5f6535"/></g><circle cx="244" cy="148" r="3" fill="#fbf2dc"/><circle cx="296" cy="148" r="3" fill="#fbf2dc"/><path d="M70 56Q88 32 118 40" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M112 28L130 42L108 50Z" fill="#9c3f22"/><path d="M190 50Q214 24 236 46" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M230 34L248 50L226 56Z" fill="#9c3f22"/><text x="39" y="120" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="10" fill="#7a6247">APKT</text><text x="148" y="168" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="10" fill="#7a6247">operator CC</text><text x="262" y="168" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="10" fill="#7a6247">petugas lapangan</text></svg><div class="mb"><h2>Durasi Manual Dispatch</h2><p>Durasi laporan masuk ke APKT hingga diteruskan oleh Operator Command Center ke petugas di lapangan.</p><span class="go">Buka rekap →</span></div></a>
 <a class="mc" href="#callback"><svg viewBox="0 0 320 180" role="img" aria-label="Callback pelanggan: telepon, percakapan dan penilaian"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="40" y="26" width="72" height="128" rx="12" fill="#fbf2dc"/><rect x="50" y="42" width="52" height="86" rx="3" fill="#efdcae"/><circle cx="76" cy="142" r="5" fill="#fbf2dc"/><path d="M142 40H282A8 8 0 0 1 290 48V92A8 8 0 0 1 282 100H178L156 120V100H142A8 8 0 0 1 134 92V48A8 8 0 0 1 142 40Z" fill="#fbf2dc"/><circle cx="76" cy="84" r="13" fill="#5f6535"/><path d="M71 84l4 4 8-9" fill="none" stroke="#fbf2dc" stroke-width="3"/></g><text x="212" y="78" text-anchor="middle" font-family="serif" font-size="26" fill="#d49a2a" letter-spacing="2">★★★★★</text><path d="M170 150Q214 172 262 140" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M256 130L272 144L250 150Z" fill="#9c3f22"/><circle cx="288" cy="136" r="15" fill="#fbf2dc" stroke="#7a6247" stroke-width="9" stroke-dasharray="5 4.5"/><circle cx="288" cy="136" r="7" fill="#fbf2dc" stroke="#3a2a1c" stroke-width="3"/></svg><div class="mb"><h2>Callback Pelanggan</h2><p>Rekap callback / Konfirmasi ke pelanggan.</p><span class="go">Buka rekap →</span></div></a>
+<a class="mc off" tabindex="0" role="button" aria-disabled="true"><svg viewBox="0 0 320 180" role="img" aria-label="Monitoring cuti: kalender dengan hari cuti ditandai, koper dan matahari"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="30" y="26" width="146" height="128" rx="6" fill="#fbf2dc"/><rect x="30" y="26" width="146" height="24" rx="6" fill="#3a2a1c"/><path d="M62 18V34M144 18V34" fill="none" stroke-width="5"/><rect x="42" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="68" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="94" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="120" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="146" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="42" y="86" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="68" y="86" width="20" height="14" rx="2" fill="#5f6535"/><rect x="94" y="86" width="20" height="14" rx="2" fill="#5f6535"/><rect x="120" y="86" width="20" height="14" rx="2" fill="#5f6535"/><rect x="146" y="86" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="42" y="106" width="20" height="14" rx="2" fill="#5f6535"/><rect x="68" y="106" width="20" height="14" rx="2" fill="#5f6535"/><rect x="94" y="106" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="120" y="106" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="146" y="106" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="42" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="68" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="94" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="120" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="146" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><path d="M118 112l5 5 10-11" fill="none" stroke="#fbf2dc" stroke-width="3"/></g><circle cx="270" cy="40" r="15" fill="#d49a2a" stroke="#3a2a1c" stroke-width="3"/><path d="M270 14V8M270 66V72M244 40H238M296 40H302M252 22l-4-4M288 22l4-4M252 58l-4 4M288 58l4 4" stroke="#d49a2a" stroke-width="3" stroke-linecap="round"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M230 96V88A6 6 0 0 1 236 82H262A6 6 0 0 1 268 88V96" fill="none"/><rect x="198" y="96" width="100" height="62" rx="8" fill="#9c3f22"/><path d="M226 96V158M270 96V158" fill="none" stroke="#fbf2dc" stroke-width="4"/><rect x="241" y="120" width="16" height="12" rx="2" fill="#d49a2a"/></g></svg><div class="mb"><h2>Monitoring Cuti</h2><p>Pantau cuti pegawai Command Center.</p><span class="go">Dalam pengembangan</span></div><div class="soon">Dalam Tahap Pengembangan</div></a>
+<a class="mc off" tabindex="0" role="button" aria-disabled="true"><svg viewBox="0 0 320 180" role="img" aria-label="Rekap absensi dan lembur: daftar hadir, jam dinding dan bulan penanda lembur malam"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="26" y="22" width="108" height="140" rx="6" fill="#fbf2dc"/><rect x="58" y="14" width="44" height="16" rx="5" fill="#d49a2a"/><circle cx="52" cy="52" r="8" fill="#5f6535"/><path d="M48 52l3 3 6-7" fill="none" stroke="#fbf2dc" stroke-width="2.5"/><path d="M72 52H118" fill="none"/><circle cx="52" cy="76" r="8" fill="#5f6535"/><path d="M48 76l3 3 6-7" fill="none" stroke="#fbf2dc" stroke-width="2.5"/><path d="M72 76H118" fill="none"/><circle cx="52" cy="100" r="8" fill="#fbf2dc"/><path d="M72 100H118" fill="none"/><circle cx="52" cy="124" r="8" fill="#5f6535"/><path d="M48 124l3 3 6-7" fill="none" stroke="#fbf2dc" stroke-width="2.5"/><path d="M72 124H118" fill="none"/></g><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><circle cx="220" cy="92" r="52" fill="#fbf2dc"/><circle cx="220" cy="92" r="42" fill="#efdcae" stroke-width="2"/><path d="M220 92V62M220 92L242 104" fill="none" stroke-width="4"/><circle cx="220" cy="92" r="4" fill="#3a2a1c"/><path d="M220 54v5M220 125v5M182 92h5M253 92h5" fill="none" stroke-width="2.5"/></g><path d="M276 28a20 20 0 1 0 22 26a16 16 0 0 1-22-26Z" fill="#d49a2a" stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round"/><circle cx="170" cy="140" r="14" fill="#9c3f22" stroke="#3a2a1c" stroke-width="3"/><path d="M170 133V147M163 140H177" stroke="#fbf2dc" stroke-width="3.5" stroke-linecap="round"/></svg><div class="mb"><h2>Rekap Absensi dan Lembur</h2><p>Rekap absensi dan lembur pegawai.</p><span class="go">Dalam pengembangan</span></div><div class="soon">Dalam Tahap Pengembangan</div></a>
 </div>
 <p class="hnote">sumber data : APKT-EIS-VCC by @K.I.T.A</p>
 </main>
@@ -344,7 +349,7 @@ function xl(k){const rows=filt();if(!rows.length)return alert('Tidak ada data un
 function popD(l,d){PP={...d,n:CG.pre+'_'+l.replace(/[^\w]+/g,'-')+sfx()};$('mx').textContent='Unduh Excel';$('mx2').hidden=true;
  $('mt').textContent=l+' ('+d.a.length+' baris)';
  $('mi').innerHTML='<table><thead><tr>'+d.h.map((h,i)=>`<th class="${d.f.includes(i)?'n':''}">${h}</th>`).join('')+'</tr></thead><tbody>'+
-  (d.a.length?d.a.slice(0,300).map(r=>'<tr>'+r.map((v,j)=>`<td class="${d.f.includes(j)?'n':''}">${e(d.f.includes(j)&&v!==''?n2(v):v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+d.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
+  (d.a.length?d.a.slice(0,300).map(r=>'<tr>'+r.map((v,j)=>`<td data-l="${qa(d.h[j])}" class="${d.f.includes(j)?'n':''}">${e(d.f.includes(j)&&v!==''?n2(v):v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+d.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
  $('mf').textContent=d.a.length>300?'Menampilkan 300 baris pertama. File Excel berisi semua '+d.a.length+' baris.':'';$('md').hidden=false}
 function pop(k){const x=KP[k];popD(x.l,x.d())}
 function one1(f){popD(f>0?'Durasi terkecil':'Durasi terbesar',det(one(filt(),f)))}
@@ -525,37 +530,22 @@ function fillA(){if(!CB.M)return;const m=CB.M;
  opts($('cbM'),[...new Set(m.eis.filter(r=>!isNaN(r.t)).map(r=>mkt(r.t)))].sort().reverse(),'Semua bulan',v=>MN[+v.slice(5)-1]+' '+v.slice(0,4));
  const ar=[...new Set(m.eis.map(r=>r.area).concat(m.calls.filter(c=>c.rec).map(c=>c.area)))].sort();opts($('cbA'),ar,'Semua area');fillU()}
 function fillU(){if(!CB.M)return;const a=$('cbA').value,m=CB.M,u=[...new Set(m.eis.concat(m.calls.filter(c=>c.rec)).filter(r=>!a||r.area==a).map(r=>r.ulp))].sort();opts($('cbU'),u,'Semua ULP')}
-/* rekap percobaan callback (1 kali, 2 kali, 3 kali, dst) */
-const kali=b=>b==0?'Belum dihubungi':b>=10?'10 kali atau lebih':b+' kali';
-function attCalls(list,scope){const kf=c=>c.rec||c.k,n=new Map();scope.forEach(c=>n.set(kf(c),(n.get(kf(c))||0)+1));
- const ks=new Set(list.map(kf)),B={};let tp=0;
- ks.forEach(k=>{const a=n.get(k)||1,b=Math.min(a,10),o=B[b]=B[b]||{p:0,c:0};o.p++;o.c+=a;tp+=a});
- if(!ks.size)return null;
- const a=Object.keys(B).map(Number).sort((x,y)=>x-y).map(b=>[kali(b),B[b].p,pcs(B[b].p/ks.size*100),B[b].c]);a.push(['Total',ks.size,'100,0%',tp]);
- return{h:['Percobaan Callback','Jumlah Pelanggan','% Pelanggan','Jumlah Panggilan'],a}}
-function attReps(list,called){if(!list.length)return null;const B={};
- list.forEach(r=>{const c=called.get(r),b=Math.min(c?c.n:0,10);B[b]=(B[b]||0)+1});
- const a=Object.keys(B).map(Number).sort((x,y)=>x-y).map(b=>[kali(b),B[b],pcs(B[b]/list.length*100)]);a.push(['Total',list.length,'100,0%']);
- return{h:['Percobaan Callback','Jumlah Laporan','% Laporan'],a}}
-/* spesifikasi tabel pop up: v = tampilan, d = detail lengkap, att = rekap percobaan */
+/* spesifikasi tabel pop up: v = tampilan, d = detail lengkap */
 function repSpec(list,called){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0));
  const st=r=>{const c=called.get(r);return c?'Ya ('+c.n+'x)':'Belum'};
- return{att:attReps(L,called),v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi','Jml Percobaan Telp'],a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r),c?c.n:0]})},
+ return{v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi','Jml Percobaan Telp'],a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r),c?c.n:0]})},
   d:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Nama Pelapor','Alamat','Deskripsi','Penyebab','Durasi (EIS)','Dihubungi','Jml Percobaan Telp','Telp Pertama'],
    a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),r.nm,r.al,r.ds,r.pb,r.du,c?'Ya':'Belum',c?c.n:0,c?fT(c.t):'']})}}}
 function callSpec(list,scope){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sc=scope||L,sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
- const kf=c=>c.rec||c.k,tot=new Map(),seq=new Map(),run=new Map();
+ const kf=c=>c.rec||c.k,tot=new Map();
  sc.forEach(c=>tot.set(kf(c),(tot.get(kf(c))||0)+1));
- [...sc].sort((a,b)=>(a.t||0)-(b.t||0)).forEach(c=>{const n=(run.get(kf(c))||0)+1;run.set(kf(c),n);seq.set(c,n)});
- const ke=c=>seq.get(c)||'',jm=c=>tot.get(kf(c))||'';
- return{att:attCalls(L,sc),v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Percobaan Ke-','Jml Percobaan','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',ke(c),jm(c),c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
-  d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Percobaan Ke-','Jml Percobaan','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.raw,c.nm,c.ty,c.du,c.no||'-',ke(c),jm(c),c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
-function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70),x=sp.att?[{h:sp.att.h,a:sp.att.a,n:'Percobaan Callback'}]:[];
+ const jm=c=>tot.get(kf(c))||'';
+ return{v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Jumlah Percobaan','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',jm(c),c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
+  d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Jumlah Percobaan','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.raw,c.nm,c.ty,c.du,c.no||'-',jm(c),c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
+function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70),x=[];
  PP={h:sp.v.h,a:sp.v.a,f:[],n:n,sn:'Tampilan',x:x};PP2={h:sp.d.h,a:sp.d.a,n:n+'_detail',x:x};
  $('mt').textContent=t+' ('+sp.v.a.length+' baris)';
- const at=sp.att?'<div class="atw"><b>Rekap Percobaan Callback (per laporan pelanggan)</b><table><thead><tr>'+sp.att.h.map((h,i)=>`<th class="${i?'n':''}">${e(h)}</th>`).join('')+'</tr></thead><tbody>'+
-  sp.att.a.map((r,k)=>`<tr${k==sp.att.a.length-1?' class="tot"':''}>`+r.map((v,i)=>`<td class="${i?'n':''}">${e(v)}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>':'';
- $('mi').innerHTML=at+'<table><thead><tr>'+sp.v.h.map(h=>`<th>${e(h)}</th>`).join('')+'</tr></thead><tbody>'+(sp.v.a.length?sp.v.a.slice(0,300).map(r=>'<tr>'+r.map(v=>`<td>${e(v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+sp.v.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
+ $('mi').innerHTML='<table><thead><tr>'+sp.v.h.map(h=>`<th>${e(h)}</th>`).join('')+'</tr></thead><tbody>'+(sp.v.a.length?sp.v.a.slice(0,300).map(r=>'<tr>'+r.map((v,j)=>`<td data-l="${qa(sp.v.h[j])}">${e(v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+sp.v.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
  $('mf').textContent=sp.v.a.length>300?'Menampilkan 300 baris pertama. File Excel berisi semua '+sp.v.a.length+' baris.':'';
  $('mx').textContent='Unduh Excel (tampilan)';$('mx2').hidden=false;$('md').hidden=false}
 function metricSpec(g,m){const Z=CB.Z;
@@ -629,7 +619,7 @@ $('cbOut').onclick=ev=>{const b=ev.target.closest('button');
  const t=ev.target.closest('tr[data-a]');if(t){const n=t.dataset.a;CB.open.has(n)?CB.open.delete(n):CB.open.add(n);render()}};
 const sfx2=()=>{const f=[$('cbM').value,$('cbA').value,$('cbU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
 $('cbXR').onclick=()=>{if(!CB.view||!CB.view.a.length)return alert('Tidak ada data untuk diunduh.');dl(CB.view.h,CB.view.a,'Callback_Rekap'+sfx2(),'Rekap Callback')};
-$('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl,CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan',s.att?[{h:s.att.h,a:s.att.a,n:'Percobaan Callback'}]:[])};
+$('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl,CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan')};
 $('mx2').onclick=()=>{if(PP2)dl(PP2.h,PP2.a,PP2.n,'Detail',PP2.x)};
 setInterval(()=>{if(!$('cb').hidden&&!document.hidden)sync()},CBC.iv*60000);
 window.__cb={bld,agg,pdt,pk,pks,ulpN,ordOf};
@@ -665,5 +655,45 @@ function build(){
 build();
 let w=innerWidth;addEventListener('resize',()=>{const m1=w<=640,m2=innerWidth<=640;w=innerWidth;if(m1!==m2)build()});
 })();
+</script>
+<script>
+/* Header statis: video kanan atas, Command Center kiri atas, judul halaman bergeser ke tengah saat halaman di-skrol */
+(function(){
+const hd=document.querySelector('header'),br=hd.querySelector('.brand'),bt=document.getElementById('bt'),bs=document.getElementById('bs'),
+ ht=document.getElementById('ht'),hr=document.getElementById('hr'),mq=matchMedia('(max-width:640px)'),BD=6;
+let G=null,raf=0;
+const lerp=(a,b,t)=>a+(b-a)*t,ease=t=>t*t*(3-2*t);
+function measure(){
+ const vw=hd.clientWidth,H=hd.offsetHeight,small=mq.matches,cs=getComputedStyle(hd),padL=parseFloat(cs.paddingLeft)||0;
+ const on=!!hr&&!hr.hidden,hh=on?hr.offsetHeight:0,hw=on?hr.offsetWidth:0,hRt=on?(parseFloat(getComputedStyle(hr).right)||0):0;
+ const tH=bs.offsetTop+bs.offsetHeight-bt.offsetTop,bw=Math.max(bt.offsetWidth,bs.offsetWidth);
+ const tW=Math.max(ht.offsetWidth,ht.scrollWidth),hT=ht.offsetHeight;
+ const y0b=br.offsetTop,x0=ht.offsetLeft,y0t=ht.offsetTop,y0h=on?(small?14:(H-hh)/2):0;
+ /* mode 1 baris: brand kiri - judul tengah - video kanan (jika muat) */
+ let C=72,inn=C-BD;const kb1=Math.min(1,46/tH),kt1=.95,kh1=hh?54/hh:1,tw1=tW*kt1;
+ const fit=(vw-tw1)/2>=padL+bw*kb1+16&&(vw+tw1)/2<=(on?vw-hRt-hw*kh1:vw)-16;
+ let kb,kt,kh,yb,yt,yh,xt;
+ if(fit){kb=kb1;kt=kt1;kh=kh1;yb=(inn-tH*kb)/2;yh=(inn-hh*kh)/2;yt=(inn-hT*kt)/2}
+ else{/* mode 2 baris (mobile): brand + video di atas, judul di tengah baris bawah */
+  C=92;inn=C-BD;kb=Math.min(1,36/tH);kh=hh?38/hh:1;kt=Math.min(.82,(vw-28)/tW);yb=9;yh=9;
+  const bb=yb+tH*kb;yt=bb+Math.max(0,(inn-bb-hT*kt)/2)}
+ xt=(vw-tW*kt)/2;
+ const R=H-C;hd.style.top=(-Math.max(0,R))+'px';
+ G={R,on,y0b,yb,kb,x0,xt,y0t,yt,kt,y0h,yh,kh}}
+function update(){
+ if(!G)return;
+ const s=Math.max(0,window.pageYOffset||0),sc=G.R>0?Math.min(s,G.R):0,p=G.R>0?sc/G.R:1,e=ease(p);
+ br.style.transform='translate(0,'+(e*(G.yb-G.y0b)+sc).toFixed(2)+'px) scale('+lerp(1,G.kb,e).toFixed(4)+')';
+ ht.style.transform='translate('+(e*(G.xt-G.x0)).toFixed(2)+'px,'+(e*(G.yt-G.y0t)+sc).toFixed(2)+'px) scale('+lerp(1,G.kt,e).toFixed(4)+')';
+ if(G.on){hr.style.top=G.y0h+'px';hr.style.transform='translate(0,'+(e*(G.yh-G.y0h)+sc).toFixed(2)+'px) scale('+lerp(1,G.kh,e).toFixed(4)+')'}
+ hd.style.setProperty('--fd',Math.max(0,1-p*3).toFixed(3));hd.style.setProperty('--p',p.toFixed(3))}
+const all=()=>{measure();update()};
+addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;update()})},{passive:true});
+addEventListener('resize',all);addEventListener('orientationchange',all);addEventListener('load',all);
+if(window.ResizeObserver)new ResizeObserver(all).observe(hd);
+new MutationObserver(all).observe(hd,{childList:true,characterData:true,subtree:true});
+if(hr)new MutationObserver(all).observe(hr,{attributes:true,attributeFilter:['hidden']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);
+all()})();
 </script>
 </body></html>
