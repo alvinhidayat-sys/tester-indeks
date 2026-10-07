@@ -115,8 +115,23 @@ summary{cursor:pointer;font-style:italic;color:var(--mut)}
 .inf{font-size:12.5px;color:var(--mut);margin-top:10px;white-space:pre-wrap;line-height:1.5}
 #cbOut td[data-m]{cursor:pointer}#cbOut td[data-m]:hover{background:#fff6de;text-decoration:underline dotted}
 #cbOut tr.tot td[data-m]:hover{background:var(--ink);color:#fff}
-#cbOut th{white-space:normal;vertical-align:bottom;min-width:84px}#cbOut th:nth-child(-n+2){min-width:120px}
-@media(max-width:640px){#cb .btns{flex:1 1 100%}#cb .btns button{flex:1 1 44%}#cb input[type=date]{width:100%}}
+#cbOut.wrap{max-height:none}
+#cbOut table{min-width:900px;border-collapse:separate;border-spacing:0;font-size:13.5px}
+#cbOut th{position:static;text-align:center;white-space:normal;vertical-align:middle;line-height:1.25;padding:8px 10px;border-bottom:2px solid var(--ink);border-right:1px solid var(--line)}
+#cbOut th.l{text-align:left}#cbOut th.grp{background:#e3cf9f;border-bottom:1px solid var(--ink)}
+#cbOut th.st{min-width:96px;font-size:12.5px;background:#f0dfb2}
+#cbOut th.b,#cbOut td.b{border-left:2px solid var(--ink)}
+#cbOut td{padding:7px 10px;border-right:1px solid rgba(200,174,126,.5)}
+#cbOut td.n{text-align:right;font-variant-numeric:tabular-nums}
+#cbOut td.pc{text-align:right;font-weight:600;min-width:84px}
+#cbOut tr.sub td{font-weight:700}
+#cbOut tr.u td:first-child{color:var(--mut);font-size:12.5px}#cbOut tr.u td:nth-child(2){padding-left:22px}
+#cbOut tr.u:hover td{background:#fff6de}
+.cbn{margin:8px 0 0}
+.atw{margin-bottom:14px}.atw b{display:block;margin-bottom:6px;font:400 15px "Special Elite","Courier New",monospace}
+.atw table{min-width:0;width:auto}.atw td.n,.atw th.n{text-align:right}
+@media(max-width:640px){#cb .btns{flex:1 1 100%}#cb .btns button{flex:1 1 44%}
+#cbOut table{min-width:0}#cbOut td{border-right:0}#cbOut td.b{border-left:0}#cbOut td.pc{min-width:0}#cbOut tr.u td:nth-child(2){padding-left:0}.atw table{width:100%}}
 </style></head><body>
 <header><div class="hero" id="hr"><video id="hv" src="journey.mp4" poster="journey-poster.jpg" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video></div><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1 id="ht">Dashboard Durasi Command Center</h1><p id="hp">Pilih menu untuk melihat rekap durasi layanan pengaduan pelanggan</p></header>
 <div id="fl" aria-hidden="true"></div>
@@ -149,23 +164,21 @@ summary{cursor:pointer;font-style:italic;color:var(--mut)}
 <main id="cb" hidden>
 <div class="row" style="margin-bottom:12px"><a class="btnlink" href="#">← Kembali ke Beranda</a></div>
 <div class="card"><div class="row">
+<label>Bulan<select id="cbM"></select></label>
 <label>Area (UP3)<select id="cbA"></select></label>
 <label>Posko (ULP)<select id="cbU"></select></label>
-<label>Dari tanggal<input type="date" id="cbF"></label>
-<label>Sampai tanggal<input type="date" id="cbT"></label>
 <button id="cbS">Sinkron sekarang</button><span id="cbSt">Belum sinkron</span></div>
-<details style="margin-top:10px"><summary>Pengaturan &amp; info pembacaan data</summary>
+<details style="margin-top:10px"><summary>Pengaturan</summary>
 <div class="row" style="margin-top:8px">
 <label>Jeda nomor sama dihitung 1 kali (menit)<input type="number" id="cbGp" min="0" max="1440" value="15"></label>
-<label>Format tanggal di sheet<select id="cbDf"><option value="auto">Otomatis</option><option value="mdy">Bulan/Hari/Tahun (9/1/26 = 1 Sep)</option><option value="dmy">Hari/Bulan/Tahun (9/1/26 = 9 Jan)</option></select></label></div>
-<div class="inf" id="cbInf"></div></details>
+<label>Format tanggal di sheet<select id="cbDf"><option value="auto">Otomatis</option><option value="mdy">Bulan/Hari/Tahun (9/1/26 = 1 Sep)</option><option value="dmy">Hari/Bulan/Tahun (9/1/26 = 9 Jan)</option></select></label></div></details>
 <div id="cbErr" style="color:var(--pri);margin-top:8px;white-space:pre-wrap"></div></div>
 <div class="kpi" id="cbKpi"></div>
 <div class="card"><div class="row btns" style="justify-content:space-between;align-items:center"><b>Rekapitulasi Callback per Area &amp; ULP</b>
 <div class="row btns"><button class="alt" id="cbXR">Unduh Excel tampilan tabel</button><button class="alt" id="cbXD">Unduh Excel detail panggilan</button></div></div>
-<div class="clg"><span>Klik angka untuk membuka rincian (pop up, bisa diunduh). Klik % untuk daftar laporan yang belum dihubungi.</span></div>
-<div class="clg"><span><b>Total Lapor</b> = laporan di EIS</span><span><b>Percobaan Telp</b> = panggilan keluar (nomor ganda tetap dihitung)</span><span><b>Plgn Dihubungi</b> = nomor sama dalam jeda singkat dihitung 1 kali</span><span><b>% Dihubungi</b> = Plgn Dihubungi ÷ Total Lapor</span></div>
-<div class="wrap" id="cbOut" style="margin-top:6px"></div></div>
+<div class="wrap" id="cbOut" style="margin-top:10px"></div>
+<div class="clg cbn"><span>Klik angka untuk membuka rincian (pop up, bisa diunduh). Klik % untuk daftar laporan yang belum dihubungi.</span></div>
+<div class="clg cbn"><span><b>Total Lapor</b> = laporan di EIS</span><span><b>Percobaan Telp</b> = panggilan keluar (nomor ganda tetap dihitung)</span><span><b>Plgn Dihubungi</b> = nomor sama dalam jeda singkat dihitung 1 kali</span><span><b>% Dihubungi</b> = Plgn Dihubungi ÷ Total Lapor</span></div></div>
 </main>
 <div id="md" hidden><div class="box"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="mt"></h2><div class="row"><button class="alt" id="mx">Unduh Excel</button><button class="alt" id="mx2" hidden>Unduh Excel (detail)</button><button id="mc">Tutup</button></div></div><div class="wrap" id="mi"></div><div id="mf"></div></div></div>
 <script>
@@ -323,8 +336,8 @@ $('chG').onclick=()=>{CH.mode='g';CH.sel=null;chart(CF||filt())};$('chT').onclic
 $('chN').onclick=()=>{CH.met='n';chart(CF||filt())};$('chA').onclick=()=>{CH.met='a';chart(CF||filt())};
 $('chC').onclick=ev=>{const f=ev.target.closest('#chF');if(f){const g=CI.find(x=>x.k==CH.sel);if(g)chf(g);return}
  const b=ev.target.closest('[data-c]');if(!b)return;const g=CI[+b.dataset.c];CH.sel=CH.sel==g.k?null:g.k;chart(CF||filt())};
-function dl(h,a,n,sn){const ws=XLSX.utils.aoa_to_sheet([h,...a]);ws['!cols']=h.map((x,i)=>({wch:Math.min(34,Math.max(12,x.length,...a.slice(0,60).map(r=>String(r[i]).length)))}));
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,sn||'Rekap');XLSX.writeFile(wb,n+'.xlsx')}
+function dl(h,a,n,sn,x){const ws=XLSX.utils.aoa_to_sheet([h,...a]);ws['!cols']=h.map((x,i)=>({wch:Math.min(34,Math.max(12,x.length,...a.slice(0,60).map(r=>String(r[i]).length)))}));
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,sn||'Rekap');(x||[]).forEach(z=>{const w=XLSX.utils.aoa_to_sheet([z.h,...z.a]);w['!cols']=z.h.map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,w,z.n)});XLSX.writeFile(wb,n+'.xlsx')}
 const sfx=()=>{const f=[$('fM').value,$('fA').value,$('fU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
 function xl(k){const rows=filt();if(!rows.length)return alert('Tidak ada data untuk diunduh.');
  k=='R'?dl(RH,flat(rows),CG.pre+'_Rekap'+sfx()):dl(DH,rows.map(detRow),CG.pre+'_Detail'+sfx())}
@@ -343,10 +356,10 @@ $('out').onclick=ev=>{const b=ev.target.closest('button');
  const t=ev.target.closest('tr[data-i]');if(!t)return;const n=TR[+t.dataset.i];open.has(n)?open.delete(n):open.add(n);render()};
 $('kpi').onclick=ev=>{const b=ev.target.closest('button[data-k]');if(b)pop(+b.dataset.k)};
 $('mc').onclick=()=>{$('md').hidden=true};$('md').onclick=ev=>{if(ev.target.id=='md')$('md').hidden=true};
-document.onkeydown=ev=>{if(ev.key=='Escape')$('md').hidden=true};$('mx').onclick=()=>dl(PP.h,PP.a,PP.n);
+document.onkeydown=ev=>{if(ev.key=='Escape')$('md').hidden=true};$('mx').onclick=()=>dl(PP.h,PP.a,PP.n,PP.sn,PP.x);
 function fitBrand(){const t=$('bt'),s=$('bs');s.style.fontSize='10px';s.style.fontSize=(10*t.offsetWidth/s.offsetWidth)+'px'}
 function lab(el){el.querySelectorAll('table').forEach(t=>{const h=[...t.querySelectorAll('th')].map(x=>x.textContent);t.querySelectorAll('tbody tr').forEach(r=>[...r.children].forEach((c,i)=>{c.dataset.l=h[i]||''}))})}
-['out','mi','cbOut'].forEach(i=>new MutationObserver(()=>lab($(i))).observe($(i),{childList:true}));
+['out','mi'].forEach(i=>new MutationObserver(()=>lab($(i))).observe($(i),{childList:true}));
 fitBrand();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBrand);
 
 const DH_M=['No','No Laporan','Nama Area','Nama Unit','Tanggal Lapor','Tanggal Lapor Referensi','Tanggal Marking','Acuan Hitung','Durasi (menit)','Status'];
@@ -412,7 +425,7 @@ const cn=(h,al)=>{const H=H0(h);for(const a of al){const k=nz(a);const i=H.findI
 const cf=(h,ex,inc)=>{let i=cx(h,ex);if(i<0&&inc)i=cn(h,inc);return i};
 const rq=(i,nm,h)=>{if(i<0)throw Error('Kolom '+nm+' tidak ditemukan. Header terbaca: '+h.join(' | '));return i};
 const PHX=['notelepon','notelp','nohp','nomortelepon','nomortelp','nomorhp','telepon','telp','hp','phone','notlp','nohppelapor','teleponpelapor'],PHI=['telepon','telp','nohp','phone'];
-const NOX=['nolapor','nolaporan','nomorlaporan'],TLX=['tanggallapor','tgllapor','waktulapor'];
+const NOX=['nolapor','nolaporan','nomorlaporan'],TLX=['tgljamlapor','tanggaljamlapor','tanggallapor','tgllapor','waktulapor','jamlapor'];
 const POX=['namaposko','posko','namaulp','ulp','namaunit','unit'],ARX=['namaarea','area','up3','namaup3'];
 const bLog=h=>{
  const ph=rq(cf(h,['nomor','nomortelepon','notelepon','notelp','nohp','number','phonenumber','phone','nomortelp','telepon','telp','nomorhp','notlp','tujuan'],['telepon','telp','nomor','number','phone','hp']),'Nomor telepon (log HP operator)',h);
@@ -477,6 +490,7 @@ function bld(R,o){
   const pre=L2.filter(r=>!isNaN(r.t)&&r.t<=c.t+60),post=L2.filter(r=>!isNaN(r.t)&&r.t>c.t+60);
   const r=pre.length?pre.reduce((a,b)=>b.t>a.t?b:a):post.length?post.reduce((a,b)=>b.t<a.t?b:a):L2[L2.length-1];
   c.rec=r;c.area=r.area;c.ulp=r.ulp;c.sk=r.eis?r.st:LAIN;c.no=r.no});
+ calls.forEach(c=>{c.mt=c.rec&&!isNaN(c.rec.t)?c.rec.t:c.t});
  calls.sort((a,b)=>(a.t||0)-(b.t||0));
  const rk=s=>/^selesai$/i.test(s)?0:/^selesai/i.test(s)?1:/batal/i.test(s)?3:2;
  const eis=recs.filter(r=>r.eis),sts=[...new Set(eis.map(r=>r.st))].sort((a,b)=>rk(a)-rk(b)||a.localeCompare(b));
@@ -488,10 +502,11 @@ function bld(R,o){
  I.push('Nomor di log yang tidak ditemukan di APKT/EIS: '+unm.size+' nomor ('+calls.filter(c=>!c.rec).length+' panggilan).');
  return{recs,eis,calls,sts,W,I}}
 /* ===== agregasi sesuai filter ===== */
+const mkt=t=>new Date(t*1000).toISOString().slice(0,7);
 function agg(M,f){
- const inT=t=>(isNaN(f.from)&&isNaN(f.to))||(!isNaN(t)&&(isNaN(f.from)||t>=f.from)&&(isNaN(f.to)||t<=f.to));
+ const inT=t=>!f.m||(!isNaN(t)&&mkt(t)==f.m);
  const ok=x=>(!f.a||x.area==f.a)&&(!f.u||x.ulp==f.u);
- const rep=M.eis.filter(r=>inT(r.t)&&ok(r)),cl=M.calls.filter(c=>inT(c.t)&&ok(c)),called=new Map();
+ const rep=M.eis.filter(r=>inT(r.t)&&ok(r)),cl=M.calls.filter(c=>inT(c.mt)&&ok(c)),called=new Map();
  cl.forEach(c=>{if(c.rec){const v=called.get(c.rec)||{n:0,t:NaN};v.n++;if(!isNaN(c.t)&&(isNaN(v.t)||c.t<v.t))v.t=c.t;called.set(c.rec,v)}});
  const mk=()=>({rep:[],try:[],con:[],st:{}}),T=mk(),AR=new Map();
  const gOf=(a,u)=>{let A=AR.get(a);if(!A){A={name:a,t:mk(),U:new Map()};AR.set(a,A)}let G=A.U.get(u);if(!G){G=mk();A.U.set(u,G)}return[T,A.t,G]};
@@ -503,93 +518,115 @@ function agg(M,f){
 /* ===== UI ===== */
 const CB={raw:null,M:null,Z:null,G:[],cols:[],busy:false,open:new Set(),init:false,KP:[],view:null};let PP2=null;
 const fT=t=>isNaN(t)?'':fd(t),pcn=(c,r)=>r?c/r*100:null,pcs=v=>v==null?'-':v.toFixed(1).replace('.',',')+'%';
-const shS=s=>s.length>24?s.slice(0,23)+'…':s,tel=k=>k?'62'+k:'';
-function filters(){const d=v=>v?Date.parse(v+'T00:00:00Z')/1000:NaN,fr=d($('cbF').value),to=d($('cbT').value);return{a:$('cbA').value,u:$('cbU').value,from:fr,to:isNaN(to)?NaN:to+86399}}
+const tel=k=>k?'62'+k:'',qa=s=>e(s).replace(/"/g,'&quot;');
+function filters(){return{m:$('cbM').value,a:$('cbA').value,u:$('cbU').value}}
 const opt=()=>({ds:$('cbDf').value,gap:$('cbGp').value});
-function fillA(){if(!CB.M)return;const m=CB.M,ar=[...new Set(m.eis.map(r=>r.area).concat(m.calls.filter(c=>c.rec).map(c=>c.area)))].sort();opts($('cbA'),ar,'Semua area');fillU()}
+function fillA(){if(!CB.M)return;const m=CB.M;
+ opts($('cbM'),[...new Set(m.eis.filter(r=>!isNaN(r.t)).map(r=>mkt(r.t)))].sort().reverse(),'Semua bulan',v=>MN[+v.slice(5)-1]+' '+v.slice(0,4));
+ const ar=[...new Set(m.eis.map(r=>r.area).concat(m.calls.filter(c=>c.rec).map(c=>c.area)))].sort();opts($('cbA'),ar,'Semua area');fillU()}
 function fillU(){if(!CB.M)return;const a=$('cbA').value,m=CB.M,u=[...new Set(m.eis.concat(m.calls.filter(c=>c.rec)).filter(r=>!a||r.area==a).map(r=>r.ulp))].sort();opts($('cbU'),u,'Semua ULP')}
-/* spesifikasi tabel pop up: v = tampilan, d = detail lengkap */
+/* rekap percobaan callback (1 kali, 2 kali, 3 kali, dst) */
+const kali=b=>b==0?'Belum dihubungi':b>=10?'10 kali atau lebih':b+' kali';
+function attCalls(list,scope){const kf=c=>c.rec||c.k,n=new Map();scope.forEach(c=>n.set(kf(c),(n.get(kf(c))||0)+1));
+ const ks=new Set(list.map(kf)),B={};let tp=0;
+ ks.forEach(k=>{const a=n.get(k)||1,b=Math.min(a,10),o=B[b]=B[b]||{p:0,c:0};o.p++;o.c+=a;tp+=a});
+ if(!ks.size)return null;
+ const a=Object.keys(B).map(Number).sort((x,y)=>x-y).map(b=>[kali(b),B[b].p,pcs(B[b].p/ks.size*100),B[b].c]);a.push(['Total',ks.size,'100,0%',tp]);
+ return{h:['Percobaan Callback','Jumlah Pelanggan','% Pelanggan','Jumlah Panggilan'],a}}
+function attReps(list,called){if(!list.length)return null;const B={};
+ list.forEach(r=>{const c=called.get(r),b=Math.min(c?c.n:0,10);B[b]=(B[b]||0)+1});
+ const a=Object.keys(B).map(Number).sort((x,y)=>x-y).map(b=>[kali(b),B[b],pcs(B[b]/list.length*100)]);a.push(['Total',list.length,'100,0%']);
+ return{h:['Percobaan Callback','Jumlah Laporan','% Laporan'],a}}
+/* spesifikasi tabel pop up: v = tampilan, d = detail lengkap, att = rekap percobaan */
 function repSpec(list,called){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0));
  const st=r=>{const c=called.get(r);return c?'Ya ('+c.n+'x)':'Belum'};
- return{v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi'],a:L.map((r,i)=>[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r)])},
+ return{att:attReps(L,called),v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi'],a:L.map((r,i)=>[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r)])},
   d:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Nama Pelapor','Alamat','Deskripsi','Penyebab','Durasi (EIS)','Dihubungi','Jml Percobaan Telp','Telp Pertama'],
    a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),r.nm,r.al,r.ds,r.pb,r.du,c?'Ya':'Belum',c?c.n:0,c?fT(c.t):'']})}}}
-function callSpec(list){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
- return{v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
+function callSpec(list,scope){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
+ return{att:attCalls(L,scope||L),v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
   d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.raw,c.nm,c.ty,c.du,c.no||'-',c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
-function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
- PP={h:sp.v.h,a:sp.v.a,f:[],n:n};PP2={h:sp.d.h,a:sp.d.a,n:n+'_detail'};
+function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70),x=sp.att?[{h:sp.att.h,a:sp.att.a,n:'Percobaan Callback'}]:[];
+ PP={h:sp.v.h,a:sp.v.a,f:[],n:n,sn:'Tampilan',x:x};PP2={h:sp.d.h,a:sp.d.a,n:n+'_detail',x:x};
  $('mt').textContent=t+' ('+sp.v.a.length+' baris)';
- $('mi').innerHTML='<table><thead><tr>'+sp.v.h.map(h=>`<th>${e(h)}</th>`).join('')+'</tr></thead><tbody>'+(sp.v.a.length?sp.v.a.slice(0,300).map(r=>'<tr>'+r.map(v=>`<td>${e(v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+sp.v.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
+ const at=sp.att?'<div class="atw"><b>Rekap Percobaan Callback (per laporan pelanggan)</b><table><thead><tr>'+sp.att.h.map((h,i)=>`<th class="${i?'n':''}">${e(h)}</th>`).join('')+'</tr></thead><tbody>'+
+  sp.att.a.map((r,k)=>`<tr${k==sp.att.a.length-1?' class="tot"':''}>`+r.map((v,i)=>`<td class="${i?'n':''}">${e(v)}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>':'';
+ $('mi').innerHTML=at+'<table><thead><tr>'+sp.v.h.map(h=>`<th>${e(h)}</th>`).join('')+'</tr></thead><tbody>'+(sp.v.a.length?sp.v.a.slice(0,300).map(r=>'<tr>'+r.map(v=>`<td>${e(v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+sp.v.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
  $('mf').textContent=sp.v.a.length>300?'Menampilkan 300 baris pertama. File Excel berisi semua '+sp.v.a.length+' baris.':'';
  $('mx').textContent='Unduh Excel (tampilan)';$('mx2').hidden=false;$('md').hidden=false}
 function metricSpec(g,m){const Z=CB.Z;
  if(m=='rep')return{t:'Total Laporan — '+g.l,s:repSpec(g.G.rep,Z.called)};
- if(m=='try')return{t:'Percobaan Panggilan — '+g.l,s:callSpec(g.G.try)};
- if(m=='con')return{t:'Pelanggan Dihubungi — '+g.l,s:callSpec(g.G.con)};
+ if(m=='try')return{t:'Percobaan Panggilan — '+g.l,s:callSpec(g.G.try,g.G.try)};
+ if(m=='con')return{t:'Pelanggan Dihubungi — '+g.l,s:callSpec(g.G.con,g.G.try)};
  if(m=='pct')return{t:'Laporan Belum Dihubungi — '+g.l,s:repSpec(g.G.rep.filter(r=>!Z.called.has(r)),Z.called)};
- const c=CB.cols[+m.slice(1)];return{t:'Callback '+c+' — '+g.l,s:callSpec(g.G.st[c]||[])}}
+ const c=CB.cols[+m.slice(1)];return{t:'Callback '+c+' — '+g.l,s:callSpec(g.G.st[c]||[],g.G.try)}}
 function recHtml(){const Z=CB.Z,cols=CB.cols,fa=$('cbA').value;CB.G=[];
- const H=['AREA','ULP','Total Lapor','Percobaan Telp','Plgn Dihubungi','% Dihubungi'].concat(cols.map(shS));
- const TT=['Area (UP3)','ULP / Posko','Total laporan masuk (sheet EIS)','Jumlah percobaan panggilan keluar (nomor ganda tetap dihitung)','Jumlah pelanggan yang dihubungi (nomor sama dalam jeda '+(+$('cbGp').value||0)+' menit dihitung 1 kali)','Persentase pelanggan dihubungi terhadap laporan masuk'].concat(cols.map(c=>'Jumlah callback berstatus '+c+' (dari pelanggan yang dihubungi)'));
+ const BASE=['AREA','ULP','Total Lapor','Percobaan Telp','Plgn Dihubungi','% Dihubungi'];
+ const TT=['Area (UP3)','ULP / Posko','Total laporan masuk (sheet EIS)','Jumlah percobaan panggilan keluar (nomor ganda tetap dihitung)','Jumlah pelanggan yang dihubungi (nomor sama dalam jeda '+(+$('cbGp').value||0)+' menit dihitung 1 kali)','Persentase pelanggan dihubungi terhadap laporan masuk'];
  const X=[];let tr='';
  const reg=(G,l)=>{CB.G.push({G,l});return CB.G.length-1};
- const cells=(G,gi,pcOn)=>{const p=pcn(G.con.length,G.rep.length);
-  return `<td class="n" data-m="rep" data-g="${gi}">${G.rep.length}</td><td class="n" data-m="try" data-g="${gi}">${G.try.length}</td><td class="n" data-m="con" data-g="${gi}">${G.con.length}</td><td class="n" ${pcOn?`data-m="pct" data-g="${gi}"`:''}>${pcs(p)}</td>`+cols.map((c,i)=>`<td class="n" data-m="s${i}" data-g="${gi}">${(G.st[c]||[]).length}</td>`).join('')};
+ const cells=(G,gi,pcOn,tot)=>{const p=pcn(G.con.length,G.rep.length),w=p==null?0:Math.min(100,p).toFixed(0),
+   bar=(!tot&&p!=null)?` style="background-image:linear-gradient(90deg,rgba(95,101,53,.30) ${w}%,transparent ${w}%)"`:'';
+  const d=(m,l,v,c)=>`<td class="n${c||''}" data-l="${qa(l)}" data-m="${m}" data-g="${gi}">${v}</td>`;
+  return d('rep',BASE[2],G.rep.length)+d('try',BASE[3],G.try.length)+d('con',BASE[4],G.con.length)+
+   `<td class="n pc" data-l="${BASE[5]}"${bar}${pcOn?` data-m="pct" data-g="${gi}"`:''}>${pcs(p)}</td>`+
+   cols.map((c,i)=>d('s'+i,c,(G.st[c]||[]).length,i?'':' b')).join('')};
  const xr=(a,u,G)=>{const p=pcn(G.con.length,G.rep.length);X.push([a,u,G.rep.length,G.try.length,G.con.length,p==null?'':+p.toFixed(1)].concat(cols.map(c=>(G.st[c]||[]).length)))};
+ const lc=(a,u)=>`<td data-l="AREA">${a}</td><td data-l="ULP">${u}</td>`;
  Z.A.forEach(A=>{
-  if(A.name==UNM){const gi=reg(A.t,UNM);tr+=`<tr class="sub"><td>${e(A.name)}</td><td>-</td>${cells(A.t,gi,false)}</tr>`;xr(A.name,'-',A.t);return}
+  if(A.name==UNM){const gi=reg(A.t,UNM);tr+=`<tr class="sub">${lc(e(A.name),'-')}${cells(A.t,gi,false)}</tr>`;xr(A.name,'-',A.t);return}
   if(!fa){const gi=reg(A.t,A.name),op=CB.open.has(A.name);
-   tr+=`<tr class="sub" data-a="${e(A.name).replace(/"/g,'&quot;')}"><td>${op?'▾ ':'▸ '}${e(A.name)}</td><td>Semua ULP</td>${cells(A.t,gi,true)}</tr>`;xr(A.name,'Semua ULP',A.t);
+   tr+=`<tr class="sub" data-a="${qa(A.name)}">${lc((op?'▾ ':'▸ ')+e(A.name),'Semua ULP')}${cells(A.t,gi,true)}</tr>`;xr(A.name,'Semua ULP',A.t);
    if(!op)return}
-  A.U.forEach(([u,G])=>{const gi=reg(G,A.name+' / '+u);tr+=`<tr class="u"><td>${e(A.name)}</td><td>${e(u)}</td>${cells(G,gi,true)}</tr>`;xr(A.name,u,G)})});
- if(Z.A.length>1||(fa&&Z.A.length&&Z.A[0].U.length>1)){const gi=reg(Z.T,'Semua data');tr+=`<tr class="tot"><td>TOTAL</td><td></td>${cells(Z.T,gi,true)}</tr>`;xr('TOTAL','',Z.T)}
- CB.view={h:['AREA','ULP','Total Lapor','Percobaan Telp','Plgn Dihubungi','% Dihubungi'].concat(cols.map(shS)),a:X};
+  A.U.forEach(([u,G])=>{const gi=reg(G,A.name+' / '+u);tr+=`<tr class="u">${lc(e(A.name),e(u))}${cells(G,gi,true)}</tr>`;xr(A.name,u,G)})});
+ if(Z.A.length>1||(fa&&Z.A.length&&Z.A[0].U.length>1)){const gi=reg(Z.T,'Semua data');tr+=`<tr class="tot">${lc('TOTAL','')}${cells(Z.T,gi,true,true)}</tr>`;xr('TOTAL','',Z.T)}
+ CB.view={h:BASE.concat(cols),a:X};
  const ctl=fa?'':'<div class="row" style="margin-bottom:8px"><button class="alt" id="cbEa">Buka semua area</button><button class="alt" id="cbEc">Tutup semua</button></div>';
- return ctl+'<table><thead><tr>'+H.map((h,i)=>`<th class="${i>1?'n':''}" title="${e(TT[i]).replace(/"/g,'&quot;')}">${e(h)}</th>`).join('')+'</tr></thead><tbody>'+tr+'</tbody></table>'}
+ const g=cols.length;
+ return ctl+'<table><thead><tr>'+BASE.map((h,i)=>`<th rowspan="${g?2:1}" class="${i<2?'l':''}" title="${qa(TT[i])}">${h}</th>`).join('')+(g?`<th colspan="${g}" class="grp">Jumlah Callback per Status</th>`:'')+'</tr>'+
+  (g?'<tr>'+cols.map((c,i)=>`<th class="st${i?'':' b'}" title="${qa('Jumlah callback berstatus '+c+' (dari pelanggan yang dihubungi)')}">${e(c)}</th>`).join('')+'</tr>':'')+'</thead><tbody>'+tr+'</tbody></table>'}
 function render(){
  if(!CB.M){$('cbKpi').innerHTML='';$('cbOut').innerHTML='<div class="emp">Belum ada data. Klik "Sinkron sekarang".</div>';return}
  const Z=agg(CB.M,filters());CB.Z=Z;
  CB.cols=CB.M.sts.slice();if((Z.T.st[LAIN]||[]).length)CB.cols.push(LAIN);
  if(!CB.init){Z.A.forEach(a=>CB.open.add(a.name));CB.init=true}
- const T=Z.T,fl=filters(),noF=!fl.a&&!fl.u,unm=Z.cl.filter(c=>!c.rec),nb=T.rep.filter(r=>!Z.called.has(r)),gT={G:T,l:'Semua data'};
+ const T=Z.T,fl=filters(),noF=!fl.a&&!fl.u,unm=Z.cl.filter(c=>!c.rec),nb=T.rep.filter(r=>!Z.called.has(r));
  CB.KP=[
   {l:'Total Laporan (EIS)',v:T.rep.length,d:()=>({t:'Total Laporan — Semua data',s:repSpec(T.rep,Z.called)})},
-  {l:'Percobaan Panggilan Keluar',v:T.try.length,d:()=>({t:'Percobaan Panggilan — Semua data',s:callSpec(T.try)})},
-  {l:'Pelanggan Dihubungi',v:T.con.length,d:()=>({t:'Pelanggan Dihubungi — Semua data',s:callSpec(T.con)})},
-  {l:'% Dihubungi / Laporan',v:pcs(pcn(T.con.length,T.rep.length)),d:()=>({t:'Pelanggan Dihubungi — Semua data',s:callSpec(T.con)})},
+  {l:'Percobaan Panggilan Keluar',v:T.try.length,d:()=>({t:'Percobaan Panggilan — Semua data',s:callSpec(T.try,T.try)})},
+  {l:'Pelanggan Dihubungi',v:T.con.length,d:()=>({t:'Pelanggan Dihubungi — Semua data',s:callSpec(T.con,T.try)})},
+  {l:'% Dihubungi / Laporan',v:pcs(pcn(T.con.length,T.rep.length)),d:()=>({t:'Pelanggan Dihubungi — Semua data',s:callSpec(T.con,T.try)})},
   {l:'Laporan Belum Dihubungi',v:nb.length,d:()=>({t:'Laporan Belum Dihubungi — Semua data',s:repSpec(nb,Z.called)})},
-  {l:'Panggilan Ganda (jeda singkat)',v:T.try.length-T.con.length,d:()=>({t:'Panggilan Ganda — Semua data',s:callSpec(T.try.filter(c=>!c.cnt))})},
-  {l:'Panggilan Nomor Tidak Terpetakan',v:noF?unm.length:'-',d:()=>({t:'Nomor Tidak Terpetakan',s:callSpec(unm)})}];
+  {l:'Panggilan Ganda (jeda singkat)',v:T.try.length-T.con.length,d:()=>({t:'Panggilan Ganda — Semua data',s:callSpec(T.try.filter(c=>!c.cnt),T.try)})},
+  {l:'Panggilan Nomor Tidak Terpetakan',v:noF?unm.length:'-',d:()=>({t:'Nomor Tidak Terpetakan',s:callSpec(unm,unm)})}];
  $('cbKpi').innerHTML=CB.KP.map((k,i)=>`<button data-k="${i}"><b>${k.v}</b>${k.l}</button>`).join('');
  $('cbOut').innerHTML=Z.A.length?recHtml():'<div class="emp">Tidak ada data untuk filter ini.</div>';
  if(!Z.A.length)CB.view=null}
+const warn=()=>{$('cbErr').textContent=CB.M.W.length?'Perhatian:\n'+CB.M.W.join('\n'):''};
 async function sync(){if(CB.busy)return;CB.busy=true;$('cbErr').textContent='';$('cbSt').textContent='Menyinkronkan...';
  try{const ks=[['log',bLog],['apkt',bApk],['eis',bEis],['up3',bUp]],rs=await Promise.allSettled(ks.map(([k,b])=>ldS(k,b))),R={},er=[];
   rs.forEach((r,i)=>{const k=ks[i][0];if(r.status=='fulfilled')R[k]=r.value;else if(k!='up3')er.push(r.reason.message);else R.up3=null});
   if(er.length)throw Error(er.join('\n\n'));
   CB.raw=R;CB.M=bld(R,opt());fillA();render();
-  $('cbSt').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+CB.M.eis.length+' laporan EIS, '+CB.M.calls.length+' panggilan keluar)';
-  $('cbInf').textContent=CB.M.I.join('\n');
-  $('cbErr').textContent=CB.M.W.length?'Perhatian:\n'+CB.M.W.join('\n'):''
+  $('cbSt').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+CB.M.eis.length+' laporan EIS, '+CB.M.calls.length+' panggilan keluar)';warn()
  }catch(x){$('cbErr').textContent=x.message;$('cbSt').textContent='Sinkron gagal'}finally{CB.busy=false}}
-function rebuild(){if(!CB.raw)return;try{CB.M=bld(CB.raw,opt());fillA();render();$('cbInf').textContent=CB.M.I.join('\n');$('cbErr').textContent=CB.M.W.length?'Perhatian:\n'+CB.M.W.join('\n'):''}catch(x){$('cbErr').textContent=x.message}}
+function rebuild(){if(!CB.raw)return;try{CB.M=bld(CB.raw,opt());fillA();render();warn()}catch(x){$('cbErr').textContent=x.message}}
 function enter(){cur=null;$('home').hidden=true;$('app').hidden=true;$('md').hidden=true;$('cb').hidden=false;
  $('ht').textContent='Rekap Callback Pelanggan';$('hp').textContent='Rekap panggilan keluar operator Command Center ke pelanggan: log HP operator dicocokkan dengan data APKT per nomor telepon, dibandingkan dengan laporan EIS';
  document.title='Rekap Callback Pelanggan';window.scrollTo(0,0);if(CB.M){fillA();render()}sync()}
 window.cbEnter=enter;
 $('cbS').onclick=sync;
-$('cbA').onchange=()=>{fillU();render()};$('cbU').onchange=$('cbF').onchange=$('cbT').onchange=render;
+$('cbA').onchange=()=>{fillU();render()};$('cbU').onchange=$('cbM').onchange=render;
 $('cbGp').onchange=$('cbDf').onchange=rebuild;
 $('cbKpi').onclick=ev=>{const b=ev.target.closest('button[data-k]');if(!b)return;const k=CB.KP[+b.dataset.k].d();popC(k.t,k.s)};
 $('cbOut').onclick=ev=>{const b=ev.target.closest('button');
  if(b&&b.id=='cbEa'){CB.Z.A.forEach(a=>CB.open.add(a.name));return render()}if(b&&b.id=='cbEc'){CB.open.clear();return render()}
  const c=ev.target.closest('td[data-m]');if(c){const g=CB.G[+c.dataset.g],k=metricSpec(g,c.dataset.m);return popC(k.t,k.s)}
  const t=ev.target.closest('tr[data-a]');if(t){const n=t.dataset.a;CB.open.has(n)?CB.open.delete(n):CB.open.add(n);render()}};
-const sfx2=()=>{const f=[$('cbA').value,$('cbU').value,$('cbF').value,$('cbT').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
+const sfx2=()=>{const f=[$('cbM').value,$('cbA').value,$('cbU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
 $('cbXR').onclick=()=>{if(!CB.view||!CB.view.a.length)return alert('Tidak ada data untuk diunduh.');dl(CB.view.h,CB.view.a,'Callback_Rekap'+sfx2(),'Rekap Callback')};
-$('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan')};
-$('mx2').onclick=()=>{if(PP2)dl(PP2.h,PP2.a,PP2.n,'Detail')};
+$('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl,CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan',s.att?[{h:s.att.h,a:s.att.a,n:'Percobaan Callback'}]:[])};
+$('mx2').onclick=()=>{if(PP2)dl(PP2.h,PP2.a,PP2.n,'Detail',PP2.x)};
 setInterval(()=>{if(!$('cb').hidden&&!document.hidden)sync()},CBC.iv*60000);
 window.__cb={bld,agg,pdt,pk,pks,ulpN,ordOf};
 route();
