@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rekap Durasi Create CTT</title>
+<title>Dashboard Durasi Command Center</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
@@ -79,7 +79,7 @@ select,button,input{font-size:16px;min-height:42px}
 label{flex:1 1 100%}label select{width:100%}
 #bS{flex:1 1 40%}#st{flex:1 1 55%}
 .kpi{grid-template-columns:repeat(2,1fr);gap:8px}.kpi button{padding:8px 10px}.kpi b{font-size:21px}
-.row.tabs,.row:has(#xR){flex:1 1 100%}.tabs button,#xR,#xD{flex:1}
+.row.tabs,.row:has(#xR){flex:1 1 100%}.tabs button{flex:1}.row:has(#xR) button{flex:1 1 44%}
 #out.wrap{max-height:none;overflow:visible}
 table{min-width:0}thead{display:none}table,tbody,tr,td{display:block;width:100%}
 tr{border:2px solid var(--ink);border-radius:3px;background:#fff9ea;margin-bottom:10px;padding:4px 12px;box-shadow:2px 2px 0 var(--line)}
@@ -94,10 +94,37 @@ tr.sub{background:#f0dfb2}
 .vb{flex:1 0 30px;min-height:0}.vb .vt{height:140px}
 #chD{flex-direction:column;align-items:stretch}#chD button{width:100%}
 }
+
+.btnlink{display:inline-block;text-decoration:none;font-weight:600;font-size:14px;border:2px solid var(--ink);border-radius:3px;background:var(--paper);color:var(--pri);padding:7px 12px;box-shadow:2px 2px 0 var(--ink)}
+.btnlink:active{transform:translate(2px,2px);box-shadow:none}.btnlink:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.intro{margin:2px 0 16px;font-style:italic;color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.mc{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);background:rgba(251,242,220,.88);border:2px solid var(--ink);border-radius:3px;box-shadow:5px 5px 0 var(--line);overflow:hidden;transition:transform .15s,box-shadow .15s}
+.mc:hover,.mc:focus-visible{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--acc);outline:none}
+.mc svg{display:block;width:100%;height:auto;border-bottom:2px solid var(--ink)}
+.mc .mb{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.mc h2{margin:0;font:400 21px "Special Elite","Courier New",monospace;color:var(--pri)}
+.mc p{margin:0;font-size:13.5px;color:var(--mut)}
+.mc .go{margin-top:auto;padding-top:8px;font-weight:700}
+.hnote{margin-top:18px;font-size:12.5px;color:var(--mut);font-style:italic}
+.mc.off{position:relative;cursor:not-allowed}.mc.off svg{filter:grayscale(.55)}.mc.off:hover,.mc.off:focus{transform:none;box-shadow:5px 5px 0 var(--line)}.mc.off .go{color:var(--mut)}
+.soon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;background:rgba(58,42,28,.86);color:#f6e7c1;font:400 22px/1.3 "Special Elite","Courier New",monospace;opacity:0;transition:opacity .15s;pointer-events:none}
+.mc.off:hover .soon,.mc.off:focus .soon{opacity:1}
 </style></head><body>
-<header><div class="hero" id="hr"><video id="hv" src="journey.mp4" poster="journey-poster.jpg" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video></div><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1>Rekap Durasi Create CTT</h1><p>Data APKT dicocokkan dengan Data AP2T per ID Pelanggan, diperbarui otomatis setiap 2 menit</p></header>
+<header><div class="hero" id="hr"><video id="hv" src="journey.mp4" poster="journey-poster.jpg" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video></div><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1 id="ht">Dashboard Durasi Command Center</h1><p id="hp">Pilih menu untuk melihat rekap durasi layanan pengaduan pelanggan</p></header>
 <div id="fl" aria-hidden="true"></div>
-<main>
+<main id="home">
+<p class="intro">MONITORING KINERJA COMMAND CENTER UIW PAPUA DAN PAPUA BARAT.</p>
+<div class="cards">
+<a class="mc" href="#ctt"><svg viewBox="0 0 320 180" role="img" aria-label="Laporan masuk ke APKT lalu operator menerbitkan CTT dengan stopwatch"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="16" y="28" width="124" height="90" rx="5" fill="#fbf2dc"/><rect x="16" y="28" width="124" height="22" rx="5" fill="#3a2a1c"/><path d="M28 66H110M28 82H128M28 98H96" fill="none"/><circle cx="124" cy="96" r="0"/><path d="M78 118V138M52 140H104" fill="none"/><path d="M186 36H296V92A9 9 0 0 0 296 110V120H186V110A9 9 0 0 0 186 92Z" fill="#fbf2dc"/><rect x="186" y="36" width="110" height="24" fill="#9c3f22"/><path d="M200 76H282M200 92H260" fill="none"/><circle cx="268" cy="136" r="24" fill="#fbf2dc"/><rect x="262" y="108" width="12" height="7" fill="#d49a2a"/><path d="M268 136V120M268 136L280 143" fill="none" stroke-width="4"/></g><text x="78" y="44" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="14" fill="#fbf2dc">APKT</text><text x="241" y="54" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="15" fill="#fbf2dc">CTT</text><path d="M146 70Q166 52 182 66" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M178 56L194 68L174 74Z" fill="#9c3f22"/><text x="78" y="166" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="11" fill="#7a6247">laporan masuk</text><text x="240" y="170" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="11" fill="#7a6247">CTT terbit</text></svg><div class="mb"><h2>Durasi Create CTT</h2><p>Durasi terbit CTT oleh Operator Command Center setelah laporan masuk ke APKT.</p><span class="go">Buka rekap →</span></div></a>
+<a class="mc" href="#marking"><svg viewBox="0 0 320 180" role="img" aria-label="Beberapa laporan di peta dikelompokkan menjadi satu penanda gangguan atau pemadaman"><rect width="320" height="180" fill="#efdcae"/><g fill="#e3cf9f" stroke="#c8ae7e" stroke-width="2"><rect x="10" y="10" width="60" height="40"/><rect x="190" y="120" width="70" height="50"/><rect x="10" y="130" width="60" height="40"/></g><g stroke="#fbf2dc" stroke-width="10" fill="none" stroke-linecap="round"><path d="M0 70Q90 52 170 80T320 62"/><path d="M130 0Q140 90 120 180"/></g><path d="M170 24H312" stroke="#3a2a1c" stroke-width="3"/><g stroke="#3a2a1c" stroke-width="3" stroke-linecap="round"><path d="M188 24V46M242 24V46M296 24V46M180 32H196M234 32H250M288 32H304"/></g><ellipse cx="92" cy="104" rx="76" ry="58" fill="#d49a2a" fill-opacity=".18" stroke="#9c3f22" stroke-width="3.5" stroke-dasharray="9 6"/><g stroke="#3a2a1c" stroke-width="2.5" fill="#5f6535"><circle cx="52" cy="82" r="9"/><circle cx="96" cy="64" r="9"/><circle cx="128" cy="100" r="9"/><circle cx="70" cy="130" r="9"/><circle cx="112" cy="138" r="9"/><circle cx="86" cy="100" r="9"/></g><path d="M170 104H212" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round"><circle cx="248" cy="104" r="34" fill="#9c3f22"/><path d="M254 82L238 108H249L244 126L261 100H250Z" fill="#fbf2dc" stroke-width="2"/></g><text x="248" y="156" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="11" fill="#7a6247">1 kelompok marking</text></svg><div class="mb"><h2>Durasi Manual Marking</h2><p>Durasi Operator Command Center mengelompokkan laporan imbas padam meluas / pemadaman dengan laporan lainnya, atau laporan gangguan TM / Pemeliharaan TM.</p><span class="go">Buka rekap →</span></div></a>
+<a class="mc" href="#dispatch"><svg viewBox="0 0 320 180" role="img" aria-label="Laporan masuk APKT diteruskan operator command center ke petugas di lapangan"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><path d="M0 152H320" stroke="#3a2a1c" stroke-width="3"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="12" y="62" width="54" height="40" rx="3" fill="#fbf2dc"/><path d="M12 64L39 86L66 64" fill="none"/><circle cx="148" cy="78" r="20" fill="#fbf2dc"/><path d="M110 152Q110 112 148 112Q186 112 186 152Z" fill="#5f6535"/><path d="M122 74A26 26 0 0 1 174 74" fill="none" stroke-width="6"/><rect x="116" y="72" width="11" height="24" rx="5" fill="#9c3f22"/><rect x="169" y="72" width="11" height="24" rx="5" fill="#9c3f22"/><path d="M174 92Q174 106 156 106" fill="none"/><circle cx="153" cy="106" r="4" fill="#d49a2a"/><rect x="226" y="108" width="52" height="38" fill="#d49a2a"/><path d="M278 118H298L310 132V146H278Z" fill="#fbf2dc"/><circle cx="244" cy="148" r="9" fill="#3a2a1c"/><circle cx="296" cy="148" r="9" fill="#3a2a1c"/><circle cx="262" cy="74" r="14" fill="#fbf2dc"/><path d="M246 70A16 14 0 0 1 278 70Z" fill="#d49a2a"/><path d="M243 70H281" fill="none"/><path d="M252 108V92Q262 86 272 92V108" fill="#5f6535"/></g><circle cx="244" cy="148" r="3" fill="#fbf2dc"/><circle cx="296" cy="148" r="3" fill="#fbf2dc"/><path d="M70 56Q88 32 118 40" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M112 28L130 42L108 50Z" fill="#9c3f22"/><path d="M190 50Q214 24 236 46" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M230 34L248 50L226 56Z" fill="#9c3f22"/><text x="39" y="120" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="10" fill="#7a6247">APKT</text><text x="148" y="168" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="10" fill="#7a6247">operator CC</text><text x="262" y="168" text-anchor="middle" font-family="Special Elite,Courier New,monospace" font-size="10" fill="#7a6247">petugas lapangan</text></svg><div class="mb"><h2>Durasi Manual Dispatch</h2><p>Durasi laporan masuk ke APKT hingga diteruskan oleh Operator Command Center ke petugas di lapangan.</p><span class="go">Buka rekap →</span></div></a>
+<div class="mc off" tabindex="0" role="link" aria-disabled="true" title="Dalam Tahap Pengembangan"><svg viewBox="0 0 320 180" role="img" aria-label="Callback pelanggan: telepon, percakapan dan penilaian, dalam tahap pengembangan"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="40" y="26" width="72" height="128" rx="12" fill="#fbf2dc"/><rect x="50" y="42" width="52" height="86" rx="3" fill="#efdcae"/><circle cx="76" cy="142" r="5" fill="#fbf2dc"/><path d="M142 40H282A8 8 0 0 1 290 48V92A8 8 0 0 1 282 100H178L156 120V100H142A8 8 0 0 1 134 92V48A8 8 0 0 1 142 40Z" fill="#fbf2dc"/><circle cx="76" cy="84" r="13" fill="#5f6535"/><path d="M71 84l4 4 8-9" fill="none" stroke="#fbf2dc" stroke-width="3"/></g><text x="212" y="78" text-anchor="middle" font-family="serif" font-size="26" fill="#d49a2a" letter-spacing="2">★★★★★</text><path d="M170 150Q214 172 262 140" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M256 130L272 144L250 150Z" fill="#9c3f22"/><circle cx="288" cy="136" r="15" fill="#fbf2dc" stroke="#7a6247" stroke-width="9" stroke-dasharray="5 4.5"/><circle cx="288" cy="136" r="7" fill="#fbf2dc" stroke="#3a2a1c" stroke-width="3"/></svg><div class="mb"><h2>Callback Pelanggan</h2><p>Rekap callback / Konfirmasi ke pelanggan.</p><span class="go">Segera hadir</span></div><div class="soon">Dalam Tahap Pengembangan</div></div>
+</div>
+<p class="hnote">sumber data : APKT-EIS-VCC by @K.I.T.A</p>
+</main>
+<main id="app" hidden>
+<div class="row" style="margin-bottom:12px"><a class="btnlink" href="#">← Kembali ke Beranda</a></div>
 <div class="card"><div class="row">
 <label>Bulan<select id="fM"></select></label>
 <label>Area (UP3)<select id="fA"></select></label>
@@ -109,13 +136,13 @@ tr.sub{background:#f0dfb2}
 <div class="clg" id="chL"></div><div id="chB"></div><div id="chD" hidden></div></div>
 <div class="card"><div class="row" style="justify-content:space-between">
 <div class="row tabs"><button id="tR" class="on">Rekap per UP3</button><button id="tD">Detail laporan</button></div>
-<div class="row"><button class="alt" id="xR">Unduh Excel rekap</button><button class="alt" id="xD">Unduh Excel detail</button></div></div>
+<div class="row"><button class="alt" id="xR">Unduh Excel rekap</button><button class="alt" id="xD">Unduh Excel detail</button><button class="alt" id="bMin">Detail durasi terkecil</button><button class="alt" id="bMax">Detail durasi terbesar</button></div></div>
 <div class="wrap" id="out" style="margin-top:10px"></div><div id="more" style="margin-top:8px"></div></div>
 </main>
 <div id="md" hidden><div class="box"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="mt"></h2><div class="row"><button class="alt" id="mx">Unduh Excel</button><button id="mc">Tutup</button></div></div><div class="wrap" id="mi"></div><div id="mf"></div></div></div>
 <script>
 const $=id=>document.getElementById(id),e=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const D={id:'1nis3nxgCj-U2IHLcs5UzYKTbZdKYGymlLhn81E-Llis',a:'Data APKT',b:'Data AP2T',ga:'1789637322',gb:'679644625',neg:0.1,tol:120,win:24,iv:2};
+const D={id:'1nis3nxgCj-U2IHLcs5UzYKTbZdKYGymlLhn81E-Llis',a:'Data APKT',b:'Data AP2T',ga:'1789637322',gb:'679644625',neg:0.1,tol:120,win:24,iv:2,p:'199yFxZpD1S4AVoaRdjI_g8vv9hGmQVcXVImnik9MLjc',gp:'503046358'};
 let R=[],tab='R',lim=200,open=new Set(),TR=[],KP=[],PP=null;
 const MN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const nz=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,''),p2=n=>String(n).padStart(2,'0'),n2=v=>v.toFixed(2).replace('.',',');
@@ -137,7 +164,7 @@ function csv(t){const r=[];let w=[],f='',q=false;for(let i=0;i<t.length;i++){con
  if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
  else if(c=='"')q=true;else if(c==','){w.push(f);f=''}else if(c=='\n'){w.push(f);r.push(w);w=[];f=''}else if(c!='\r')f+=c}
  if(f!==''||w.length){w.push(f);r.push(w)}return r}
-async function load(n,g){const u=g?`https://docs.google.com/spreadsheets/d/${D.id}/export?format=csv&gid=${encodeURIComponent(g)}&_=${Date.now()}`:`https://docs.google.com/spreadsheets/d/${D.id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(n)}&_=${Date.now()}`;
+async function load(n,g,sid){const u=g?`https://docs.google.com/spreadsheets/d/${sid||D.id}/export?format=csv&gid=${encodeURIComponent(g)}&_=${Date.now()}`:`https://docs.google.com/spreadsheets/d/${sid||D.id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(n)}&_=${Date.now()}`;
  const r=await fetch(u,{cache:'no-store'}),t=r.ok?await r.text():'';
  if(!r.ok||/^\s*<(!doctype|html)/i.test(t))throw Error('Sheet "'+n+'" tidak bisa dibaca. Pastikan nama sheet benar dan akses spreadsheet "Siapa saja yang memiliki link: Pelihat".');return csv(t)}
 function col(h,al,nm){const H=h.map(nz);let i=-1;for(const a of al){i=H.indexOf(a);if(i>=0)return i}
@@ -155,9 +182,9 @@ function match(rep,trx){
   P.forEach(([,,r,t])=>{if(!r.m&&!t.u){r.m=t;t.u=1}})}
  rep.forEach(r=>{if(!r.m){r.d=r.pt=r.sec=null;r.st='belum';return}
   r.d=r.m.t-r.t;r.st=r.d<0?'auto':'ok';r.pt=r.d<0?+D.neg:Math.round(r.d/60*100)/100;r.sec=r.d<0?D.neg*60:r.d})}
-let busy=false;
-async function sync(){if(busy)return;busy=true;$('err').textContent='';$('st').textContent='Menyinkronkan...';
- try{const[A,B]=await Promise.all([load(D.a,D.ga),load(D.b,D.gb)]);
+let busy=false,cur=null;const DATA={};
+async function loadCTT(){
+ const[A,B]=await Promise.all([load(D.a,D.ga),load(D.b,D.gb)]);
   const ha=hdr(A,h=>({no:col(h,['nolaporan','nolapor','nomorlaporan'],'NO_LAPORAN (APKT)'),ar:col(h,['namaarea','area'],'NAMA_AREA (APKT)'),un:col(h,['namaunit','unit'],'NAMA_UNIT (APKT)'),tl:col(h,['tanggallapor','tgllapor','waktulapor'],'TANGGAL_LAPOR (APKT)'),ip:col(h,['idpel','idpelanggan'],'IDPEL (APKT)')}));
   const hb=hdr(B,h=>({ip:col(h,['idpel','idpelanggan'],'IDPEL (AP2T)'),tt:col(h,['tanggaltransaksi','tgltransaksi','tanggaltrx','tgltrx','waktutransaksi'],'Tanggal Transaksi (AP2T)')}));
   const c=ha.c,d=hb.c,seen=new Set(),rep=[],bad=[];let kosong=0,dupl=0,badB=0;
@@ -166,13 +193,43 @@ async function sync(){if(busy)return;busy=true;$('err').textContent='';$('st').t
    if(seen.has(no)){dupl++;return}seen.add(no);
    rep.push({no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t})});
   const trx=[];B.slice(hb.i+1).forEach(x=>{const k=ip(x[d.ip]),t=pd(x[d.tt]);if(!k&&!String(x[d.tt]||'').trim())return;if(!k||isNaN(t)){badB++;return}trx.push({ip:k,t})});
-  match(rep,trx);rep.sort((a,b)=>a.t-b.t);R=rep;fill();render();
-  $('st').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+rep.length+' laporan, '+trx.length+' transaksi)';
+  match(rep,trx);rep.sort((a,b)=>a.t-b.t);const msg=rep.length+' laporan, '+trx.length+' transaksi';
   const w=[];if(bad.length)w.push('APKT: '+bad.length+' baris dilewati karena Tanggal Lapor tidak terbaca, contoh: '+bad.slice(0,3).join(', ')+(bad.every(b=>b.endsWith('("")'))?'. Tanggal terbaca kosong: cek sel di sheet; jika sel terisi, isi gid sheet di konfigurasi D (ga/gb) agar data dibaca mentah.':''));
   if(kosong)w.push('APKT: '+kosong+' baris dilewati karena NO_LAPORAN kosong');
   if(badB)w.push('AP2T: '+badB+' baris dilewati karena IDPEL/Tanggal Transaksi tidak terbaca');
-  if(w.length)$('err').textContent='Perhatian:\n'+w.join('\n');
- }catch(x){$('err').textContent=x.message;$('st').textContent='Sinkron gagal'}finally{busy=false}}
+  return{rows:rep,msg,w}
+ }
+const nrm=x=>String(x==null?'':x).replace(/\s+/g,' ').trim().toUpperCase();
+let P2=null;
+async function p2b(){if(P2&&Date.now()-P2.t<15000)return P2.a;const a=await load(null,D.gp,D.p);P2={t:Date.now(),a};return a}
+async function loadP2(ex,fl,calc){
+ const A=await p2b();
+ const ha=hdr(A,h=>Object.assign({no:col(h,['nolaporan'],'NO_LAPORAN'),ar:col(h,['namaarea'],'NAMA_AREA'),un:col(h,['namaposko'],'NAMA_POSKO'),tl:col(h,['tgllapor'],'TGL_LAPOR'),ip:col(h,['idpelanggan','idpel'],'ID_PELANGGAN')},ex(h)));
+ const c=ha.c,seen=new Set(),rows=[],bad=[];
+ A.slice(ha.i+1).forEach(x=>{if(!fl(x,c))return;const no=String(x[c.no]||'').trim();if(!no)return;
+  const t=pd(x[c.tl]);if(isNaN(t)){bad.push(no+' ("'+String(x[c.tl]||'').trim()+'")');return}
+  if(seen.has(no))return;seen.add(no);
+  const r={no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t};calc(x,c,r);rows.push(r)});
+ rows.sort((a,b)=>a.t-b.t);
+ const w=[];if(bad.length)w.push('Sheet cc_p2b: '+bad.length+' baris dilewati karena TGL_LAPOR tidak terbaca, contoh: '+bad.slice(0,3).join(', '));
+ return{rows,msg:rows.length+' laporan manual, '+rows.filter(r=>r.m).length+' terhitung',w}}
+const pdn=v=>{const t=pd(v);return isNaN(t)?null:t};
+function fin(r,base,sec,bs){r.bs=bs;r.m=null;r.pt=r.sec=null;
+ if(base==null){r.st='belum';return}
+ if(sec<0){r.st='auto';return}
+ r.st='ok';r.m=true;r.sec=sec;r.pt=Math.round(sec/60*100)/100}
+function calcM(x,c,r){r.tm=pdn(x[c.tm]);r.rf=pdn(x[c.rf]);
+ const useRef=r.rf!=null&&r.rf>r.t,base=useRef?r.rf:r.t;
+ fin(r,r.tm,r.tm==null?0:r.tm-base,useRef?'TGL_LAPOR_REFERENSI':'TGL_LAPOR')}
+function calcP(x,c,r){r.pg=pdn(x[c.pg]);r.ro=pdn(x[c.ro]);
+ if(r.pg==null)return fin(r,null,0,'');
+ if(r.ro==null)return fin(r,1,r.pg-r.t,'Penugasan Regu − Lapor');
+ fin(r,1,Math.abs(r.ro-r.pg),'Return Order − Penugasan Regu')}
+async function sync(){if(busy||!cur)return;const k=cur;busy=true;$('err').textContent='';$('st').textContent='Menyinkronkan...';
+ try{const o=await MENUS[k].load();DATA[k]=o.rows;if(cur!=k)return;R=o.rows;fill();render();
+  $('st').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+o.msg+')';
+  if(o.w.length)$('err').textContent='Perhatian:\n'+o.w.join('\n')
+ }catch(x){if(cur==k){$('err').textContent=x.message;$('st').textContent='Sinkron gagal'}}finally{busy=false;if(cur&&cur!=k)sync()}}
 const mk=r=>new Date(r.t*1000).toISOString().slice(0,7);
 function opts(s,vals,all,lab){const cur=s.value,h='<option value="">'+all+'</option>'+vals.map(v=>`<option value="${e(v)}">${e(lab?lab(v):v)}</option>`).join('');if(s.dataset.h!==h){s.innerHTML=h;s.dataset.h=h}s.value=vals.includes(cur)?cur:''}
 function fill(){opts($('fM'),[...new Set(R.map(mk))].sort().reverse(),'Semua bulan',v=>MN[+v.slice(5)-1]+' '+v.slice(0,4));
@@ -183,25 +240,28 @@ const agg=()=>({n:0,s:0,mn:1e12,mx:-1}),mg=(t,o)=>{t.n+=o.n;t.s+=o.s;t.mn=Math.m
 function tree(rows){const A={};rows.filter(r=>r.m).forEach(r=>{const a=A[r.area]=A[r.area]||{name:r.area,t:agg(),U:{}},u=a.U[r.unit]=a.U[r.unit]||agg();
  [a.t,u].forEach(o=>mg(o,{n:1,s:r.pt,mn:r.sec,mx:r.sec}))});
  return Object.values(A).sort((x,y)=>x.name.localeCompare(y.name)).map(a=>({name:a.name,t:a.t,U:Object.entries(a.U).sort((x,y)=>x[0].localeCompare(y[0]))}))}
-const cl=(a,u,o)=>[a,u,o.n,+(o.s/o.n).toFixed(2),hms(o.mn),hms(o.mx)];
+const cl=(a,u,o)=>[a,u,o.n,+(o.s/o.n).toFixed(2),MM?+(o.mn/60).toFixed(2):hms(o.mn),MM?+(o.mx/60).toFixed(2):hms(o.mx)];
 function flat(rows){const t=tree(rows),out=[],fa=$('fA').value;TR=t.map(x=>x.name);
  t.forEach((x,i)=>{if(!fa){const r=cl(x.name,'Semua unit',x.t);r.i=i;out.push(r)}
   if(fa||open.has(x.name))x.U.forEach(([n,o])=>{const r=cl(x.name,n,o);r.u=1;out.push(r)})});
  if(out.length>1){const T=agg();t.forEach(x=>mg(T,x.t));const r=cl('TOTAL','',T);r.tot=1;out.push(r)}
  return out}
-const RH=['Nama Area','Nama Unit','Jumlah No Laporan','Rata-rata (menit)','Durasi Tercepat (jj:mm:ss)','Durasi Terlama (jj:mm:ss)'];
-const DH=['No','No Laporan','Nama Area','Nama Unit','ID Pelanggan','Tanggal Lapor','Tanggal Transaksi','Durasi (jj:mm:ss)','Poin (menit)','Status'];
-const SL={ok:'Create CTT',auto:'Transaksi lebih awal',belum:'Belum create'};
-const detRow=(r,i)=>[i+1,r.no,r.area,r.unit,r.ip,fd(r.t),r.m?fd(r.m.t):'',r.m?hms(r.sec):'',r.pt==null?'':r.pt,SL[r.st]];
+const RH_C=['Nama Area','Nama Unit','Jumlah No Laporan','Rata-rata (menit)','Durasi Tercepat (jj:mm:ss)','Durasi Terlama (jj:mm:ss)'];
+const DH_C=['No','No Laporan','Nama Area','Nama Unit','ID Pelanggan','Tanggal Lapor','Tanggal Transaksi','Durasi (jj:mm:ss)','Poin (menit)','Status'];
+const SL_C={ok:'Create CTT',auto:'Transaksi lebih awal',belum:'Belum create'};
+const detC=(r,i)=>[i+1,r.no,r.area,r.unit,r.ip,fd(r.t),r.m?fd(r.m.t):'',r.m?hms(r.sec):'',r.pt==null?'':r.pt,SL[r.st]];
+let DH=DH_C,SL=SL_C,detRow=detC,RH=RH_C,RN=[3],MM=false,CG=null;
 const det=l=>({h:DH,a:l.map(detRow),f:[8]});
+const SDv=s=>MM?n2(s/60):hms(s);
+const one=(rows,f)=>{const ok=rows.filter(r=>r.m);return ok.length?[ok.reduce((b,r)=>f*(r.sec-b.sec)<0?r:b)]:[]};
 function recHtml(rows){const L=flat(rows),fa=$('fA').value;
  const ctl=fa?'':'<div class="row" style="margin-bottom:8px"><button class="alt" id="bEa">Buka semua UP3</button><button class="alt" id="bEc">Tutup semua</button></div>';
  return ctl+'<table><thead><tr>'+RH.map((x,i)=>`<th class="${i>1?'n':''}">${x}</th>`).join('')+'</tr></thead><tbody>'+
   L.map(c=>{const h=c.i!==undefined,nm=h?(open.has(TR[c.i])?'▾ ':'▸ ')+e(c[0]):e(c[0]);
-   return `<tr class="${c.tot?'tot':c.u?'u':'sub'}"${h?` data-i="${c.i}"`:''}><td>${nm}</td><td>${e(c[1])}</td><td class="n">${c[2]}</td><td class="n">${n2(c[3])}</td><td class="n">${c[4]}</td><td class="n">${c[5]}</td></tr>`}).join('')+'</tbody></table>'}
+   return `<tr class="${c.tot?'tot':c.u?'u':'sub'}"${h?` data-i="${c.i}"`:''}><td>${nm}</td><td>${e(c[1])}</td><td class="n">${c[2]}</td><td class="n">${n2(c[3])}</td><td class="n">${MM?n2(c[4]):c[4]}</td><td class="n">${MM?n2(c[5]):c[5]}</td></tr>`}).join('')+'</tbody></table>'}
 function render(){const rows=filt(),ok=rows.filter(r=>r.m),by=f=>[...ok].sort((a,b)=>f*(a.sec-b.sec)),av=ok.length?ok.reduce((s,r)=>s+r.pt,0)/ok.length:0;
- KP=[{l:'Total No Laporan',v:rows.length,d:()=>det(rows)},{l:'Sudah create CTT',v:ok.length,d:()=>det(ok)},{l:'Belum create',v:rows.length-ok.length,d:()=>det(rows.filter(r=>!r.m))},
-  {l:'Rata-rata (menit)',v:ok.length?n2(av):'-',d:()=>({h:RH,a:flat(rows),f:[3]})},{l:'Tercepat',v:ok.length?hms(by(1)[0].sec):'-',d:()=>det(ok.filter(r=>r.sec==by(1)[0].sec))},{l:'Terlama',v:ok.length?hms(by(-1)[0].sec):'-',d:()=>det(ok.filter(r=>r.sec==by(-1)[0].sec))}];
+ KP=[{l:'Total No Laporan',v:rows.length,d:()=>det(rows)},{l:CG.ok,v:ok.length,d:()=>det(ok)},{l:CG.bad,v:rows.length-ok.length,d:()=>det(rows.filter(r=>!r.m))},
+  {l:'Rata-rata (menit)',v:ok.length?n2(av):'-',d:()=>({h:RH,a:flat(rows),f:RN})},{l:'Tercepat'+(MM?' (menit)':''),v:ok.length?SDv(by(1)[0].sec):'-',d:()=>det(one(rows,1))},{l:'Terlama'+(MM?' (menit)':''),v:ok.length?SDv(by(-1)[0].sec):'-',d:()=>det(one(rows,-1))}];
  $('kpi').innerHTML=KP.map((k,i)=>`<button data-k="${i}"><b>${k.v}</b>${k.l}</button>`).join('');$('more').innerHTML='';chart(rows);
  if(!rows.length){$('out').innerHTML='<div class="emp">Belum ada data. Klik "Sinkron sekarang" atau ubah filter.</div>';return}
  if(tab=='R'){$('out').innerHTML=recHtml(rows);return}
@@ -214,11 +274,11 @@ function chData(rows){const fa=$('fA').value,fm=$('fM').value,G={};
  rows.forEach(r=>{const k=CH.mode=='g'?(fa?r.unit:r.area):(fm?dk(r.t):mk(r)),g=G[k]=G[k]||{k,n:0,ok:0,s:0};g.n++;if(r.m){g.ok++;g.s+=r.pt}});
  let a=Object.values(G).map(g=>{g.avg=g.ok?g.s/g.ok:0;g.l=CH.mode=='g'?g.k:(fm?g.k.slice(8):MN[+g.k.slice(5,7)-1].slice(0,3)+' '+g.k.slice(2,4));return g});
  if(CH.mode=='g')a.sort((x,y)=>CH.met=='n'?y.n-x.n:y.avg-x.avg||y.n-x.n);else a.sort((x,y)=>x.k<y.k?-1:1);return a}
-const chv=g=>CH.met=='n'?g.n:g.avg,chs=g=>g.l+': '+g.n+' laporan, '+g.ok+' create CTT, '+(g.n-g.ok)+' belum'+(g.ok?', rata-rata '+n2(g.avg)+' menit':'');
+const chv=g=>CH.met=='n'?g.n:g.avg,chs=g=>g.l+': '+g.n+' laporan, '+g.ok+' '+CG.okS+', '+(g.n-g.ok)+' belum'+(g.ok?', rata-rata '+n2(g.avg)+' menit':'');
 function chart(rows){CF=rows;const fa=$('fA').value,fm=$('fM').value;
  $('chG').textContent=fa?'Per Unit':'Per Area';$('chT').textContent=fm?'Tren harian':'Tren bulanan';
  [['chG',CH.mode=='g'],['chT',CH.mode=='t'],['chN',CH.met=='n'],['chA',CH.met=='a']].forEach(([i,o])=>$(i).classList.toggle('on',o));
- $('chL').innerHTML=CH.met=='n'?'<span><i class="ok"></i>Sudah create CTT</span><span><i class="bl"></i>Belum create</span>':'<span><i class="av"></i>Rata-rata durasi create CTT (menit)</span>';
+ $('chL').innerHTML=CH.met=='n'?'<span><i class="ok"></i>'+e(CG.ok)+'</span><span><i class="bl"></i>'+e(CG.bad)+'</span>':'<span><i class="av"></i>'+e(CG.avgL)+'</span>';
  CI=chData(rows);if(!CI.some(g=>g.k==CH.sel))CH.sel=null;
  if(!CI.length){$('chB').innerHTML='<div class="emp">Belum ada data untuk grafik.</div>';chd();return}
  const mx=Math.max(...CI.map(chv),1e-9);
@@ -229,7 +289,7 @@ function chart(rows){CF=rows;const fa=$('fA').value,fm=$('fM').value;
  chd()}
 function chd(){const g=CI.find(x=>x.k==CH.sel),b=$('chD');if(!g){b.hidden=true;return}
  const can=CH.mode=='g'||!$('fM').value;
- b.innerHTML=`<span><b>${e(g.l)}</b> — ${g.n} laporan · ${g.ok} sudah create CTT · ${g.n-g.ok} belum · rata-rata ${g.ok?n2(g.avg)+' menit':'-'}</span>`+(can?'<button id="chF">Filter ke ini</button>':'');b.hidden=false}
+ b.innerHTML=`<span><b>${e(g.l)}</b> — ${g.n} laporan · ${g.ok} ${CG.ok.toLowerCase()} · ${g.n-g.ok} ${CG.bad.toLowerCase()} · rata-rata ${g.ok?n2(g.avg)+' menit':'-'}</span>`+(can?'<button id="chF">Filter ke ini</button>':'');b.hidden=false}
 function chf(g){if(CH.mode=='g'){if($('fA').value)$('fU').value=g.k;else{$('fA').value=g.k;fillU()}}else $('fM').value=g.k;CH.sel=null;lim=200;render()}
 $('chG').onclick=()=>{CH.mode='g';CH.sel=null;chart(CF||filt())};$('chT').onclick=()=>{CH.mode='t';CH.sel=null;chart(CF||filt())};
 $('chN').onclick=()=>{CH.met='n';chart(CF||filt())};$('chA').onclick=()=>{CH.met='a';chart(CF||filt())};
@@ -239,15 +299,17 @@ function dl(h,a,n){const ws=XLSX.utils.aoa_to_sheet([h,...a]);ws['!cols']=h.map(
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Rekap');XLSX.writeFile(wb,n+'.xlsx')}
 const sfx=()=>{const f=[$('fM').value,$('fA').value,$('fU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
 function xl(k){const rows=filt();if(!rows.length)return alert('Tidak ada data untuk diunduh.');
- k=='R'?dl(RH,flat(rows),'CTT_Rekap'+sfx()):dl(DH,rows.map(detRow),'CTT_Detail'+sfx())}
-function pop(k){const x=KP[k],d=x.d();PP={...d,n:'CTT_'+x.l.replace(/[^\w]+/g,'-')+sfx()};
- $('mt').textContent=x.l+' ('+d.a.length+' baris)';
+ k=='R'?dl(RH,flat(rows),CG.pre+'_Rekap'+sfx()):dl(DH,rows.map(detRow),CG.pre+'_Detail'+sfx())}
+function popD(l,d){PP={...d,n:CG.pre+'_'+l.replace(/[^\w]+/g,'-')+sfx()};
+ $('mt').textContent=l+' ('+d.a.length+' baris)';
  $('mi').innerHTML='<table><thead><tr>'+d.h.map((h,i)=>`<th class="${d.f.includes(i)?'n':''}">${h}</th>`).join('')+'</tr></thead><tbody>'+
   (d.a.length?d.a.slice(0,300).map(r=>'<tr>'+r.map((v,j)=>`<td class="${d.f.includes(j)?'n':''}">${e(d.f.includes(j)&&v!==''?n2(v):v)}</td>`).join('')+'</tr>').join(''):'<tr><td colspan="'+d.h.length+'" class="emp">Tidak ada data</td></tr>')+'</tbody></table>';
  $('mf').textContent=d.a.length>300?'Menampilkan 300 baris pertama. File Excel berisi semua '+d.a.length+' baris.':'';$('md').hidden=false}
+function pop(k){const x=KP[k];popD(x.l,x.d())}
+function one1(f){popD(f>0?'Durasi terkecil':'Durasi terbesar',det(one(filt(),f)))}
 function setTab(t){tab=t;lim=200;$('tR').classList.toggle('on',t=='R');$('tD').classList.toggle('on',t=='D');render()}
 $('fM').onchange=$('fU').onchange=()=>{lim=200;render()};$('fA').onchange=()=>{fillU();lim=200;render()};
-$('tR').onclick=()=>setTab('R');$('tD').onclick=()=>setTab('D');$('xR').onclick=()=>xl('R');$('xD').onclick=()=>xl('D');$('bS').onclick=sync;
+$('tR').onclick=()=>setTab('R');$('tD').onclick=()=>setTab('D');$('xR').onclick=()=>xl('R');$('xD').onclick=()=>xl('D');$('bS').onclick=sync;$('bMin').onclick=()=>one1(1);$('bMax').onclick=()=>one1(-1);
 $('out').onclick=ev=>{const b=ev.target.closest('button');
  if(b&&b.id=='bEa'){TR.forEach(n=>open.add(n));return render()}if(b&&b.id=='bEc'){open.clear();return render()}
  const t=ev.target.closest('tr[data-i]');if(!t)return;const n=TR[+t.dataset.i];open.has(n)?open.delete(n):open.add(n);render()};
@@ -258,7 +320,29 @@ function fitBrand(){const t=$('bt'),s=$('bs');s.style.fontSize='10px';s.style.fo
 function lab(el){el.querySelectorAll('table').forEach(t=>{const h=[...t.querySelectorAll('th')].map(x=>x.textContent);t.querySelectorAll('tbody tr').forEach(r=>[...r.children].forEach((c,i)=>{c.dataset.l=h[i]||''}))})}
 ['out','mi'].forEach(i=>new MutationObserver(()=>lab($(i))).observe($(i),{childList:true}));
 fitBrand();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBrand);
-sync();setInterval(sync,D.iv*60000);
+
+const DH_M=['No','No Laporan','Nama Area','Nama Unit','Tanggal Lapor','Tanggal Lapor Referensi','Tanggal Marking','Acuan Hitung','Durasi (menit)','Status'];
+const DH_P=['No','No Laporan','Nama Area','Nama Unit','Tanggal Lapor','Tanggal Penugasan Regu','Tanggal Return Order','Rumus Hitung','Durasi (menit)','Status'];
+const RH_N=['Nama Area','Nama Unit','Jumlah No Laporan','Rata-rata (menit)','Durasi Tercepat (menit)','Durasi Terlama (menit)'];
+const dm=t=>t==null?'':fd(t),SL_N={ok:'Terhitung',auto:'Durasi negatif',belum:'Data belum lengkap'};
+const detM=(r,i)=>[i+1,r.no,r.area,r.unit,dm(r.t),dm(r.rf),dm(r.tm),r.m?r.bs:'',r.m?r.pt:'',SL_N[r.st]];
+const detP=(r,i)=>[i+1,r.no,r.area,r.unit,dm(r.t),dm(r.pg),dm(r.ro),r.m?r.bs:'',r.m?r.pt:'',SL_N[r.st]];
+const MENUS={
+ ctt:{pre:'CTT',t:'Rekap Durasi Create CTT',p:'Durasi terbit CTT oleh Operator Command Center setelah laporan masuk ke APKT (APKT dicocokkan dengan AP2T per ID Pelanggan), diperbarui otomatis setiap 2 menit',load:loadCTT,ok:'Sudah create CTT',bad:'Belum create',okS:'create CTT',avgL:'Rata-rata durasi create CTT (menit)',DH:DH_C,SL:SL_C,det:detC,RH:RH_C,min:false},
+ marking:{pre:'Marking',t:'Rekap Durasi Manual Marking',p:'Durasi Operator Command Center mengelompokkan laporan imbas padam meluas / pemadaman dengan laporan lainnya, atau laporan gangguan TM / Pemeliharaan TM (MANUAL MARKING), diperbarui otomatis setiap 2 menit',
+  load:()=>loadP2(h=>({km:col(h,['keteranganmarking'],'KETERANGAN_MARKING'),tm:col(h,['tglmarking'],'TGL_MARKING'),rf:col(h,['tgllaporreferensi'],'TGL_LAPOR_REFERENSI')}),(x,c)=>nrm(x[c.km])=='MANUAL MARKING',calcM),
+  ok:'Sudah terhitung',bad:'Belum terhitung',okS:'terhitung',avgL:'Rata-rata durasi manual marking (menit)',DH:DH_M,SL:SL_N,det:detM,RH:RH_N,min:true},
+ dispatch:{pre:'Dispatch',t:'Rekap Durasi Manual Dispatch',p:'Durasi laporan masuk ke APKT hingga diteruskan oleh Operator Command Center ke petugas di lapangan (MANUAL COMMAND CENTER), diperbarui otomatis setiap 2 menit',
+  load:()=>loadP2(h=>({kk:col(h,['ketkirim'],'KET_KIRIM'),pg:col(h,['tglpenugasanregu'],'TGL_PENUGASAN_REGU'),ro:col(h,['tglreturnorder'],'TGL_RETURN_ORDER')}),(x,c)=>nrm(x[c.kk])=='MANUAL COMMAND CENTER',calcP),
+  ok:'Sudah terhitung',bad:'Belum terhitung',okS:'terhitung',avgL:'Rata-rata durasi manual dispatch (menit)',DH:DH_P,SL:SL_N,det:detP,RH:RH_N,min:true}};
+function home(){cur=null;$('home').hidden=false;$('app').hidden=true;$('md').hidden=true;$('ht').textContent='Dashboard Durasi Command Center';$('hp').textContent='Pilih menu untuk melihat rekap durasi layanan pengaduan pelanggan';document.title='Dashboard Durasi Command Center';window.scrollTo(0,0)}
+function enter(k){if(cur==k&&!$('app').hidden)return;const g=MENUS[k];cur=k;CG=g;DH=g.DH;SL=g.SL;detRow=g.det;RH=g.RH;MM=g.min;RN=g.min?[3,4,5]:[3];
+ $('ht').textContent=g.t;$('hp').textContent=g.p;document.title=g.t;$('home').hidden=true;$('app').hidden=false;
+ tab='R';lim=200;open.clear();CH.sel=null;$('tR').classList.add('on');$('tD').classList.remove('on');
+ $('fM').value='';$('fA').value='';$('fU').value='';R=DATA[k]||[];fill();render();
+ $('err').textContent='';$('st').textContent=DATA[k]?'Menyegarkan...':'Belum sinkron';window.scrollTo(0,0);sync()}
+function route(){const h=location.hash.slice(1);MENUS[h]?enter(h):home()}
+addEventListener('hashchange',route);route();setInterval(sync,D.iv*60000);
 </script>
 <script>
 (function(){
