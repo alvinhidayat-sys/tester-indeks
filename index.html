@@ -540,12 +540,16 @@ function attReps(list,called){if(!list.length)return null;const B={};
 /* spesifikasi tabel pop up: v = tampilan, d = detail lengkap, att = rekap percobaan */
 function repSpec(list,called){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0));
  const st=r=>{const c=called.get(r);return c?'Ya ('+c.n+'x)':'Belum'};
- return{att:attReps(L,called),v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi'],a:L.map((r,i)=>[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r)])},
+ return{att:attReps(L,called),v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi','Jml Percobaan Telp'],a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r),c?c.n:0]})},
   d:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Nama Pelapor','Alamat','Deskripsi','Penyebab','Durasi (EIS)','Dihubungi','Jml Percobaan Telp','Telp Pertama'],
    a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),r.nm,r.al,r.ds,r.pb,r.du,c?'Ya':'Belum',c?c.n:0,c?fT(c.t):'']})}}}
-function callSpec(list,scope){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
- return{att:attCalls(L,scope||L),v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
-  d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.raw,c.nm,c.ty,c.du,c.no||'-',c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
+function callSpec(list,scope){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sc=scope||L,sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
+ const kf=c=>c.rec||c.k,tot=new Map(),seq=new Map(),run=new Map();
+ sc.forEach(c=>tot.set(kf(c),(tot.get(kf(c))||0)+1));
+ [...sc].sort((a,b)=>(a.t||0)-(b.t||0)).forEach(c=>{const n=(run.get(kf(c))||0)+1;run.set(kf(c),n);seq.set(c,n)});
+ const ke=c=>seq.get(c)||'',jm=c=>tot.get(kf(c))||'';
+ return{att:attCalls(L,sc),v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Percobaan Ke-','Jml Percobaan','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',ke(c),jm(c),c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
+  d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Percobaan Ke-','Jml Percobaan','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.raw,c.nm,c.ty,c.du,c.no||'-',ke(c),jm(c),c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
 function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70),x=sp.att?[{h:sp.att.h,a:sp.att.a,n:'Percobaan Callback'}]:[];
  PP={h:sp.v.h,a:sp.v.a,f:[],n:n,sn:'Tampilan',x:x};PP2={h:sp.d.h,a:sp.d.a,n:n+'_detail',x:x};
  $('mt').textContent=t+' ('+sp.v.a.length+' baris)';
