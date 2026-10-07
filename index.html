@@ -536,11 +536,14 @@ function repSpec(list,called){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0));
  return{v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi','Jml Percobaan Telp'],a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r),c?c.n:0]})},
   d:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Nama Pelapor','Alamat','Deskripsi','Penyebab','Durasi (EIS)','Dihubungi','Jml Percobaan Telp','Telp Pertama'],
    a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),r.nm,r.al,r.ds,r.pb,r.du,c?'Ya':'Belum',c?c.n:0,c?fT(c.t):'']})}}}
-function callSpec(list,scope){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sc=scope||L,sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
+function callSpec(list,scope,grp){grp=grp!==false;const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sc=scope||L,sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
  const kf=c=>c.rec||c.k,tot=new Map();
  sc.forEach(c=>tot.set(kf(c),(tot.get(kf(c))||0)+1));
  const jm=c=>tot.get(kf(c))||'';
- return{v:{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Jumlah Percobaan','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',jm(c),c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])},
+ const G1=[],gm=new Map();L.forEach(c=>{const k=kf(c);if(!gm.has(k)){gm.set(k,c);G1.push(c)}});
+ const vv=grp?{h:['No','No Lapor','Jumlah Percobaan','Waktu Telp Pertama','No Telp','Nama Kontak','Area','ULP','Status'],a:G1.map((c,i)=>[i+1,c.no||'-',jm(c),fT(c.t),tel(c.k),c.nm,c.area,c.ulp,sl(c)])}
+  :{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Jumlah Percobaan','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.nm,c.du,c.no||'-',jm(c),c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])};
+ return{v:vv,
   d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Jumlah Percobaan','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),c.raw,c.nm,c.ty,c.du,c.no||'-',jm(c),c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
 function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70),x=[];
  PP={h:sp.v.h,a:sp.v.a,f:[],n:n,sn:'Tampilan',x:x};PP2={h:sp.d.h,a:sp.d.a,n:n+'_detail',x:x};
@@ -550,7 +553,7 @@ function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/
  $('mx').textContent='Unduh Excel (tampilan)';$('mx2').hidden=false;$('md').hidden=false}
 function metricSpec(g,m){const Z=CB.Z;
  if(m=='rep')return{t:'Total Laporan — '+g.l,s:repSpec(g.G.rep,Z.called)};
- if(m=='try')return{t:'Percobaan Panggilan — '+g.l,s:callSpec(g.G.try,g.G.try)};
+ if(m=='try')return{t:'Percobaan Panggilan — '+g.l,s:callSpec(g.G.try,g.G.try,true)};
  if(m=='con')return{t:'Pelanggan Dihubungi — '+g.l,s:callSpec(g.G.con,g.G.try)};
  if(m=='pct')return{t:'Laporan Belum Dihubungi — '+g.l,s:repSpec(g.G.rep.filter(r=>!Z.called.has(r)),Z.called)};
  const c=CB.cols[+m.slice(1)];return{t:'Callback '+c+' — '+g.l,s:callSpec(g.G.st[c]||[],g.G.try)}}
@@ -587,7 +590,7 @@ function render(){
  const T=Z.T,fl=filters(),noF=!fl.a&&!fl.u,unm=Z.cl.filter(c=>!c.rec),nb=T.rep.filter(r=>!Z.called.has(r));
  CB.KP=[
   {l:'Total Laporan (EIS)',v:T.rep.length,d:()=>({t:'Total Laporan — Semua data',s:repSpec(T.rep,Z.called)})},
-  {l:'Percobaan Panggilan Keluar',v:T.try.length,d:()=>({t:'Percobaan Panggilan — Semua data',s:callSpec(T.try,T.try)})},
+  {l:'Percobaan Panggilan Keluar',v:T.try.length,d:()=>({t:'Percobaan Panggilan — Semua data',s:callSpec(T.try,T.try,true)})},
   {l:'Pelanggan Dihubungi',v:T.con.length,d:()=>({t:'Pelanggan Dihubungi — Semua data',s:callSpec(T.con,T.try)})},
   {l:'% Dihubungi / Laporan',v:pcs(pcn(T.con.length,T.rep.length)),d:()=>({t:'Pelanggan Dihubungi — Semua data',s:callSpec(T.con,T.try)})},
   {l:'Laporan Belum Dihubungi',v:nb.length,d:()=>({t:'Laporan Belum Dihubungi — Semua data',s:repSpec(nb,Z.called)})},
