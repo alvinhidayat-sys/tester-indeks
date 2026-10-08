@@ -56,19 +56,20 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const toast=(t,ms=2500)=>{const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms);};
 
-/* Mode pratinjau: dibuka langsung di browser (tanpa Apps Script) memakai data contoh */
-const KD=['P','S','M','P-OTd','S-OTd','M-OTd','PK','LN'].map(k=>({unit:'Command Center',kode:k,tipe:'(contoh)',maks:8}));
-const MOCK={getConfig:()=>({useLogin:false}),
- getMeta:()=>({user:'',units:['Command Center'],kode:KD,petugas:[1,2,3].map(i=>({noInduk:'100'+i,nama:'Petugas '+i,unit:'Command Center',jabatan:'Operator'}))}),
- getEntries:()=>({'1001':{1:'P',2:'S-OT2',3:'PK'}}),saveEntries:()=>({ok:true,saved:0}),
- getOutput:()=>({cols:['NO INDUK','NAMA','JABATAN','JAM MASUK','JAM KELUAR','DURASI','TIPE LEMBUR','KODE'],kinds:['','','','masuk','keluar','durasi','',''],
-  rows:[['1001','Petugas 1','Operator','2026-10-01 08:00:00','2026-10-01 16:00:00','08:00:00','LEMBUR PENGGANTI CUTI ATAU SAKIT','P']],
-  sum:{tipes:['LEMBUR PENGGANTI CUTI ATAU SAKIT'],rows:[['1001','Petugas 1',8,8]]}})};
+/* Koneksi data: (1) dibuka dari URL web app Apps Script -> google.script.run
+   (2) index.html di-host di luar Apps Script -> isi API_URL dengan URL /exec hasil deploy */
+const API_URL='https://script.google.com/macros/s/AKfycbz0xOsSPQYjMozCC2wWEiWeUkU9l2pUeGwBClJY8_JD7P8SEP6YF8UOExFt83pV5gYMMA/exec';   // contoh: 'https://script.google.com/macros/s/XXXX/exec'
 let TOKEN='';
 const run=(fn,...a)=>new Promise((ok,no)=>{
- if(typeof google==='undefined'||!google.script)return ok(MOCK[fn](...a));
  const args=(fn==='getConfig'||fn==='login')?a:[TOKEN,...a];
- google.script.run.withSuccessHandler(ok).withFailureHandler(e=>{const m=String(e.message||e);if(m.includes('SESI_HABIS')){askLogin();}no(m);})[fn](...args);});
+ const fail=e=>{const m=String(e&&e.message||e);if(m.includes('SESI_HABIS'))askLogin();no(m);};
+ if(typeof google!=='undefined'&&google.script&&google.script.run)
+  return google.script.run.withSuccessHandler(ok).withFailureHandler(fail)[fn](...args);
+ if(!API_URL)return no('Tidak terhubung ke Google Sheet. Buka lewat URL web app (/exec) atau isi API_URL di index.html.');
+ fetch(API_URL,{method:'POST',body:JSON.stringify({fn,args})})   // text/plain: tanpa preflight CORS
+  .then(r=>r.text()).then(t=>{let r;try{r=JSON.parse(t);}catch(x){throw new Error('Respon server bukan JSON. Pastikan deploy Web app: akses "Anyone" dan versi terbaru (New version).');}
+   return r.error?fail(r.error):ok(r.data);})
+  .catch(e=>fail(/failed to fetch|networkerror/i.test(String(e&&e.message||e))?'Gagal menghubungi server (cek URL API_URL, koneksi, dan akses "Anyone" pada deploy).':e));});
 
 let META,LIST=[],ENT={};
 const cur=()=>({y:+$('thn').value,m:+$('bln').value,u:$('unit').value});
@@ -99,11 +100,13 @@ async function start(){
  $('who').textContent=META.user?'· '+META.user:'';
  $('unit').innerHTML=META.units.map(u=>`<option>${esc(u)}</option>`).join('');render();
 }
+let RSEQ=0;
 async function render(){
- const {y,m,u}=cur();if(!u||!y)return;
+ const {y,m,u}=cur();if(!u||!y)return;const sq=++RSEQ;
  $('msg').textContent='Memuat…';$('msg').hidden=false;$('tbl').hidden=true;
  LIST=META.petugas.filter(p=>p.unit===u);
- try{ENT=await run('getEntries',y,m,u);}catch(e){$('msg').textContent='Gagal: '+e;return;}
+ try{ENT=await run('getEntries',y,m,u);}catch(e){if(sq===RSEQ)$('msg').textContent='Gagal: '+e;return;}
+ if(sq!==RSEQ)return;
  const n=days(y,m);
  let h=`<tr><th rowspan="2">NO INDUK</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th><th colspan="${n}">BULAN ${BLN[m-1].toUpperCase()} ${y}</th><th rowspan="2">JML JAM</th></tr><tr>`;
  for(let d=1;d<=n;d++)h+=`<th class="${isWe(y,m,d)?'we':''}">${d}</th>`;h+='</tr>';
