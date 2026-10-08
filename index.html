@@ -3,8 +3,8 @@
 <title>Rekap Lembur CC-DCC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
-:root{--bg:#f4f6f9;--card:#fff;--tx:#1d2733;--mut:#6b7785;--pr:#1f6feb;--bd:#d9dfe7;--we:#fdeeee;--c1:#dbeafe;--c2:#ffedd5;--c3:#dcfce7}
-@media(prefers-color-scheme:dark){:root{--bg:#10151b;--card:#18202a;--tx:#e6ebf1;--mut:#92a0b0;--bd:#2b3644;--we:#2b1c1f;--c1:#1e3a5f;--c2:#5a3a14;--c3:#1b4a2c}}
+:root{--bg:#f4f6f9;--card:#fff;--tx:#1d2733;--mut:#6b7785;--pr:#1f6feb;--bd:#d9dfe7;--we:#fdeeee;--c1:#dbeafe;--c2:#ffedd5;--c3:#dcfce7;--alt:#eaf1fb;--we2:#f9e0e0}
+@media(prefers-color-scheme:dark){:root{--alt:#202c3a;--we2:#38242a;--bg:#10151b;--card:#18202a;--tx:#e6ebf1;--mut:#92a0b0;--bd:#2b3644;--we:#2b1c1f;--c1:#1e3a5f;--c2:#5a3a14;--c3:#1b4a2c}}
 *{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--tx);padding:16px}
 h1{font-size:18px;margin:0}
 .top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -34,6 +34,9 @@ th{background:var(--bg);position:sticky;top:0;z-index:2}td.l{text-align:left}.we
 /* form input */
 #frm td:first-child,#frm th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:150px}#frm th:first-child{z-index:3;background:var(--bg)}
 td.cell{min-width:36px;height:28px;cursor:pointer;font-size:11px;padding:2px 4px}td.cell:focus{outline:none}
+/* baris genap pada tabel input diberi highlight lembut */
+#frm tr.alt td:not(.we):not(.c1):not(.c2):not(.c3){background:var(--alt)}
+#frm tr.alt td.we{background:var(--we2)}
 td.sel{outline:2px solid var(--pr)!important;outline-offset:-2px}
 .ed{display:flex;flex-wrap:wrap;gap:10px;align-items:end;border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
 .ed label b{color:var(--pr)}.ed select{min-width:150px}.ed #eInfo{font-weight:700;align-self:center;min-width:170px}
@@ -253,7 +256,7 @@ function openForm(){
  $('mt').textContent=`${rev?'Revisi':'Input'} Rekap Lembur — ${u} — ${BLN[m-1]} ${y}`;
  $('chips').innerHTML=tipesU(u).map(t=>`<b>${esc(t)}</b>: ${kodeU(u).filter(k=>k.tipe===t).map(k=>esc(k.kode)).join(', ')}`).join(' · ')+' · kode <b>-OTd</b>: pilih jumlah jam (maks. 4)';
  let h='<tr><th>NAMA</th>';for(let d=1;d<=n;d++)h+=`<th class="${isWe(y,m,d)?'we':''}">${d}</th>`;h+='<th>JML</th></tr>';
- LIST.forEach(p=>{h+=`<tr><td class="l">${esc(p.nama)}</td>`;
+ LIST.forEach((p,ri)=>{h+=`<tr class="${ri%2?'alt':''}"><td class="l">${esc(p.nama)}</td>`;
   for(let d=1;d<=n;d++)h+=`<td tabindex="0" data-n="${esc(p.noInduk)}" data-d="${d}"></td>`;
   h+=`<td class="tot j" data-n="${esc(p.noInduk)}"></td></tr>`;});
  $('frm').innerHTML=h;
