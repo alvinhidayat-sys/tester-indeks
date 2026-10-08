@@ -6,11 +6,19 @@
 :root{--bg:#f4f6f9;--card:#fff;--tx:#1d2733;--mut:#6b7785;--pr:#1f6feb;--bd:#d9dfe7;--we:#fdeeee;--c1:#dbeafe;--c2:#ffedd5;--c3:#dcfce7}
 @media(prefers-color-scheme:dark){:root{--bg:#10151b;--card:#18202a;--tx:#e6ebf1;--mut:#92a0b0;--bd:#2b3644;--we:#2b1c1f;--c1:#1e3a5f;--c2:#5a3a14;--c3:#1b4a2c}}
 *{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--tx);padding:16px}
-h1{font-size:18px;margin:0 0 12px}
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+h1{font-size:18px;margin:0}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sync{display:inline-flex;align-items:center;gap:8px;border-radius:99px;padding:6px 14px;font-size:12px;border:1px solid var(--bd);background:var(--card);cursor:pointer}
+.sync i{width:10px;height:10px;border-radius:50%;background:#999;flex:none}
+.s-ok i{background:#22a55b}.s-busy i{background:#e8a317;animation:pl 1s infinite}.s-err i{background:#d33}.s-dirty i{background:#e8791a}.s-off i{background:#777}
+.s-err{border-color:#d33}.s-dirty{border-color:#e8791a}
+@keyframes pl{50%{opacity:.25}}
 label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
 select,input,button{font:inherit;padding:7px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx)}
-button{cursor:pointer}button:disabled{opacity:.6;cursor:wait}.pr{background:var(--pr);color:#fff;border-color:var(--pr)}.sp{flex:1}
+button{cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.pr{background:var(--pr);color:#fff;border-color:var(--pr)}.sp{flex:1}
+.hero{min-height:62vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.big{font-size:20px;font-weight:700;letter-spacing:.5px;padding:22px 44px;border-radius:14px;box-shadow:0 6px 18px #1f6feb44}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:12px}
 .kop{text-align:center;font-weight:700;margin:8px 0;line-height:1.5}.kop small{display:block;font-weight:600}
 .wrap{overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:10px;max-height:68vh}
 table{border-collapse:collapse;width:max-content;min-width:100%}
@@ -20,96 +28,203 @@ th{background:var(--bg);position:sticky;top:0;z-index:2}td.l{text-align:left}.we
 .note{font-size:12px;margin:10px 2px;line-height:1.6}#msg{color:var(--mut);padding:10px}
 .ov{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:10}
 .box{background:var(--card);border-radius:12px;padding:14px;max-width:98vw;max-height:94vh;display:flex;flex-direction:column;gap:10px}
-.box .wrap{max-height:58vh}input.c{width:54px;text-align:center;padding:4px;text-transform:uppercase}
-input.bad{border-color:#d33;background:#fdd;color:#900}.chips{font-size:11px;color:var(--mut);max-width:90vw}.chips b{color:var(--tx)}
-#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2733;color:#fff;padding:9px 16px;border-radius:8px;display:none;z-index:20}
-td select{display:block;margin:1px auto;padding:2px;font-size:11px;width:auto;max-width:78px}[hidden]{display:none!important}#det{font-size:12px;color:var(--tx);line-height:1.6;min-height:38px;max-width:none}
-@media print{.bar,#toast,.ov{display:none!important}.wrap{max-height:none;border:0}body{padding:0}}
+.box .wrap{max-height:50vh}.chips{font-size:11px;color:var(--mut);max-width:90vw}.chips b{color:var(--tx)}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2733;color:#fff;padding:9px 16px;border-radius:8px;display:none;z-index:30}
+[hidden]{display:none!important}#det{font-size:12px;color:var(--tx);line-height:1.6;min-height:38px;max-width:none}
+/* form input */
+#frm td:first-child,#frm th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:150px}#frm th:first-child{z-index:3;background:var(--bg)}
+td.cell{min-width:36px;height:28px;cursor:pointer;font-size:11px;padding:2px 4px}td.cell:focus{outline:none}
+td.sel{outline:2px solid var(--pr)!important;outline-offset:-2px}
+.ed{display:flex;flex-wrap:wrap;gap:10px;align-items:end;border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.ed label b{color:var(--pr)}.ed select{min-width:150px}.ed #eInfo{font-weight:700;align-self:center;min-width:170px}
+.pick{display:flex;flex-direction:column;gap:8px;width:340px}.pick button{text-align:left;padding:12px}.pick button small{display:block;color:var(--mut);margin-top:2px}.pick button:hover{border-color:var(--pr)}
+#pa{display:none}
+@media print{
+ :root{--bg:#fff;--card:#fff;--tx:#000;--bd:#555;--we:#fdeeee;--c1:#dbeafe;--c2:#ffedd5;--c3:#dcfce7}
+ @page{size:A4 landscape;margin:8mm}
+ body{padding:0;background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body>*:not(#pa){display:none!important}#pa{display:block}
+ #pa table{width:100%;font-size:8px}#pa th,#pa td{padding:2px 3px;font-size:8px;position:static;background-clip:padding-box}#pa th{background:#e8edf4}
+ #pa td.l{text-align:left}.note{font-size:9px}
+}
 </style></head><body>
-<h1>Rekap Lembur — Command Center &amp; DCC P2B <small id="who" style="font-weight:400;color:var(--mut)"></small></h1>
-<div class="bar">
- <label>Bulan<select id="bln"></select></label>
- <label>Tahun<input id="thn" type="number" min="2020" max="2100" style="width:90px"></label>
- <label>Unit<select id="unit"></select></label>
- <span class="sp"></span>
- <button class="pr" id="bIn">+ Input Lembur</button>
- <button id="bEx">Export Excel</button>
- <button id="bPr">Cetak</button>
-</div>
-<div class="kop" id="kop" hidden>RINCIAN PERHITUNGAN LEMBUR<small>PROJECT : COMMAND CENTER - DCC P2B</small><small id="kper"></small></div>
-<div class="wrap"><div id="msg">Memuat…</div><table id="tbl" hidden></table></div>
-<div class="note" id="foot" hidden><b>CATATAN :</b><br>1. LEMBUR KELEBIHAN JAM KERJA TIDAK BOLEH LEBIH DARI 4 JAM.<br>2. LEMBUR (HARI LIBUR NASIONAL, PERMINTAAN PLN, PENGGANTI CUTI DAN SAKIT) TIDAK BOLEH MELEBIHI 8 JAM.</div>
 
+<div class="top">
+ <h1>Rekap Lembur — Command Center &amp; DCC P2B <small id="who" style="font-weight:400;color:var(--mut)"></small></h1>
+ <button class="sync s-idle" id="sync" title="Klik untuk sinkron ulang"><i></i><span id="syncT">Menghubungkan…</span></button>
+</div>
+
+<!-- LANDING -->
+<section id="landing"><div class="hero">
+ <button class="big pr" id="bStart" disabled>INPUT REKAP LEMBUR</button>
+ <div class="chips" id="lmsg">Menghubungkan ke Google Sheet…</div>
+</div></section>
+
+<!-- PREVIEW -->
+<section id="app" hidden>
+ <div class="bar">
+  <b id="ctx"></b><span class="sp"></span>
+  <button class="pr" id="bRev">REVISI</button>
+  <button id="bPr">Cetak PDF</button>
+  <button id="bEx">Export Excel</button>
+  <button id="bFil">Ubah Filter</button>
+  <button id="bHome">Beranda</button>
+ </div>
+ <div class="kop" id="kop" hidden>RINCIAN PERHITUNGAN LEMBUR<small>PROJECT : COMMAND CENTER - DCC P2B</small><small id="kper"></small></div>
+ <div class="wrap"><div id="msg">Memuat…</div><table id="tbl" hidden></table></div>
+ <div class="note" id="foot" hidden><b>CATATAN :</b><br>1. LEMBUR KELEBIHAN JAM KERJA TIDAK BOLEH LEBIH DARI 4 JAM.<br>2. LEMBUR (HARI LIBUR NASIONAL, PERMINTAAN PLN, PENGGANTI CUTI DAN SAKIT) TIDAK BOLEH MELEBIHI 8 JAM.</div>
+</section>
+
+<!-- POPUP FILTER -->
+<div class="ov" id="fm"><div class="box" style="width:320px">
+ <b>Filter Rekap Lembur</b>
+ <label>Bulan<select id="fb"></select></label>
+ <label>Tahun<input id="ft" type="number" min="2020" max="2100"></label>
+ <label>Unit<select id="fu"></select></label>
+ <div style="display:flex;gap:8px;justify-content:flex-end"><button id="fX">Batal</button><button class="pr" id="fGo">Lanjutkan</button></div>
+</div></div>
+
+<!-- FORM INPUT / REVISI -->
 <div class="ov" id="modal"><div class="box">
  <b id="mt"></b><div class="chips" id="chips"></div>
  <div class="wrap"><table id="frm"></table></div>
+ <div class="ed">
+  <span id="eInfo">Klik sel pada tabel</span>
+  <label><span><b>1</b> Tipe Lembur</span><select id="eTipe" disabled></select></label>
+  <label><span><b>2</b> Kode</span><select id="eKode" disabled></select></label>
+  <label id="lJam" hidden><span><b>3</b> Jam lembur</span><select id="eJam"></select></label>
+  <button id="eDel" disabled>Hapus isi</button>
+ </div>
  <div class="chips" id="det"></div>
- <div style="display:flex;gap:8px;justify-content:space-between;align-items:center"><span class="chips">Kosongkan sel untuk menghapus · Enter/panah untuk pindah sel</span>
+ <div style="display:flex;gap:8px;justify-content:space-between;align-items:center"><span class="chips">Panah = pindah sel · Delete = hapus isi · Enter = ke dropdown Tipe Lembur</span>
  <span><button id="bX">Batal</button> <button class="pr" id="bS">Simpan</button></span></div>
 </div></div>
+
+<!-- PILIH OUTPUT -->
+<div class="ov" id="pk"><div class="box"><b id="pkT"></b>
+ <div class="pick">
+  <button id="pk1">Output Pengajuan<small>Rincian per Tipe Lembur (JAM MASUK / SELESAI / DURASI) sesuai form_output</small></button>
+  <button id="pk2">Tampilan Preview<small>Rekap kode per tanggal seperti tampilan di layar</small></button>
+  <button id="pkX">Batal</button>
+ </div></div></div>
 
 <div class="ov" id="login"><div class="box" style="width:300px"><b>Login</b>
  <input id="lu" placeholder="Username"><input id="lp" type="password" placeholder="Password"><button class="pr" id="bL">Masuk</button></div></div>
 <div id="toast"></div>
+<div id="pa"></div>
 
 <script>
 const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const $=id=>document.getElementById(id);
 const NK=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const isOpen=id=>$(id).style.display==='flex',show=id=>$(id).style.display='flex',hide=id=>$(id).style.display='none';
 const toast=(t,ms=2500)=>{const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms);};
 
-/* Koneksi data: (1) dibuka dari URL web app Apps Script -> google.script.run
-   (2) index.html di-host di luar Apps Script -> isi API_URL dengan URL /exec hasil deploy */
-const API_URL='https://script.google.com/macros/s/AKfycbz0xOsSPQYjMozCC2wWEiWeUkU9l2pUeGwBClJY8_JD7P8SEP6YF8UOExFt83pV5gYMMA/exec';   // contoh: 'https://script.google.com/macros/s/XXXX/exec'
+/* ================= INDIKATOR SINKRON ================= */
+let PEND=0,SYNC_ERR=false,LAST=null,DIRTY=false;
+function paintSync(){
+ let c='idle',t='Menghubungkan…';
+ if(!navigator.onLine){c='off';t='Offline — tidak ada koneksi';}
+ else if(PEND>0){c='busy';t='Menyinkronkan…';}
+ else if(SYNC_ERR){c='err';t='Gagal sinkron · klik untuk coba lagi';}
+ else if(DIRTY&&isOpen('modal')){c='dirty';t='Perubahan belum disimpan';}
+ else if(LAST){c='ok';t='Tersinkron · '+pad(LAST.getHours())+':'+pad(LAST.getMinutes())+':'+pad(LAST.getSeconds());}
+ $('sync').className='sync s-'+c;$('syncT').textContent=t;
+}
+window.addEventListener('online',()=>{paintSync();if(FILTER)render(true);});
+window.addEventListener('offline',paintSync);
+window.addEventListener('beforeunload',e=>{if(DIRTY&&isOpen('modal')){e.preventDefault();e.returnValue='';}});
+setInterval(()=>{if(FILTER&&!PEND&&!document.hidden&&!isOpen('modal')&&!isOpen('login'))render(true);},60000);   // sinkron otomatis tiap 60 detik
+$('sync').onclick=async()=>{
+ if(PEND)return;if(isOpen('modal'))return toast('Simpan atau tutup form dulu');
+ if(!META)return start();
+ try{META=await run('getMeta');}catch(e){return toast('Gagal sinkron: '+e,4000);}
+ if(FILTER)await render(true);toast('Data tersinkron');
+};
+
+/* ================= KONEKSI DATA ================= */
+const API_URL='https://script.google.com/macros/s/AKfycbz0xOsSPQYjMozCC2wWEiWeUkU9l2pUeGwBClJY8_JD7P8SEP6YF8UOExFt83pV5gYMMA/exec';
 let TOKEN='';
-const run=(fn,...a)=>new Promise((ok,no)=>{
+const run=(fn,...a)=>new Promise((ok0,no0)=>{
+ PEND++;paintSync();let done=false;
+ const ok=v=>{if(done)return;done=true;PEND--;SYNC_ERR=false;LAST=new Date();paintSync();ok0(v);};
+ const no=e=>{if(done)return;done=true;PEND--;SYNC_ERR=true;paintSync();no0(e);};
  const args=(fn==='getConfig'||fn==='login')?a:[TOKEN,...a];
  const fail=e=>{const m=String(e&&e.message||e);if(m.includes('SESI_HABIS'))askLogin();no(m);};
  if(typeof google!=='undefined'&&google.script&&google.script.run)
   return google.script.run.withSuccessHandler(ok).withFailureHandler(fail)[fn](...args);
- if(!API_URL)return no('Tidak terhubung ke Google Sheet. Buka lewat URL web app (/exec) atau isi API_URL di index.html.');
- fetch(API_URL,{method:'POST',body:JSON.stringify({fn,args})})   // text/plain: tanpa preflight CORS
+ if(!API_URL)return fail('Tidak terhubung ke Google Sheet. Buka lewat URL web app (/exec) atau isi API_URL di index.html.');
+ fetch(API_URL,{method:'POST',body:JSON.stringify({fn,args})})
   .then(r=>r.text()).then(t=>{let r;try{r=JSON.parse(t);}catch(x){throw new Error('Respon server bukan JSON. Pastikan deploy Web app: akses "Anyone" dan versi terbaru (New version).');}
    return r.error?fail(r.error):ok(r.data);})
   .catch(e=>fail(/failed to fetch|networkerror/i.test(String(e&&e.message||e))?'Gagal menghubungi server (cek URL API_URL, koneksi, dan akses "Anyone" pada deploy).':e));});
 
-let META,LIST=[],ENT={};
-const cur=()=>({y:+$('thn').value,m:+$('bln').value,u:$('unit').value});
-const days=(y,m)=>new Date(y,m,0).getDate();                 // jumlah hari sebenarnya (kabisat otomatis)
+let META=null,FILTER=null,LIST=[],ENT={},DRAFT={},SEL=null;
+const cur=()=>FILTER||{};
+const days=(y,m)=>new Date(y,m,0).getDate();
 const isWe=(y,m,d)=>[0,6].includes(new Date(y,m-1,d).getDay());
 const cls=c=>{c=String(c||'').toUpperCase();return !c?'':c.includes('-OT')?'c2':(c==='PK'||c==='LN')?'c3':'c1';};
-function hours(u,code){                                       // jam dari sebuah kode (untuk kolom JML JAM)
+const isOTd=k=>/^[PSM]-OTD$/i.test(k),kodeU=u=>META.kode.filter(k=>NK(k.unit)===NK(u));
+const tipesU=u=>[...new Set(kodeU(u).map(k=>k.tipe).filter(Boolean))];
+const durKode=k=>{const cap=Math.min(k.maks||8,8);if(k.keluar===null||k.keluar===undefined)return cap;let d=k.keluar-(k.jam||0);if(d<=0)d+=24;return Math.min(d,cap);};   // jam masuk->keluar, maks 8 jam
+function hours(u,code){
  code=String(code||'').trim().toUpperCase();if(!code)return 0;
  const m=/^[PSM]-OT(\d+(?:[.,]\d+)?)$/.exec(code);if(m)return Math.min(parseFloat(m[1].replace(',','.'))||0,4);
- const k=META.kode.find(x=>NK(x.unit)===NK(u)&&x.kode.toUpperCase()===code);return k?Math.min(k.maks||8,8):0;}
+ const k=META.kode.find(x=>NK(x.unit)===NK(u)&&x.kode.toUpperCase()===code);return k?durKode(k):0;}
+function parseCode(u,v){
+ v=String(v||'').trim().toUpperCase();if(!v)return null;const ks=kodeU(u);
+ const m=/^([PSM])-OT(\d+(?:[.,]\d+)?)$/.exec(v);
+ if(m){const k=ks.find(x=>x.kode.toUpperCase()===m[1]+'-OTD');return k?{k:k.kode,h:parseFloat(m[2].replace(',','.'))}:null;}
+ const k=ks.find(x=>x.kode.toUpperCase()===v);return k?{k:k.kode,h:0}:null;}
+const fmtDT=(y,m,d,h)=>{const t=new Date(Date.UTC(y,m-1,d)+Math.round(h*3600000));return `${pad(t.getUTCDate())}/${pad(t.getUTCMonth()+1)}/${t.getUTCFullYear()} ${pad(t.getUTCHours())}:${pad(t.getUTCMinutes())}:${pad(t.getUTCSeconds())}`;};
+const fmtD=h=>{const s=Math.round(h*3600);return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`;};
+const fmtU=d=>`${pad(d.getUTCDate())}/${pad(d.getUTCMonth()+1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+const toDate=v=>{const q=String(v).match(/(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)/);return new Date(Date.UTC(+q[1],q[2]-1,+q[3],+q[4],+q[5],+q[6]));};
 
 /* ---- login ---- */
-function askLogin(){$('login').style.display='flex';$('lu').focus();}
-$('bL').onclick=async()=>{const r=await run('login',$('lu').value,$('lp').value);
- if(!r.ok)return toast(r.error);TOKEN=r.token;$('login').style.display='none';start();};
+function askLogin(){show('login');$('lu').focus();}
+$('bL').onclick=async()=>{let r;try{r=await run('login',$('lu').value,$('lp').value);}catch(e){return toast(e);}
+ if(!r.ok)return toast(r.error);TOKEN=r.token;hide('login');start();};
 $('lp').onkeydown=e=>{if(e.key==='Enter')$('bL').click();};
 
-/* ---- tampilan utama ---- */
+/* ================= LANDING & FILTER ================= */
 async function init(){
- $('bln').innerHTML=BLN.map((n,i)=>`<option value="${i+1}">${n}</option>`).join('');
- const t=new Date();$('bln').value=t.getMonth()+1;$('thn').value=t.getFullYear();
- ['bln','thn','unit'].forEach(i=>$(i).onchange=render);
- let cfg={};try{cfg=await run('getConfig');}catch(e){$('msg').textContent='Gagal memuat: '+e;return;}
+ $('fb').innerHTML=BLN.map((n,i)=>`<option value="${i+1}">${n}</option>`).join('');
+ let cfg={};try{cfg=await run('getConfig');}catch(e){$('lmsg').textContent='Gagal memuat: '+e;return;}
  cfg.useLogin&&!TOKEN?askLogin():start();
 }
 async function start(){
- try{META=await run('getMeta');}catch(e){$('msg').textContent='Gagal memuat: '+e;return;}
+ $('lmsg').textContent='Menghubungkan ke Google Sheet…';
+ try{META=await run('getMeta');}catch(e){$('lmsg').textContent='Gagal memuat: '+e;return;}
  $('who').textContent=META.user?'· '+META.user:'';
- $('unit').innerHTML=META.units.map(u=>`<option>${esc(u)}</option>`).join('');render();
+ $('bStart').disabled=false;$('lmsg').textContent='Klik tombol untuk memulai input rekap lembur.';
 }
+$('bStart').onclick=openFilter;$('bFil').onclick=openFilter;
+function openFilter(){
+ const t=new Date(),f=FILTER||{y:t.getFullYear(),m:t.getMonth()+1,u:''};
+ $('fb').value=f.m;$('ft').value=f.y;
+ $('fu').innerHTML=META.units.map(u=>`<option${u===f.u?' selected':''}>${esc(u)}</option>`).join('');show('fm');
+}
+$('fX').onclick=()=>hide('fm');
+$('fGo').onclick=async()=>{
+ const y=+$('ft').value,m=+$('fb').value,u=$('fu').value;
+ if(!y||!u)return toast('Lengkapi bulan, tahun, dan unit');
+ FILTER={y,m,u};hide('fm');$('landing').hidden=true;$('app').hidden=false;
+ if(await render())openForm();
+};
+$('bHome').onclick=()=>{FILTER=null;$('app').hidden=true;$('landing').hidden=false;};
+
+/* ================= PREVIEW ================= */
 let RSEQ=0;
-async function render(){
- const {y,m,u}=cur();if(!u||!y)return;const sq=++RSEQ;
- $('msg').textContent='Memuat…';$('msg').hidden=false;$('tbl').hidden=true;
- LIST=META.petugas.filter(p=>p.unit===u);
- try{ENT=await run('getEntries',y,m,u);}catch(e){if(sq===RSEQ)$('msg').textContent='Gagal: '+e;return;}
- if(sq!==RSEQ)return;
+async function render(silent){
+ const {y,m,u}=cur();if(!u||!y)return false;const sq=++RSEQ;
+ $('ctx').textContent=`${u} · ${BLN[m-1]} ${y}`;
+ if(!silent||$('tbl').hidden){$('msg').textContent='Memuat…';$('msg').hidden=false;$('tbl').hidden=true;}
+ let E;try{E=await run('getEntries',y,m,u);}catch(e){if(sq===RSEQ&&!silent){$('msg').hidden=false;$('msg').textContent='Gagal: '+e;}return false;}
+ if(sq!==RSEQ)return false;
+ ENT=E;LIST=META.petugas.filter(p=>p.unit===u);
  const n=days(y,m);
  let h=`<tr><th rowspan="2">NO INDUK</th><th rowspan="2">NAMA</th><th rowspan="2">JABATAN</th><th colspan="${n}">BULAN ${BLN[m-1].toUpperCase()} ${y}</th><th rowspan="2">JML JAM</th></tr><tr>`;
  for(let d=1;d<=n;d++)h+=`<th class="${isWe(y,m,d)?'we':''}">${d}</th>`;h+='</tr>';
@@ -120,101 +235,202 @@ async function render(){
  $('tbl').innerHTML=h;$('tbl').hidden=!LIST.length;
  $('kper').textContent=`Bulan : ${BLN[m-1]}    Tahun : ${y}`;$('kop').hidden=$('foot').hidden=!LIST.length;
  $('msg').hidden=!!LIST.length;if(!LIST.length)$('msg').textContent='Tidak ada petugas untuk unit ini.';
+ return true;
 }
-$('bPr').onclick=()=>window.print();
 
-/* ---- form input: dropdown Kode (dari sheet kode_lembur) ---- */
-const isOTd=k=>/^[PSM]-OTD$/i.test(k),kodeU=u=>META.kode.filter(k=>NK(k.unit)===NK(u)),pad=n=>String(n).padStart(2,'0');
-const fmtDT=(y,m,d,h)=>{const t=new Date(Date.UTC(y,m-1,d)+Math.round(h*3600000));return `${pad(t.getUTCDate())}/${pad(t.getUTCMonth()+1)}/${t.getUTCFullYear()} ${pad(t.getUTCHours())}:${pad(t.getUTCMinutes())}:${pad(t.getUTCSeconds())}`;};
-const fmtD=h=>{const s=Math.round(h*3600);return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`;};
-function parseCode(u,v){                                          // 'P-OT2' -> {k:'P-OTd',h:2}
- v=String(v||'').trim().toUpperCase();if(!v)return null;const ks=kodeU(u);
- const m=/^([PSM])-OT(\d+(?:[.,]\d+)?)$/.exec(v);
- if(m){const k=ks.find(x=>x.kode.toUpperCase()===m[1]+'-OTD');return k?{k:k.kode,h:parseFloat(m[2].replace(',','.'))}:null;}
- const k=ks.find(x=>x.kode.toUpperCase()===v);return k?{k:k.kode,h:0}:null;}
-function cellVal(td){const s=td.querySelector('.c'),h=td.querySelector('.h');if(!s.value)return '';
- return isOTd(s.value)?s.value[0].toUpperCase()+'-OT'+h.value:s.value;}
-function cellHtml(p,d,u,we){
- const raw=(ENT[p.noInduk]||{})[d]||'',pv=parseCode(u,raw);
- let o='<option value=""></option>'+kodeU(u).map(k=>`<option value="${esc(k.kode)}"${pv&&pv.k===k.kode?' selected':''} title="${esc(k.tipe)}">${esc(k.kode)}</option>`).join('');
- if(raw&&!pv)o+=`<option value="${esc(raw)}" selected>${esc(raw)} ⚠</option>`;   // kode lama yang tidak ada di kode_lembur
- const hs=[0.5,1,1.5,2,2.5,3,3.5,4];if(pv&&pv.h&&!hs.includes(pv.h))hs.push(pv.h);
- return `<td class="${we?'we':''}" data-n="${esc(p.noInduk)}" data-d="${d}"><select class="c">${o}</select><select class="h"${pv&&pv.h?'':' hidden'} title="Jam lembur">${hs.map(x=>`<option${pv&&pv.h===x?' selected':''}>${x}</option>`).join('')}</select></td>`;}
-function showDet(td){
- const {y,m,u}=cur(),p=LIST.find(x=>x.noInduk===td.dataset.n),d=+td.dataset.d,v=cellVal(td),pc=parseCode(u,v);
- if(!p)return;
- if(!pc){$('det').innerHTML=`<b>${esc(p.nama)}</b> · tgl ${d}: ${v?'kode tidak valid':'pilih kode untuk melihat Tipe Lembur dan jam'}`;return;}
- const k=kodeU(u).find(x=>x.kode===pc.k),ot=isOTd(k.kode),dur=ot?pc.h:Math.min(k.maks||8,8),day=d+(ot&&k.kode[0].toUpperCase()==='M'?1:0),st=k.jam||0;
- $('det').innerHTML=`<b>${esc(p.nama)}</b> · tgl ${d} · Kode <b>${esc(v)}</b><br>Tipe Lembur : <b>${esc(k.tipe)}</b><br>Jam Masuk : <b>${fmtDT(y,m,day,st)}</b> · Jam Keluar : <b>${fmtDT(y,m,day,st+dur)}</b> · Durasi : <b>${fmtD(dur)}</b>`;}
-$('bIn').onclick=()=>{
+/* ================= FORM INPUT / REVISI ================= */
+$('bRev').onclick=()=>{if(!LIST.length)return toast('Tidak ada petugas untuk unit ini');openForm();};
+function paintCell(td){
+ const {y,m}=cur(),d=+td.dataset.d,v=(DRAFT[td.dataset.n]||{})[d]||'';
+ td.className='cell '+(v?cls(v):isWe(y,m,d)?'we':'')+(td===SEL?' sel':'');td.textContent=v;
+}
+function paintTot(no){const {u}=cur();let t=0;Object.values(DRAFT[no]||{}).forEach(v=>t+=hours(u,v));
+ const c=$('frm').querySelector(`td.j[data-n="${CSS.escape(no)}"]`);if(c)c.textContent=t||'';}
+function openForm(){
  const {y,m,u}=cur();if(!LIST.length)return;const n=days(y,m);
- $('mt').textContent=`Input Lembur — ${u} — ${BLN[m-1]} ${y}`;
- $('chips').innerHTML='Kode: '+kodeU(u).map(k=>`<b>${esc(k.kode)}</b> ${esc(k.tipe)}`).join(' · ')+' · untuk kode <b>-OTd</b> pilih jumlah jamnya (maks. 4)';
- let h='<tr><th>NAMA</th>';for(let d=1;d<=n;d++)h+=`<th class="${isWe(y,m,d)?'we':''}">${d}</th>`;h+='</tr>';
- LIST.forEach(p=>{h+=`<tr><td class="l">${esc(p.nama)}</td>`;for(let d=1;d<=n;d++)h+=cellHtml(p,d,u,isWe(y,m,d));h+='</tr>';});
- $('frm').innerHTML=h;$('det').textContent='Pilih kode pada sel untuk melihat Tipe Lembur dan jam.';$('modal').style.display='flex';
+ DRAFT={};Object.keys(ENT).forEach(no=>DRAFT[no]={...ENT[no]});DIRTY=false;SEL=null;
+ const rev=Object.values(ENT).some(o=>Object.keys(o).length);
+ $('mt').textContent=`${rev?'Revisi':'Input'} Rekap Lembur — ${u} — ${BLN[m-1]} ${y}`;
+ $('chips').innerHTML=tipesU(u).map(t=>`<b>${esc(t)}</b>: ${kodeU(u).filter(k=>k.tipe===t).map(k=>esc(k.kode)).join(', ')}`).join(' · ')+' · kode <b>-OTd</b>: pilih jumlah jam (maks. 4)';
+ let h='<tr><th>NAMA</th>';for(let d=1;d<=n;d++)h+=`<th class="${isWe(y,m,d)?'we':''}">${d}</th>`;h+='<th>JML</th></tr>';
+ LIST.forEach(p=>{h+=`<tr><td class="l">${esc(p.nama)}</td>`;
+  for(let d=1;d<=n;d++)h+=`<td tabindex="0" data-n="${esc(p.noInduk)}" data-d="${d}"></td>`;
+  h+=`<td class="tot j" data-n="${esc(p.noInduk)}"></td></tr>`;});
+ $('frm').innerHTML=h;
+ $('frm').querySelectorAll('td[data-n][data-d]').forEach(td=>paintCell(td));
+ LIST.forEach(p=>paintTot(p.noInduk));
+ loadEditor();show('modal');paintSync();
+}
+function selCell(td){const o=SEL;SEL=td;if(o&&o!==td)paintCell(o);paintCell(td);loadEditor();}
+function fillKode(t,sel){
+ const {u}=cur();
+ $('eKode').innerHTML='<option value="">— pilih Kode —</option>'+kodeU(u).filter(k=>k.tipe===t).map(k=>`<option value="${esc(k.kode)}"${k.kode===sel?' selected':''}>${esc(k.kode)}</option>`).join('');
+ $('eKode').disabled=!t;
+}
+function loadEditor(){
+ const {u}=cur(),td=SEL;
+ if(!td){$('eInfo').textContent='Klik sel pada tabel';$('eTipe').innerHTML='';$('eKode').innerHTML='';$('eTipe').disabled=$('eKode').disabled=$('eDel').disabled=true;$('lJam').hidden=true;$('det').textContent='Pilih sel, lalu pilih Tipe Lembur → Kode untuk melihat jam masuk/keluar.';return;}
+ const no=td.dataset.n,d=+td.dataset.d,p=LIST.find(x=>x.noInduk===no),v=(DRAFT[no]||{})[d]||'',pc=parseCode(u,v);
+ const kd=pc&&kodeU(u).find(x=>x.kode===pc.k);
+ $('eInfo').textContent=`${p.nama} · tgl ${d}`;
+ $('eTipe').innerHTML='<option value="">— pilih Tipe Lembur —</option>'+tipesU(u).map(t=>`<option value="${esc(t)}"${kd&&kd.tipe===t?' selected':''}>${esc(t)}</option>`).join('');
+ $('eTipe').disabled=false;$('eDel').disabled=false;
+ fillKode(kd?kd.tipe:'',kd?kd.kode:'');
+ const hs=[0.5,1,1.5,2,2.5,3,3.5,4];if(pc&&pc.h&&!hs.includes(pc.h))hs.push(pc.h);
+ $('eJam').innerHTML=hs.map(x=>`<option${pc&&pc.h===x?' selected':''}>${x}</option>`).join('');
+ $('lJam').hidden=!(kd&&isOTd(kd.kode));showDet();
+}
+function setCell(val){
+ const td=SEL;if(!td)return;const no=td.dataset.n,d=+td.dataset.d;
+ DRAFT[no]=DRAFT[no]||{};if(val)DRAFT[no][d]=val;else delete DRAFT[no][d];
+ DIRTY=true;paintCell(td);paintTot(no);showDet();paintSync();
+}
+function applyEditor(){
+ const k=$('eKode').value;let v='';
+ if(k){if(isOTd(k)){v=k[0].toUpperCase()+'-OT'+$('eJam').value;$('lJam').hidden=false;}else{v=k;$('lJam').hidden=true;}}else $('lJam').hidden=true;
+ setCell(v);
+}
+$('eTipe').onchange=()=>{
+ const {u}=cur(),t=$('eTipe').value;fillKode(t,'');
+ const ks=kodeU(u).filter(k=>k.tipe===t);if(ks.length===1)$('eKode').value=ks[0].kode;   // hanya 1 kode -> otomatis terpilih
+ if($('eKode').value&&isOTd($('eKode').value))$('eJam').value='1';
+ applyEditor();
 };
-$('frm').onchange=e=>{const td=e.target.closest('td[data-n]');if(!td)return;
- if(e.target.classList.contains('c')){const hs=td.querySelector('.h'),o=isOTd(e.target.value);if(o&&hs.hidden)hs.value='1';hs.hidden=!o;}
- showDet(td);};
-$('frm').onfocusin=e=>{const td=e.target.closest&&e.target.closest('td[data-n]');if(td)showDet(td);};
-$('bX').onclick=()=>$('modal').style.display='none';
+$('eKode').onchange=()=>{if(isOTd($('eKode').value)&&$('lJam').hidden)$('eJam').value='1';applyEditor();};
+$('eJam').onchange=applyEditor;
+$('eDel').onclick=()=>{if(!SEL)return;setCell('');loadEditor();SEL.focus();};
+function showDet(){
+ const {y,m,u}=cur(),td=SEL;if(!td)return;
+ const no=td.dataset.n,d=+td.dataset.d,p=LIST.find(x=>x.noInduk===no),v=(DRAFT[no]||{})[d]||'',pc=parseCode(u,v);
+ if(!pc){$('det').innerHTML=`<b>${esc(p.nama)}</b> · tgl ${d}: ${v?'<span style="color:#d33">kode lama "'+esc(v)+'" tidak valid — pilih ulang atau hapus</span>':'pilih Tipe Lembur lalu Kode'}`;return;}
+ const k=kodeU(u).find(x=>x.kode===pc.k),ot=isOTd(k.kode),dur=ot?pc.h:durKode(k),day=d+(ot&&k.kode[0].toUpperCase()==='M'?1:0),st=k.jam||0;
+ $('det').innerHTML=`<b>${esc(p.nama)}</b> · tgl ${d} · Kode <b>${esc(v)}</b><br>Tipe Lembur : <b>${esc(k.tipe)}</b><br>Jam Masuk : <b>${fmtDT(y,m,day,st)}</b> · Jam Keluar : <b>${fmtDT(y,m,day,st+dur)}</b> · Durasi : <b>${fmtD(dur)}</b>`;
+}
+$('frm').onfocusin=e=>{const td=e.target.closest&&e.target.closest('td[data-d]');if(td)selCell(td);};
+$('frm').onclick=e=>{const td=e.target.closest&&e.target.closest('td[data-d]');if(td&&td!==SEL)selCell(td);};
+$('frm').onkeydown=e=>{
+ const td=e.target.closest&&e.target.closest('td[data-d]');if(!td)return;
+ const mv={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
+ if(mv){e.preventDefault();const tr=td.parentElement,i=[...tr.children].indexOf(td);
+  const row=mv[0]?(mv[0]<0?tr.previousElementSibling:tr.nextElementSibling):tr;
+  const nx=row&&row.children[i+mv[1]];if(nx&&nx.dataset.d)nx.focus();}
+ else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();setCell('');loadEditor();}
+ else if(e.key==='Enter'){e.preventDefault();$('eTipe').focus();}
+};
+function closeForm(){if(DIRTY&&!confirm('Perubahan belum disimpan. Tutup form?'))return;DIRTY=false;hide('modal');paintSync();}
+$('bX').onclick=closeForm;
 $('bS').onclick=async()=>{
  const {y,m,u}=cur(),entries=[];
- $('frm').querySelectorAll('td[data-n]').forEach(td=>{const v=cellVal(td);if(v)entries.push({noInduk:td.dataset.n,tgl:+td.dataset.d,kode:v});});
+ Object.keys(DRAFT).forEach(no=>Object.keys(DRAFT[no]).forEach(d=>{if(DRAFT[no][d])entries.push({noInduk:no,tgl:+d,kode:DRAFT[no][d]});}));
  $('bS').disabled=true;$('bS').textContent='Menyimpan…';
  try{const r=await run('saveEntries',{tahun:y,bulan:m,unit:u,entries});
   if(!r.ok)alert('Gagal simpan:\n'+r.errors.join('\n'));
-  else{$('modal').style.display='none';toast(`Tersimpan: ${r.saved} entri`);if(r.warn)alert('Input tersimpan, tetapi sheet form_output belum terisi:\n'+r.warn);await render();}
+  else{DIRTY=false;hide('modal');toast(`Tersimpan: ${r.saved} entri`);if(r.warn)alert('Input tersimpan, tetapi sheet form_output belum terisi:\n'+r.warn);await render();}
  }catch(e){alert('Error: '+e);}
- $('bS').disabled=false;$('bS').textContent='Simpan';
+ $('bS').disabled=false;$('bS').textContent='Simpan';paintSync();
 };
-document.addEventListener('keydown',e=>{if(e.key==='Escape')$('modal').style.display='none';});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
+ if(isOpen('pk'))hide('pk');else if(isOpen('fm'))hide('fm');else if(isOpen('modal'))closeForm();});
 
-/* ---- export Excel: header ganda mengikuti sheet form_output ---- */
-$('bEx').onclick=async()=>{
- const {y,m,u}=cur();$('bEx').disabled=true;
+/* ================= CETAK PDF & EXPORT EXCEL (2 opsi) ================= */
+let PICK='';
+const NOTE='<div class="note"><b>CATATAN :</b><br>1. LEMBUR KELEBIHAN JAM KERJA TIDAK BOLEH LEBIH DARI 4 JAM.<br>2. LEMBUR (HARI LIBUR NASIONAL, PERMINTAAN PLN, PENGGANTI CUTI DAN SAKIT) TIDAK BOLEH MELEBIHI 8 JAM.</div>';
+const kopHtml=()=>{const {y,m}=cur();return `<div class="kop">RINCIAN PERHITUNGAN LEMBUR<small>PROJECT : COMMAND CENTER - DCC P2B</small><small>Bulan : ${BLN[m-1]}    Tahun : ${y}</small></div>`;};
+$('bPr').onclick=()=>{PICK='pdf';$('pkT').textContent='Cetak PDF — pilih isi dokumen';show('pk');};
+$('bEx').onclick=()=>{PICK='xls';$('pkT').textContent='Export Excel — pilih isi dokumen';show('pk');};
+$('pkX').onclick=()=>hide('pk');
+$('pk1').onclick=()=>doOut('peng');$('pk2').onclick=()=>doOut('prev');
+async function doOut(mode){
+ hide('pk');
+ if(!LIST.length||$('tbl').hidden)return toast('Belum ada data untuk dicetak/diexport');
  try{
-  const r=await run('getOutput',y,m,u);
-  if(r.errors&&r.errors.length)alert('Entri berikut dilewati:\n'+r.errors.join('\n'));
-  if(!r.rows.length)return toast('Belum ada data lembur untuk filter ini',3500);
-  const T=r.tipes,NF=7,NC=NF+T.length*3+1,R1=5,R2=6,DUR='[h]:mm:ss',FMT='dd/mm/yyyy hh:mm:ss';
-  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Rincian Lembur'),L=c=>ws.getColumn(c).letter;
-  const bd={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
-  const HF={type:'pattern',pattern:'solid',fgColor:{argb:'FF9DB8DB'}},JF={type:'pattern',pattern:'solid',fgColor:{argb:'FF4A86D6'}};
-  const line=(row,text,o={})=>{ws.mergeCells(row,1,row,NC);const c=ws.getCell(row,1);c.value=text;c.font={bold:!!o.b,size:o.s||11};c.alignment={horizontal:o.l?'left':'center'};};
-  line(1,'RINCIAN PERHITUNGAN LEMBUR',{b:1,s:14});line(2,'PROJECT : COMMAND CENTER - DCC P2B',{b:1});line(3,`Bulan : ${BLN[m-1]}     Tahun : ${y}`,{b:1});
-  ['NO','PERIODE','NO INDUK','NAMA','JABATAN','BANK','NO REK'].forEach((t,i)=>{ws.mergeCells(R1,i+1,R2,i+1);ws.getCell(R1,i+1).value=t;});
-  T.forEach((t,g)=>{const c=NF+1+g*3;ws.mergeCells(R1,c,R1,c+2);ws.getCell(R1,c).value=t;['JAM MASUK','JAM SELESAI','DURASI'].forEach((s,i)=>ws.getCell(R2,c+i).value=s);});
-  ws.mergeCells(R1,NC,R2,NC);ws.getCell(R1,NC).value='jmlh';
-  for(let rr=R1;rr<=R2;rr++)for(let cc=1;cc<=NC;cc++){const c=ws.getCell(rr,cc);c.font={bold:true};c.border=bd;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.fill=cc===NC?JF:HF;}
-  const toDate=v=>{const q=String(v).match(/(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)/);return new Date(Date.UTC(+q[1],q[2]-1,+q[3],+q[4],+q[5],+q[6]));};
-  const per=`${BLN[m-1]} ${y}`;
-  r.rows.forEach((x,i)=>{const rn=R2+1+i,g=T.indexOf(x.tipe),row=ws.getRow(rn);
-   [i+1,per,x.noInduk,x.nama,x.jabatan,x.bank,x.noRek].forEach((v,j)=>row.getCell(j+1).value=v);
-   if(g>=0){const c0=NF+1+g*3,a=toDate(x.masuk),b=toDate(x.keluar),dv=(b-a)/864e5;
-    row.getCell(c0).value=a;row.getCell(c0+1).value=b;
-    row.getCell(c0+2).value={formula:`${L(c0+1)}${rn}-${L(c0)}${rn}`,result:dv};                       // Durasi = Jam Selesai - Jam Masuk
-    row.getCell(NC).value={formula:T.map((_,k)=>L(NF+3+k*3)+rn).join('+'),result:dv};}
-   for(let cc=1;cc<=NC;cc++){const c=row.getCell(cc);c.border=bd;c.alignment={horizontal:cc===4||cc===5?'left':'center'};
-    if(cc>NF&&cc<NC)c.numFmt=(cc-NF-1)%3<2?FMT:DUR;else if(cc===NC)c.numFmt=DUR;}});
-  ws.columns.forEach((c,i)=>{const k=i+1;c.width=k===1?5:k<=3?13:k<=5?(k===4?28:26):k<=NF?16:k===NC?12:(k-NF-1)%3<2?22:12;});
-  const f=R2+r.rows.length+2;
-  line(f,'CATATAN :',{b:1,l:1});
-  line(f+1,'1. LEMBUR KELEBIHAN JAM KERJA TIDAK BOLEH LEBIH DARI 4 JAM.',{l:1});
-  line(f+2,'2. LEMBUR (HARI LIBUR NASIONAL, PERMINTAAN PLN, PENGGANTI CUTI DAN SAKIT) TIDAK BOLEH MELEBIHI 8 JAM.',{l:1});
-  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0};
-  // sheet ke-2: rekap jam per petugas per tipe lembur
-  const by={};r.rows.forEach(x=>{const hr=(toDate(x.keluar)-toDate(x.masuk))/36e5,b=by[x.noInduk]=by[x.noInduk]||{n:x.noInduk,nm:x.nama,v:{},t:0};b.v[x.tipe]=(b.v[x.tipe]||0)+hr;b.t+=hr;});
-  const w2=wb.addWorksheet('Rekap Per Petugas');
-  w2.addRow(['NO INDUK','NAMA',...T,'TOTAL JAM']).eachCell(c=>{c.font={bold:true};c.border=bd;c.alignment={horizontal:'center',wrapText:true};c.fill=HF;});
-  Object.values(by).forEach(b=>w2.addRow([b.n,b.nm,...T.map(t=>Math.round((b.v[t]||0)*100)/100),Math.round(b.t*100)/100]).eachCell(c=>c.border=bd));
-  w2.columns.forEach((c,i)=>c.width=i<2?(i?26:14):22);
-  const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-  a.download=`Rincian_Lembur_${u.replace(/\W+/g,'_')}_${BLN[m-1]}_${y}.xlsx`;a.click();
- }catch(e){alert('Export gagal: '+e);}
- $('bEx').disabled=false;
-};
-init();
+  if(mode==='peng'){const r=await getPeng();if(!r)return;PICK==='xls'?await xlsPeng(r):printPeng(r);}
+  else PICK==='xls'?await xlsPrev():printPrev();
+ }catch(e){alert('Gagal: '+e);}
+}
+async function getPeng(){
+ const {y,m,u}=cur(),r=await run('getOutput',y,m,u);
+ if(r.errors&&r.errors.length)alert('Entri berikut dilewati:\n'+r.errors.join('\n'));
+ if(!r.rows.length){toast('Belum ada data lembur untuk filter ini',3500);return null;}
+ return r;
+}
+function printNow(html){$('pa').innerHTML=html;setTimeout(()=>window.print(),100);}
+function printPrev(){printNow(kopHtml()+`<table>${$('tbl').innerHTML}</table>`+NOTE);}
+function printPeng(r){
+ const {y,m}=cur(),T=r.tipes,per=`${BLN[m-1]} ${y}`;
+ let h=kopHtml()+'<table><tr>'+['NO','PERIODE','NO INDUK','NAMA','JABATAN','BANK','NO REK'].map(t=>`<th rowspan="2">${t}</th>`).join('')+T.map(t=>`<th colspan="3">${esc(t)}</th>`).join('')+'<th rowspan="2">JMLH</th></tr><tr>'+T.map(()=>'<th>JAM MASUK</th><th>JAM SELESAI</th><th>DURASI</th>').join('')+'</tr>';
+ r.rows.forEach((x,i)=>{const g=T.indexOf(x.tipe),a=toDate(x.masuk),b=toDate(x.keluar),du=fmtD((b-a)/36e5);
+  h+=`<tr><td>${i+1}</td><td>${esc(per)}</td><td>${esc(x.noInduk)}</td><td class="l">${esc(x.nama)}</td><td class="l">${esc(x.jabatan)}</td><td>${esc(x.bank)}</td><td>${esc(x.noRek)}</td>`;
+  T.forEach((_,k)=>{h+=k===g?`<td>${fmtU(a)}</td><td>${fmtU(b)}</td><td>${du}</td>`:'<td></td><td></td><td></td>';});
+  h+=`<td>${du}</td></tr>`;});
+ printNow(h+'</table>'+NOTE);
+}
+const BD={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+const HF={type:'pattern',pattern:'solid',fgColor:{argb:'FF9DB8DB'}};
+const fill=a=>({type:'pattern',pattern:'solid',fgColor:{argb:a}});
+async function dl(wb,name){const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=name;a.click();}
+const mkLine=(ws,NC)=>(row,text,o={})=>{ws.mergeCells(row,1,row,NC);const c=ws.getCell(row,1);c.value=text;c.font={bold:!!o.b,size:o.s||11};c.alignment={horizontal:o.l?'left':'center'};};
+
+/* Excel: Output Pengajuan (header ganda mengikuti form_output) */
+async function xlsPeng(r){
+ const {y,m,u}=cur();
+ const T=r.tipes,NF=7,NC=NF+T.length*3+1,R1=5,R2=6,DUR='[h]:mm:ss',FMT='dd/mm/yyyy hh:mm:ss';
+ const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Rincian Lembur'),L=c=>ws.getColumn(c).letter,line=mkLine(ws,NC);
+ const JF=fill('FF4A86D6');
+ line(1,'RINCIAN PERHITUNGAN LEMBUR',{b:1,s:14});line(2,'PROJECT : COMMAND CENTER - DCC P2B',{b:1});line(3,`Bulan : ${BLN[m-1]}     Tahun : ${y}`,{b:1});
+ ['NO','PERIODE','NO INDUK','NAMA','JABATAN','BANK','NO REK'].forEach((t,i)=>{ws.mergeCells(R1,i+1,R2,i+1);ws.getCell(R1,i+1).value=t;});
+ T.forEach((t,g)=>{const c=NF+1+g*3;ws.mergeCells(R1,c,R1,c+2);ws.getCell(R1,c).value=t;['JAM MASUK','JAM SELESAI','DURASI'].forEach((s,i)=>ws.getCell(R2,c+i).value=s);});
+ ws.mergeCells(R1,NC,R2,NC);ws.getCell(R1,NC).value='jmlh';
+ for(let rr=R1;rr<=R2;rr++)for(let cc=1;cc<=NC;cc++){const c=ws.getCell(rr,cc);c.font={bold:true};c.border=BD;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.fill=cc===NC?JF:HF;}
+ const per=`${BLN[m-1]} ${y}`;
+ r.rows.forEach((x,i)=>{const rn=R2+1+i,g=T.indexOf(x.tipe),row=ws.getRow(rn);
+  [i+1,per,x.noInduk,x.nama,x.jabatan,x.bank,x.noRek].forEach((v,j)=>row.getCell(j+1).value=v);
+  if(g>=0){const c0=NF+1+g*3,a=toDate(x.masuk),b=toDate(x.keluar),dv=(b-a)/864e5;
+   row.getCell(c0).value=a;row.getCell(c0+1).value=b;
+   row.getCell(c0+2).value={formula:`${L(c0+1)}${rn}-${L(c0)}${rn}`,result:dv};
+   row.getCell(NC).value={formula:T.map((_,k)=>L(NF+3+k*3)+rn).join('+'),result:dv};}
+  for(let cc=1;cc<=NC;cc++){const c=row.getCell(cc);c.border=BD;c.alignment={horizontal:cc===4||cc===5?'left':'center'};
+   if(cc>NF&&cc<NC)c.numFmt=(cc-NF-1)%3<2?FMT:DUR;else if(cc===NC)c.numFmt=DUR;}});
+ ws.columns.forEach((c,i)=>{const k=i+1;c.width=k===1?5:k<=3?13:k<=5?(k===4?28:26):k<=NF?16:k===NC?12:(k-NF-1)%3<2?22:12;});
+ const f=R2+r.rows.length+2;
+ line(f,'CATATAN :',{b:1,l:1});
+ line(f+1,'1. LEMBUR KELEBIHAN JAM KERJA TIDAK BOLEH LEBIH DARI 4 JAM.',{l:1});
+ line(f+2,'2. LEMBUR (HARI LIBUR NASIONAL, PERMINTAAN PLN, PENGGANTI CUTI DAN SAKIT) TIDAK BOLEH MELEBIHI 8 JAM.',{l:1});
+ ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0};
+ const by={};r.rows.forEach(x=>{const hr=(toDate(x.keluar)-toDate(x.masuk))/36e5,b=by[x.noInduk]=by[x.noInduk]||{n:x.noInduk,nm:x.nama,v:{},t:0};b.v[x.tipe]=(b.v[x.tipe]||0)+hr;b.t+=hr;});
+ const w2=wb.addWorksheet('Rekap Per Petugas');
+ w2.addRow(['NO INDUK','NAMA',...T,'TOTAL JAM']).eachCell(c=>{c.font={bold:true};c.border=BD;c.alignment={horizontal:'center',wrapText:true};c.fill=HF;});
+ Object.values(by).forEach(b=>w2.addRow([b.n,b.nm,...T.map(t=>Math.round((b.v[t]||0)*100)/100),Math.round(b.t*100)/100]).eachCell(c=>c.border=BD));
+ w2.columns.forEach((c,i)=>c.width=i<2?(i?26:14):22);
+ await dl(wb,`Pengajuan_Lembur_${u.replace(/\W+/g,'_')}_${BLN[m-1]}_${y}.xlsx`);
+}
+
+/* Excel: Tampilan Preview (matriks kode per tanggal) */
+async function xlsPrev(){
+ const {y,m,u}=cur(),n=days(y,m),NC=3+n+1,R1=5,R2=6;
+ const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Rekap Lembur'),line=mkLine(ws,NC);
+ const FC={c1:'FFDBEAFE',c2:'FFFFEDD5',c3:'FFDCFCE7',we:'FFFDEEEE'};
+ line(1,'RINCIAN PERHITUNGAN LEMBUR',{b:1,s:14});line(2,'PROJECT : COMMAND CENTER - DCC P2B',{b:1});line(3,`Bulan : ${BLN[m-1]}     Tahun : ${y}`,{b:1});
+ ['NO INDUK','NAMA','JABATAN'].forEach((t,i)=>{ws.mergeCells(R1,i+1,R2,i+1);ws.getCell(R1,i+1).value=t;});
+ ws.mergeCells(R1,4,R1,3+n);ws.getCell(R1,4).value=`BULAN ${BLN[m-1].toUpperCase()} ${y}`;
+ for(let d=1;d<=n;d++)ws.getCell(R2,3+d).value=d;
+ ws.mergeCells(R1,NC,R2,NC);ws.getCell(R1,NC).value='JML JAM';
+ for(let rr=R1;rr<=R2;rr++)for(let cc=1;cc<=NC;cc++){const c=ws.getCell(rr,cc);c.font={bold:true};c.border=BD;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};
+  c.fill=(rr===R2&&cc>3&&cc<NC&&isWe(y,m,cc-3))?fill(FC.we):HF;}
+ LIST.forEach((p,i)=>{const rn=R2+1+i,row=ws.getRow(rn),e=ENT[p.noInduk]||{};let tot=0;
+  [p.noInduk,p.nama,p.jabatan].forEach((v,j)=>row.getCell(j+1).value=v);
+  for(let d=1;d<=n;d++){const v=e[d]||'',c=row.getCell(3+d);c.value=v||null;tot+=hours(u,v);
+   const k=v?cls(v):isWe(y,m,d)?'we':'';if(k)c.fill=fill(FC[k]);}
+  row.getCell(NC).value=tot||null;
+  for(let cc=1;cc<=NC;cc++){const c=row.getCell(cc);c.border=BD;c.alignment={horizontal:cc>=2&&cc<=3?'left':'center'};if(cc===NC)c.font={bold:true};}});
+ ws.columns.forEach((c,i)=>{const k=i+1;c.width=k===1?13:k===2?28:k===3?24:k===NC?10:5;});
+ const f=R2+LIST.length+2;
+ line(f,'CATATAN :',{b:1,l:1});
+ line(f+1,'1. LEMBUR KELEBIHAN JAM KERJA TIDAK BOLEH LEBIH DARI 4 JAM.',{l:1});
+ line(f+2,'2. LEMBUR (HARI LIBUR NASIONAL, PERMINTAAN PLN, PENGGANTI CUTI DAN SAKIT) TIDAK BOLEH MELEBIHI 8 JAM.',{l:1});
+ ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0};
+ await dl(wb,`Preview_Lembur_${u.replace(/\W+/g,'_')}_${BLN[m-1]}_${y}.xlsx`);
+}
+init();paintSync();
 </script></body></html>
