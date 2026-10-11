@@ -52,8 +52,8 @@ td.sel{outline:2px solid var(--pr)!important;outline-offset:-2px}
 .lpB2{top:42%;background:#ffefc5;box-shadow:4px 4px 0 #f2ece8;font:600 1.8cqw ui-monospace,Menlo,Consolas,monospace;color:#2b1d14}.lpB2:hover:not(:disabled){background:#ffe7a8}
 .lpM{position:absolute;left:5.4%;top:54%;width:38%;font-size:1.6cqw;color:#6b4a35}
 /* SPKL */
-#sp .box{width:min(96vw,880px)}.spv{overflow:auto;background:#8a919a;border-radius:8px;padding:12px;display:flex;justify-content:flex-start;max-height:calc(94vh - 200px)}
-.spv .pg{flex:none;margin:0 auto;box-shadow:0 2px 12px #0006}.spw{color:#b45309;font-size:12px}
+#sp .box{width:min(96vw,940px)}.spv{overflow:auto;background:#525659;border-radius:8px;padding:16px;text-align:center;max-height:calc(94vh - 210px)}
+.spf{margin:0 auto;background:#fff;box-shadow:0 3px 16px #000a;overflow:hidden}.spf iframe{display:block;border:0;background:#fff}.spz{display:flex;gap:4px}.spz button{padding:7px 12px}.spw{color:#b45309;font-size:12px}
 #eAlsT{width:230px}
 @media print{
  :root{--bg:#fff;--card:#fff;--tx:#000;--bd:#555;--we:#fdeeee;--c1:#dbeafe;--c2:#ffedd5;--c3:#dcfce7}
@@ -107,7 +107,7 @@ td.sel{outline:2px solid var(--pr)!important;outline-offset:-2px}
   <label><span><b>1</b> Tipe Lembur</span><select id="eTipe" disabled></select></label>
   <label><span><b>2</b> Kode</span><select id="eKode" disabled></select></label>
   <label id="lJam" hidden><span><b>3</b> Jam lembur</span><select id="eJam"></select></label>
-  <label id="lAls" hidden><span><b>4</b> Alasan Lembur</span><select id="eAls"></select><input id="eAlsT" placeholder="Ketik alasan lembur…" hidden></label>
+  <label id="lAls" hidden><span><b>4</b> Alasan Lembur</span><select id="eAls"></select><input id="eAlsT" placeholder="Ketik alasan, mis. operator yang sedang sakit" hidden></label>
   <button id="eDel" disabled>Hapus isi</button>
  </div>
  <div class="chips" id="det"></div>
@@ -128,11 +128,11 @@ td.sel{outline:2px solid var(--pr)!important;outline-offset:-2px}
 <!-- PREVIEW SPKL -->
 <div class="ov" id="sp"><div class="box">
  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b id="spT"></b><span class="sp"></span>
-  <button id="spP">◀ Sebelumnya</button><button id="spNx">Berikutnya ▶</button></div>
+  <span class="spz"><button id="spZo" title="Perkecil">−</button><button id="spZf" title="Sesuaikan lebar">Pas</button><button id="spZi" title="Perbesar">+</button></span><button id="spP">◀ Sebelumnya</button><button id="spNx">Berikutnya ▶</button></div>
  <div class="ed"><label>Mengetahui<select id="spM"></select></label><label>Yang Menugaskan<select id="spN"></select></label><span class="spw" id="spW"></span></div>
  <div class="spv" id="spPg"></div>
  <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><span class="chips" id="spInfo" style="margin-right:auto"></span>
-  <button id="spXls" class="pr">Export Excel</button><button id="spDoc" class="pr">Export Word</button><button id="spX">Tutup</button></div>
+  <button id="spPr" class="pr">Cetak / PDF</button><button id="spXls" class="pr">Export Excel</button><button id="spDoc" class="pr">Export Word</button><button id="spX">Tutup</button></div>
 </div></div>
 <div id="toast"></div>
 <div id="pa"></div>
@@ -458,8 +458,10 @@ async function xlsPrev(){
 }
 
 /* ================= ALASAN LEMBUR (dropdown bertingkat dari sheet Alasan_spkl) ================= */
+const NKc=s=>NK(s).replace(/(.)\1+/g,'$1');   // toleran salah ketik huruf ganda (PERMINTAN/PERMINTAAN)
+const alsTxt=a=>a?a.replace(/^(operator yang sedang\s+)(.*)$/i,(x,b,c)=>b.toLowerCase()+c.toLowerCase()):'[alasan lembur belum diisi]';
 const isMan=s=>/input\s*manual/i.test(s||'');
-const alsOpts=t=>(META.alasan||[]).filter(a=>NK(a.tipe)===NK(t)&&a.alasan).map(a=>a.alasan);
+const alsOpts=t=>(META.alasan||[]).filter(a=>NKc(a.tipe)===NKc(t)&&a.alasan).map(a=>a.alasan);
 function loadAls(){
  const td=SEL;if(!td){$('lAls').hidden=true;return;}
  const {u}=cur(),no=td.dataset.n,d=+td.dataset.d,pc=parseCode(u,(DRAFT[no]||{})[d]),kd=pc&&kodeU(u).find(x=>x.kode===pc.k),opts=kd?alsOpts(kd.tipe):[];
@@ -479,38 +481,41 @@ let GOSP=false,SPD=null,SPL=[],SPI=0;
 const HR=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const DC={form:'Form FPPT-03',kepada:'Manager PLN Nusa Daya UP Papua',p1:'01.Amd-0019.Pj/HKM.00.01/E18000000/2022',p2:'0102.Add/DAN.01.02/PLNND010000/2024',
  kegiatan:'Operasional Shift',waktu:'Menyesuaikan dengan jadwal shift',durasi:'Menyesuaikan dengan jadwal shift',
- tembusan:['Manager Bagian Pengendalian Operasi Distribusi PLN UIW Papua & Papua Barat','Manager UL Papua Barat PLN Nusa Daya']};
+ tembusan:['Manager Operasi & Pemeliharaan Sistem Distribusi PLN UIW Papua & Papua Barat','Manager UL Papua PLN Nusa Daya']};
 const tc=s=>String(s).toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());
 const fTgl=dt=>`${HR[dt.getDay()]}, ${dt.getDate()} ${BLN[dt.getMonth()]} ${dt.getFullYear()}`;
 const hh=x=>`${pad(Math.floor(x%24))}:${pad(Math.round(x%1*60))}`;
-const SPCSS=`.pg{width:794px;height:1123px;background:#fff;color:#000;padding:36px 34px;box-sizing:border-box;font:13.5px/1.45 Calibri,Carlito,Arial,sans-serif}
-.pg .fr{width:100%;border:2px solid #000;border-collapse:collapse}.pg .fr>tbody>tr>td{padding:14px 40px 18px;vertical-align:top}
-.pg .fo{text-align:right}.pg .fo span{border:1px solid #000;padding:2px 14px;font-size:12px}.pg .jd{text-align:center;font-size:16px;margin:22px 0 28px}
-.pg p{margin:0 0 14px}.pg .ju{text-align:justify}.pg .in{margin-left:22px}.pg .it{border-collapse:collapse;margin:0 0 14px}.pg .it td{padding:2px 0;vertical-align:top}
-.pg .it td:nth-child(1){width:26px}.pg .it td:nth-child(2){width:135px}.pg .it td:nth-child(3){width:20px}
-.pg .tt{width:100%;border-collapse:collapse;margin-top:6px}.pg .tt td{width:50%;text-align:center;vertical-align:top;padding:2px 6px}.pg .tt .sg{height:62px}
-.pg .tb{font-size:12px;margin-top:18px}.pg .rd{color:#e00000}.pg .mis{background:#fff3b0}`;
-document.head.appendChild(Object.assign(document.createElement('style'),{textContent:SPCSS}));
+const SPCSS=`.pg{width:794px;height:1123px;background:#fff;color:#000;padding:40px 38px;box-sizing:border-box;font:14px/1.5 Calibri,Carlito,Arial,sans-serif;text-align:left}
+.pg table{border-collapse:collapse;width:100%;min-width:0}
+.pg td{border:0;padding:0;text-align:left;white-space:normal;font-size:inherit;background:none;vertical-align:top;color:#000}
+.pg .fr{border:2px solid #000}.pg .fr>tbody>tr>td{padding:16px 44px 22px}
+.pg .fo{text-align:right}.pg .fo span{display:inline-block;border:1px solid #000;padding:2px 16px;font-size:12px}
+.pg .jd{text-align:center;font-size:16px;margin:26px 0 30px}
+.pg p{margin:0 0 15px}.pg .ju{text-align:justify}.pg .in{margin-left:26px}
+.pg .it{margin:0 0 15px}.pg .it td{padding:2px 0}.pg .it td:nth-child(1){width:28px}.pg .it td:nth-child(2){width:140px}.pg .it td:nth-child(3){width:20px}
+.pg .tt{margin-top:8px}.pg .tt td{width:50%;text-align:center;padding:2px 8px}.pg .tt .sg{height:64px}
+.pg .tb{font-size:12.5px;margin-top:20px}.pg .rd{color:#e00000}`;
+const spDoc=(body,pr)=>`<!doctype html><html><head><meta charset="utf-8"><style>@page{size:A4;margin:0}html,body{margin:0;background:#fff}${SPCSS}${pr?'.pg{height:1120px;overflow:hidden}':''}</style></head><body>${body}</body></html>`;
+let SPZ=null;const spZ=()=>SPZ||Math.min(1.2,Math.max(.4,($('spPg').clientWidth-40)/794));
 
-function buildSpkl(){   // 1 SPKL = 1 petugas + alasan sama + tanggal berurutan, maks 3 hari
+function buildSpkl(){   // 1 SPKL = 1 petugas + alasan sama + tanggal mulai berurutan, maks 3 hari. Tanggal mulai = tanggal JAM MASUK (kode M-OTd mulai hari berikutnya)
  const A=SPD.alasan||{},out=[];
  LIST.forEach(p=>{const e=ENT[p.noInduk]||{},al=A[p.noInduk]||{};let g=null;
-  Object.keys(e).map(Number).sort((a,b)=>a-b).forEach(d=>{const a=al[d]||'';
-   if(g&&g.a===a&&d===g.ds[g.ds.length-1]+1&&g.ds.length<3)g.ds.push(d);else out.push(g={p,a,ds:[d],mi:0,ni:0});});});
+  Object.keys(e).map(Number).map(d=>({d,x:d+(/^M-OT/i.test(e[d])?1:0)})).sort((a,b)=>a.x-b.x||a.d-b.d).forEach(({d,x})=>{const a=al[d]||'';
+   if(g&&g.a===a&&x===g.ds[g.ds.length-1]+1&&g.ds.length<3)g.ds.push(x);else out.push(g={p,a,ds:[x],mi:0,ni:0});});});
  return out;
 }
 function wdOf(s){const {u}=cur(),e=ENT[s.p.noInduk]||{},cfg={...DC,...(SPD.cfg||{})};
  const xs=s.ds.map(d=>{const pc=parseCode(u,e[d]),k=pc&&kodeU(u).find(x=>x.kode===pc.k);if(!k||!isOTd(k.kode))return null;const st=k.jam||0;return [`${hh(st)} s/d ${hh(st+pc.h)} WIT`,`${pc.h} jam`];});
  return xs.every(x=>x&&x.join()===xs[0].join())?xs[0]:[cfg.waktu,cfg.durasi];}
 function spModel(s){
- const {y,m,u}=cur(),pj=SPD.pejabat||{},cfg={...DC,...(SPD.cfg||{})},dc=/^dcc\s+/i.test(u),core=u.replace(/^dcc\s+(up3\s+)?/i,''),
-  ul=pj.label||(dc?'DCC UP3 '+tc(core):u),up=dc?'UP3 '+tc(core):u,M=(pj.mengetahui||[])[s.mi]||{},N=(pj.menugaskan||[])[s.ni]||{},
-  jab=j=>{j=j||'';const i=j.toLowerCase().indexOf(up.toLowerCase());return i>=0?[[j.slice(0,i),0],[j.slice(i,i+up.length),1],[j.slice(i+up.length),0]]:[[j+' ',0],[up,1]];},
-  d0=new Date(y,m-1,s.ds[0]),dN=new Date(y,m-1,s.ds[s.ds.length-1]),wd=wdOf(s);
- return {form:cfg.form,kepada:cfg.kepada,nama:s.p.nama,tgl:fTgl(new Date(y,m-1,s.ds[0]-1)),
-  para:[['Menunjuk Perjanjian Pemborongan Operator Command Center dan Operator DCC UIW Papua dan Papua Barat Nomor : Pihak Pertama ',0],[cfg.p1,0,1],[', Pihak Kedua ',0],[cfg.p2,0,1],[' dan sehubungan dengan adanya operator yang sedang ',0],[s.a||'[alasan lembur belum diisi]',1],[', maka operator ',0],[ul,1],[' atas nama :',0]],
-  items:[['Hari, Tgl. mulai',[[fTgl(d0)+(s.ds.length>1?' s/d '+fTgl(dN):''),1]]],['Waktu mulai s/d',[[wd[0],0]]],['Durasi',[[wd[1],0]]],['Untuk Kegiatan',[[cfg.kegiatan,0]]]],
-  mn:M.nama||'………………',mj:jab(M.jabatan),nn:N.nama||'………………',nj:jab(N.jabatan),tmb:(pj.tembusan&&pj.tembusan.length)?pj.tembusan:cfg.tembusan};
+ const {y,m,u}=cur(),pj=SPD.pejabat||{},cfg={...DC,...(SPD.cfg||{})},M=(pj.mengetahui||[])[s.mi]||{},N=(pj.menugaskan||[])[s.ni]||{},
+  jab=x=>x.jabatan?[[x.jabatan+' ',0],[x.ut||'',1]]:[['',0]],
+  d0=new Date(y,m-1,s.ds[0]),dN=new Date(y,m-1,s.ds[s.ds.length-1]);
+ return {form:cfg.form,kepada:cfg.kepada,nama:s.p.nama,tgl:fTgl(new Date(y,m-1,s.ds[0]-7)),   // tanggal surat = H-7 dari tanggal mulai (sesuai template SPKL)
+  para:[['Menunjuk Perjanjian Pemborongan Operator Command Center dan Operator DCC UIW Papua dan Papua Barat Nomor : Pihak Pertama ',0],[cfg.p1,0,1],[', Pihak Kedua ',0],[cfg.p2,0,1],[' dan sehubungan dengan adanya ',0],[alsTxt(s.a),1],[', maka operator ',0],[s.p.jabatan||pj.label||u,1],[' atas nama :',0]],
+  items:[['Hari, Tgl. mulai',[[fTgl(d0)+(s.ds.length>1?' s/d '+fTgl(dN):''),1]]],['Waktu mulai s/d',[[cfg.waktu,0]]],['Durasi',[[cfg.durasi,0]]],['Untuk Kegiatan',[[cfg.kegiatan,0]]]],
+  mn:M.nama||'………………',mj:jab(M),nn:N.nama||'………………',nj:jab(N),tmb:(pj.tembusan&&pj.tembusan.length)?pj.tembusan:cfg.tembusan};
 }
 const sg=a=>a.map(([t,r,b,i,uu])=>{t=esc(t);if(b)t=`<b>${t}</b>`;if(i)t=`<i>${t}</i>`;if(uu)t=`<u>${t}</u>`;return r?`<span class="rd">${t}</span>`:t;}).join('');
 function spHtml(s,br){const M=spModel(s);
@@ -529,18 +534,22 @@ async function openSpkl(){
  const {y,m,u}=cur();if(!LIST.length)return toast('Tidak ada petugas untuk unit ini');
  try{SPD=await run('getSpklData',y,m,u);}catch(e){return alert('Gagal memuat data SPKL (pastikan code GS terbaru sudah di-deploy ulang, versi baru):\n'+e);}
  SPL=buildSpkl();if(!SPL.length)return toast('Belum ada data lembur untuk filter ini',3500);
- SPI=0;show('sp');paintSp();
+ SPI=0;SPZ=null;show('sp');paintSp();
 }
 function paintSp(){
- const s=SPL[SPI],pj=SPD.pejabat||{},opt=(a,i)=>(a||[]).map((x,k)=>`<option value="${k}"${k===i?' selected':''}>${esc(x.nama)} — ${esc(x.jabatan)}${x.bk?' (backup)':''}</option>`).join('')||'<option>(kosong)</option>';
+ const s=SPL[SPI],pj=SPD.pejabat||{},opt=(a,i)=>(a||[]).map((x,k)=>`<option value="${k}"${k===i?' selected':''}>${x.nama?esc(x.nama):'(kosong)'} — ${esc((x.jabatan||'')+' '+(x.ut||''))}${x.bk?' (backup)':''}</option>`).join('')||'<option>(kosong)</option>';
  $('spT').textContent=`Preview SPKL — Lembar ${SPI+1} / ${SPL.length} — ${s.p.nama}`;
  $('spM').innerHTML=opt(pj.mengetahui,s.mi);$('spN').innerHTML=opt(pj.menugaskan,s.ni);
- $('spW').textContent=(pj.mengetahui||[]).length&&(pj.menugaskan||[]).length?'':'⚠ Pejabat unit ini tidak terbaca dari sheet ttd_pejabat';
- $('spPg').innerHTML=spHtml(s);const pg=$('spPg').firstChild;pg.style.zoom=Math.min(1,(innerHeight-250)/1123,(innerWidth-70)/794);
+ {const M=(pj.mengetahui||[])[s.mi],N=(pj.menugaskan||[])[s.ni];$('spW').textContent=(M&&M.nama&&N&&N.nama)?'':'⚠ Asman/TL unit ini kosong di ttd_pejabat — pilih backup dari dropdown'+(pj.error?' ('+pj.error+')':'');}
+ const z=spZ();$('spPg').innerHTML=`<div class="spf" style="width:${Math.round(794*z)}px;height:${Math.round(1123*z)}px"><iframe title="Lembar A4" style="width:794px;height:1123px;transform:scale(${z});transform-origin:0 0" srcdoc="${esc(spDoc(spHtml(s)))}"></iframe></div>`;
  const miss=SPL.filter(x=>!x.a).length;
  $('spInfo').textContent=`${SPL.length} lembar${miss?` · ⚠ ${miss} lembar belum ada Alasan Lembur`:''}`;
  $('spP').disabled=SPI===0;$('spNx').disabled=SPI===SPL.length-1;
 }
+$('spZo').onclick=()=>{SPZ=Math.max(.3,spZ()-.1);paintSp();};$('spZi').onclick=()=>{SPZ=Math.min(1.6,spZ()+.1);paintSp();};$('spZf').onclick=()=>{SPZ=null;paintSp();};
+window.addEventListener('resize',()=>{if(isOpen('sp')&&!SPZ)paintSp();});
+$('spPr').onclick=()=>{const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+ f.srcdoc=spDoc(SPL.map((s,i)=>spHtml(s,i<SPL.length-1)).join(''),1);f.onload=()=>{f.contentWindow.focus();f.contentWindow.print();setTimeout(()=>f.remove(),60000);};document.body.appendChild(f);};
 $('bSp').onclick=openSpkl;$('spX').onclick=()=>hide('sp');
 $('spP').onclick=()=>{if(SPI>0){SPI--;paintSp();}};$('spNx').onclick=()=>{if(SPI<SPL.length-1){SPI++;paintSp();}};
 $('spM').onchange=()=>{SPL[SPI].mi=+$('spM').value;paintSp();};$('spN').onchange=()=>{SPL[SPI].ni=+$('spN').value;paintSp();};
@@ -552,7 +561,7 @@ $('spDoc').onclick=()=>{const body=SPL.map((s,i)=>spHtml(s,i<SPL.length-1)).join
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff',html],{type:'application/msword'}));a.download=spName('doc');a.click();};
 
 async function xlsSpkl(){
- const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('SPKL',{pageSetup:{paperSize:9,orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});
+ const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('SPKL',{pageSetup:{paperSize:9,orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});ws.views=[{showGridLines:false}];
  [4,22,3,20,20,20].forEach((w,i)=>ws.getColumn(i+1).width=w);
  const RED='FFE00000',thin={style:'thin'},med={style:'medium'};
  const rt=a=>({richText:a.map(([t,r,b,i,uu])=>({text:t,font:{name:'Calibri',size:11,bold:!!b,italic:!!i,underline:!!uu,color:{argb:r?RED:'FF000000'}}}))});
