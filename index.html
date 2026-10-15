@@ -786,6 +786,18 @@ const anyForm=()=>isOpen('modal')||isOpen('mA');
 const menuBtns=on=>['bAbs','bStart','bRk'].forEach(i=>{$(i).hidden=!on;$(i).disabled=!on;});
 const LOCK_PAST=false;   // true = tanggal sebelum hari ini terkunci (tidak bisa input/revisi) · false = backdate diperbolehkan
 const pastLocked=(y,m,d)=>{if(!LOCK_PAST)return false;const t=new Date();return new Date(y,m-1,d)<new Date(t.getFullYear(),t.getMonth(),t.getDate());};
+function popWarn(id,icon,title,body){
+ if(document.getElementById(id))return;
+ const o=document.createElement('div');o.id=id;o.setAttribute('role','alertdialog');
+ o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:16px';
+ o.innerHTML='<div style=&quot;background:#fff;color:#222;max-width:380px;width:100%;border-radius:14px;padding:22px 20px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4);font-family:system-ui,sans-serif&quot;><div style=&quot;font-size:34px&quot;>'+icon+'</div>'+(title?'<div style=&quot;font-size:17px;font-weight:700;color:#c0392b;margin:6px 0&quot;>'+title+'</div>':'')+'<div style=&quot;font-size:14px;line-height:1.5;margin-top:6px&quot;>'+body+'</div><button type=&quot;button&quot; style=&quot;margin-top:16px;padding:9px 28px;border:0;border-radius:8px;background:#c0392b;color:#fff;font-size:14px;font-weight:600;cursor:pointer&quot;>Mengerti</button></div>';
+ const c=()=>{o.remove();document.removeEventListener('keydown',k)};
+ const k=e=>{if(e.key==='Escape')c()};document.addEventListener('keydown',k);
+ o.onclick=e=>{if(e.target===o||e.target.tagName==='BUTTON')c()};
+ document.body.appendChild(o);o.querySelector('button').focus();
+}
+function warnLock(){popWarn('lockWarn','\uD83D\uDD12','Tanggal Terkunci','Tidak diijinkan melakukan penginputan mundur.<br>Hubungi <b>Adm. Command Center - Scada PPB</b><br>untuk melakukan perubahan.')}
+function warnSkip(){popWarn('skipWarn','\u26A0\uFE0F','','<b>Jika melangkahi hari silahkan buat pengajuan berbeda</b>')}
 const periodLocked=(y,m)=>LOCK_PAST&amp;&amp;new Date(y,m,0)<new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());
 const LOCKNOTE=LOCK_PAST?' · <b style=&quot;color:#d33&quot;>Tanggal sebelum hari ini terkunci</b>':'';
 const toast=(t,ms=2500)=>{const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms);};
@@ -969,7 +981,7 @@ function paintTot(no){const {u}=cur();let t=0;Object.values(DRAFT[no]||{}).forEa
  const c=$('frm').querySelector(`td.j[data-n=&quot;${CSS.escape(no)}&quot;]`);if(c)c.textContent=t||'';}
 function openForm(){
  const {y,m,u}=cur();if(!LIST.length)return;
- if(periodLocked(y,m))return toast('Periode '+BLN[m-1]+' '+y+' sudah lewat — terkunci, tidak bisa input / revisi',4000);const n=days(y,m);
+ if(periodLocked(y,m))return warnLock();const n=days(y,m);
  DRAFT={};Object.keys(ENT).forEach(no=>DRAFT[no]={...ENT[no]});DRAFTA={};Object.keys(ALS).forEach(no=>DRAFTA[no]={...ALS[no]});DIRTY=false;SEL=null;
  const rev=Object.values(ENT).some(o=>Object.keys(o).length);
  $('mt').textContent=`${rev?'Revisi':'Input'} Rekap Lembur — ${u} — ${BLN[m-1]} ${y}`;
@@ -1006,7 +1018,7 @@ function loadEditor(){
 }
 function setCell(val){
  const td=SEL;if(!td)return;const no=td.dataset.n,d=+td.dataset.d;
- {const {y,m}=cur();if(pastLocked(y,m,d)){toast('Tanggal lampau terkunci, tidak dapat diubah');return;}}
+ {const {y,m}=cur();if(pastLocked(y,m,d)){warnLock();return;}}
  DRAFT[no]=DRAFT[no]||{};if(val)DRAFT[no][d]=val;else{delete DRAFT[no][d];if(DRAFTA[no])delete DRAFTA[no][d];}
  DIRTY=true;paintCell(td);paintTot(no);showDet();paintSync();
 }
@@ -1032,7 +1044,7 @@ function showDet(){
  $('det').innerHTML=`<b>${esc(p.nama)}</b> · tgl ${d} · Kode <b>${esc(v)}</b><br>Tipe Lembur : <b>${esc(k.tipe)}</b><br>Jam Masuk : <b>${fmtDT(y,m,day,st)}</b> · Jam Keluar : <b>${fmtDT(y,m,day,st+dur)}</b> · Durasi : <b>${fmtD(dur)}</b>`;
 }
 $('frm').onfocusin=e=>{const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(td)selCell(td);};
-$('frm').onclick=e=>{const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(td&amp;&amp;td!==SEL)selCell(td);};
+$('frm').onclick=e=>{const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(td){const c=cur();if(pastLocked(c.y,c.m,+td.dataset.d))warnLock();}if(td&amp;&amp;td!==SEL)selCell(td);};
 $('frm').onkeydown=e=>{
  const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(!td)return;
  const mv={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
@@ -1521,7 +1533,7 @@ function paintTotA(no){let t=0;Object.values(DRAFTB[no]||{}).forEach(v=>{t+=hadi
  const c=$('afrm').querySelector(`td.j[data-n=&quot;${CSS.escape(no)}&quot;]`);if(c)c.textContent=t||'';}
 function openFormA(){
  const {y,m,u}=curA();if(!LISTA.length)return;
- if(periodLocked(y,m))return toast('Periode '+BLN[m-1]+' '+y+' sudah lewat — terkunci, tidak bisa input / revisi',4000);const n=days(y,m);
+ if(periodLocked(y,m))return warnLock();const n=days(y,m);
  DRAFTB={};Object.keys(ENTA).forEach(no=>DRAFTB[no]={...ENTA[no]});DRAFTK={};Object.keys(KETA).forEach(no=>DRAFTK[no]={...KETA[no]});DIRTY=false;SELA=null;
  const rev=Object.values(ENTA).some(o=>Object.keys(o).length);
  $('amt').textContent=`${rev?'Revisi':'Input'} Absensi — ${u} — ${BLN[m-1]} ${y}`;
@@ -1558,7 +1570,7 @@ function loadEditorA(){
 }
 function setCellA(val,ket){
  const td=SELA;if(!td)return;const no=td.dataset.n,d=+td.dataset.d;
- {const {y,m}=curA();if(pastLocked(y,m,d)){toast('Tanggal lampau terkunci, tidak dapat diubah');return;}}
+ {const {y,m}=curA();if(pastLocked(y,m,d)){warnLock();return;}}
  DRAFTB[no]=DRAFTB[no]||{};DRAFTK[no]=DRAFTK[no]||{};
  if(val){DRAFTB[no][d]=val;if(val==='Skt'){if(ket)DRAFTK[no][d]=ket;else delete DRAFTK[no][d];}else delete DRAFTK[no][d];}
  else{delete DRAFTB[no][d];delete DRAFTK[no][d];}
@@ -1592,7 +1604,7 @@ $('aeAdd').onclick=()=>{if($('aeAdd').disabled)return;PENDA=true;loadEditorA();c
 $('aeDel').onclick=()=>{if(!SELA)return;setCellA('');REA=false;PENDA=false;loadEditorA();SELA.focus();};
 $('aeKet').onchange=()=>setCellA('Skt',$('aeKet').value);
 $('afrm').onfocusin=e=>{const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(td)selCellA(td);};
-$('afrm').onclick=e=>{const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(!td)return;if(td!==SELA)selCellA(td);else{REA=!!((DRAFTB[td.dataset.n]||{})[+td.dataset.d]);loadEditorA();}};   // klik sel terisi (dipilih kembali) -> Tambah Shift aktif
+$('afrm').onclick=e=>{const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(!td)return;{const c=curA();if(pastLocked(c.y,c.m,+td.dataset.d))warnLock();}if(td!==SELA)selCellA(td);else{REA=!!((DRAFTB[td.dataset.n]||{})[+td.dataset.d]);loadEditorA();}};   // klik sel terisi (dipilih kembali) -> Tambah Shift aktif
 $('afrm').onkeydown=e=>{
  const td=e.target.closest&amp;&amp;e.target.closest('td[data-d]');if(!td)return;
  const mv={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
@@ -2220,6 +2232,18 @@ const now=new Date();
 const LOCK_PAST=false;
 const today0=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
 const isPast=k=>LOCK_PAST&amp;&amp;dt(k)<today0();
+function popWarn(id,icon,title,body){
+ if(document.getElementById(id))return;
+ const o=document.createElement('div');o.id=id;o.setAttribute('role','alertdialog');
+ o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:16px';
+ o.innerHTML='<div style=&quot;background:#fff;color:#222;max-width:380px;width:100%;border-radius:14px;padding:22px 20px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4);font-family:system-ui,sans-serif&quot;><div style=&quot;font-size:34px&quot;>'+icon+'</div>'+(title?'<div style=&quot;font-size:17px;font-weight:700;color:#c0392b;margin:6px 0&quot;>'+title+'</div>':'')+'<div style=&quot;font-size:14px;line-height:1.5;margin-top:6px&quot;>'+body+'</div><button type=&quot;button&quot; style=&quot;margin-top:16px;padding:9px 28px;border:0;border-radius:8px;background:#c0392b;color:#fff;font-size:14px;font-weight:600;cursor:pointer&quot;>Mengerti</button></div>';
+ const c=()=>{o.remove();document.removeEventListener('keydown',k)};
+ const k=e=>{if(e.key==='Escape')c()};document.addEventListener('keydown',k);
+ o.onclick=e=>{if(e.target===o||e.target.tagName==='BUTTON')c()};
+ document.body.appendChild(o);o.querySelector('button').focus();
+}
+function warnLock(){popWarn('lockWarn','\uD83D\uDD12','Tanggal Terkunci','Tidak diijinkan melakukan penginputan mundur.<br>Hubungi <b>Adm. Command Center - Scada PPB</b><br>untuk melakukan perubahan.')}
+function warnSkip(){popWarn('skipWarn','\u26A0\uFE0F','','<b>Jika melangkahi hari silahkan buat pengajuan berbeda</b>')}
 const S={sel:new Set(),view:{y:now.getFullYear(),m:now.getMonth()},people:[],ttd:[],ket:[],remote:[],local:lsGet('cuti_rekap_v1',[]),p:null,ev:[],demo:false,fUnit:'',charts:{}};
 
 /* ================== DATA SHEET ================== */
@@ -2456,25 +2480,39 @@ function renderCal(){
   $('#tot').style.setProperty('--p',Math.min(100,S.sel.size/Math.max(1,limit())*100));
   const rg=ranges();$('#lama').innerHTML=rg.length?`<b>Lamanya cuti:</b> ${rg.map(esc).join(', ')}<br><b>Jumlah:</b> ${S.sel.size} hari${isCal()?' kalender':''}`:(isCal()?esc(rule().name)+': klik <b>tanggal awal</b> pada kalender, '+rule().q+' hari kalender dihitung otomatis. Klik tanggal lain untuk mengganti tanggal awal, atau klik tanggal awal sekali lagi untuk membatalkan.':'Lamanya cuti: belum ada tanggal dipilih. Klik tanggal pada kalender untuk memilih / membatalkan.');
 }
+/* Pilihan tanggal harus berurutan: hari yang dilangkahi harus hari yang memang tidak bisa dipilih (akhir pekan/libur untuk nonshift, hari lock shift, tanggal lampau terkunci). */
+function gapBlocked(k,t){
+  if(isPast(k))return true;
+  if(isCal())return false;
+  const d=dt(k);
+  if(!shift()){const w=d.getDay();return w==0||w==6||!!hday(k)}
+  const u=new Set(t);u.add(k);return !validShift(u);
+}
+function gapOk(t){
+  const a=[...t].sort();
+  for(let i=0;i<a.length-1;i++)for(let x=add(dt(a[i]),1);iso(x)<a[i+1];x=add(x,1))if(!gapBlocked(iso(x),t))return false;
+  return true;
+}
 function trySel(d,quiet){
   const k=iso(d),st=status(d);
-  if(st=='past'){if(!quiet)toast('Tanggal sebelum hari ini terkunci dan tidak bisa dipilih.');return false}
+  if(st=='past'){if(!quiet)warnLock();return false}
   if(st=='lock'){if(!quiet)toast('Shift: maksimal 6 hari berturut-turut, lalu 2 hari berikutnya tidak bisa dipilih.');return false}
   if(st=='off'){if(!quiet)toast('Nonshift: Sabtu, Minggu, libur nasional, cuti bersama, dan libur fakultatif tidak bisa dipilih.');return false}
   if(S.sel.size>=limit()){if(!quiet)toast(`Maksimal ${limit()} hari cuti.`);return false}
+  {const t=new Set(S.sel);t.add(k);if(!gapOk(t)){if(!quiet)warnSkip();return false}}
   S.sel.add(k);return true;
 }
 $('#cal').addEventListener('click',e=>{
   const c=e.target.closest('.day');if(!c||c.classList.contains('oth'))return;
   const k=c.dataset.k;
   if(isCal()){
-    if(isPast(k)){toast('Tanggal sebelum hari ini terkunci dan tidak bisa dipilih.');return}
+    if(isPast(k)){warnLock();return}
     const R=rule(),MLH=R.q;
     if(R.g&amp;&amp;(!S.p||S.p.gender!=R.g)){toast(R.name+' hanya untuk petugas '+(R.g=='P'?'perempuan':'laki-laki')+'.');return}
     if(S.sel.size&amp;&amp;[...S.sel].sort()[0]==k){S.sel.clear();renderCal();return}
     S.sel.clear();const d0=dt(k);for(let i=0;i<MLH;i++)S.sel.add(iso(add(d0,i)));
     renderCal();toast(R.name+': '+MLH+' hari kalender, '+fmt(k)+' s/d '+fmt(iso(add(d0,MLH-1)))+'.');return}
-  if(S.sel.has(k))S.sel.delete(k);else if(!trySel(dt(k)))return;
+  if(S.sel.has(k)){const t=new Set(S.sel);t.delete(k);if(!gapOk(t)){warnSkip();return}S.sel.delete(k)}else if(!trySel(dt(k)))return;
   renderCal();
 });
 function ranges(){
@@ -2554,7 +2592,7 @@ function buildRec(){
   if(ketUsed(rule())){toast(rule().name+' sudah pernah diajukan oleh petugas ini; jatah berlaku per pengajuan.');return null}
   if(needEv()&amp;&amp;!S.ev.length){toast('Upload eviden terlebih dahulu untuk '+rule().name+'.');return null}
   if(!S.sel.size){toast('Pilih minimal satu tanggal cuti pada kalender.');return null}
-  if(LOCK_PAST&amp;&amp;[...S.sel].some(isPast)){S.sel.clear();renderCal();toast('Ada tanggal yang sudah lewat dan terkunci. Pilih ulang tanggal cuti.');return null}
+  if(LOCK_PAST&amp;&amp;[...S.sel].some(isPast)){S.sel.clear();renderCal();warnLock();return null}
   const tgl=iso(new Date()),dates=[...S.sel].sort(),jumlah=dates.length,tah=isTahunan(),u=used(S.p,dt(dates[0]).getFullYear());
   return{id:Date.now(),nomor:'',nama:S.p.nama,noinduk:S.p.noinduk,jabatan:S.p.jabatan,divisi:S.p.divisi,unit:S.p.unit,pola:$('#fPola').value,ket:$('#fKet').value,dates,mulai:dates[0],selesai:dates[dates.length-1],jumlah,lamanya:lam({mulai:dates[0],selesai:dates[dates.length-1]}),tglAjuan:tgl,sisa:Math.max(0,JATAH-u-(tah?jumlah:0)),ttd:ttdFor(S.p),ev:S.ev.slice()};
 }
