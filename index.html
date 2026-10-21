@@ -97,7 +97,7 @@ h3{margin:0 0 10px;font-size:16px}
 const SHEET_ID = '1NnW0HlZVAovqO3tOvhVPNl-bGrY3UrKuYT1iuTraT5U';
 const MASTER_GID = '0';            // tab alur verifikasi (data_verifikasi)
 const DATA_SHEET = 'data_berkas';  // tab baru untuk ceklis berkas
-const API_URL = '';                // tempel URL Web App Apps Script di sini
+const API_URL = 'https://script.google.com/macros/s/AKfycbyjOyAqz2WAIIpGqzmm2zINxbtMLR99CuSxvzm2wsXO57DCnw0-SSul6H_rTPjbWkqv/exec'; // URL Web App Apps Script
 /* ====================== */
 
 const $ = id => document.getElementById(id);
@@ -212,7 +212,7 @@ function render() {
 /* ---- pop up alur progres ---- */
 function renderModal() {
   const P = shown[cur]; if (!P) return;
-  const a = analyze(P, S.periode), ro = !API_URL;
+  const a = analyze(P, S.periode);
   $('mT').textContent = P.name;
   $('mS').textContent = P.bidang + ' · Periode ' + new Date(S.periode + '-01T00:00:00').toLocaleDateString('id-ID', {month:'long', year:'numeric'});
   const keep = $('mB').scrollTop;
@@ -222,8 +222,8 @@ function renderModal() {
       s.us.map(({u, r}) => {
         const at = `data-s="${s.urutan}" data-u="${esc(u)}"`;
         return `<div class="u"><div class="un">${esc(u)}</div>
-        <div class="f"><label class="ck"><input type="checkbox" data-a="masuk" ${at} ${r.masuk ? 'checked' : ''} ${ro || !s.open || r.selesai ? 'disabled' : ''}>Berkas Masuk</label><input type="date" data-a="tm" ${at} value="${r.tm}" ${ro || !r.masuk || r.selesai ? 'disabled' : ''}></div>
-        <div class="f"><label class="ck"><input type="checkbox" data-a="selesai" ${at} ${r.selesai ? 'checked' : ''} ${ro || !r.masuk || later ? 'disabled' : ''}>Selesai Verifikasi</label><input type="date" data-a="ts" ${at} value="${r.ts}" ${ro || !r.selesai || later ? 'disabled' : ''}></div></div>`;
+        <div class="f"><label class="ck"><input type="checkbox" data-a="masuk" ${at} ${r.masuk ? 'checked' : ''} ${!s.open || r.selesai ? 'disabled' : ''}>Berkas Masuk</label><input type="date" data-a="tm" ${at} value="${r.tm}" ${!r.masuk || r.selesai ? 'disabled' : ''}></div>
+        <div class="f"><label class="ck"><input type="checkbox" data-a="selesai" ${at} ${r.selesai ? 'checked' : ''} ${!r.masuk || later ? 'disabled' : ''}>Selesai Verifikasi</label><input type="date" data-a="ts" ${at} value="${r.ts}" ${!r.selesai || later ? 'disabled' : ''}></div></div>`;
       }).join('') + '</section>';
   }).join('');
   $('mB').scrollTop = keep;
@@ -244,6 +244,7 @@ async function save(P, s, u, r) {
 
 $('mB').addEventListener('change', e => {
   const t = e.target, a = t.dataset.a; if (!a) return;
+  if (!API_URL) { toast('API_URL belum diisi di index.html'); renderModal(); return; }
   const P = shown[cur], s = +t.dataset.s, u = t.dataset.u, r = {...rec(P.name, S.periode, s, u)};
   if (a === 'masuk') { r.masuk = t.checked; r.tm = t.checked ? (r.tm || today()) : ''; }
   else if (a === 'selesai') { r.selesai = t.checked; r.ts = t.checked ? (r.ts || today()) : ''; }
