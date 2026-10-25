@@ -2260,8 +2260,18 @@ function ppClose(P){
  ppTbl(P,s,0.5,1.5,12.33,["Prioritas","Tindak Lanjut","Fokus / Unit","Indikator Keberhasilan"],pr.map(function(r){return[{text:r[0],options:{bold:true,align:"center",color:"FFFFFF",fill:{color:PP.sc[7]}}},ppT(r[1],240),ppT(r[2],70),ppT(r[3],80)]}),{colW:[0.9,6.4,2.5,2.53],left:[1,2,3],fs:11,rh:0.78})}
 
 /* ---------- pembangun utama ---------- */
-function ppBuild(all,f,x){
- if(!window.PptxGenJS)throw new Error("Pustaka PptxGenJS belum termuat. Pastikan perangkat terhubung ke internet lalu muat ulang halaman.");
+var PP_LIBS=["https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js","https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js","https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js","https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"];
+function ppLoadLib(){
+ if(window.PptxGenJS)return Promise.resolve();
+ var tryLoad=function(i){
+  if(i>=PP_LIBS.length)return Promise.reject(new Error("Pustaka PptxGenJS gagal dimuat dari semua sumber CDN (jsdelivr, cdnjs, unpkg). Periksa koneksi/firewall yang memblokir CDN tersebut, lalu coba lagi."));
+  return new Promise(function(res){
+   var el=document.createElement("script"),done=false,fin=function(ok){if(done)return;done=true;clearTimeout(t);if(!ok&&el.parentNode)el.parentNode.removeChild(el);res(ok&&!!window.PptxGenJS)},t=setTimeout(function(){fin(false)},20000);
+   el.src=PP_LIBS[i];el.async=true;el.onload=function(){fin(true)};el.onerror=function(){fin(false)};document.head.appendChild(el)
+  }).then(function(ok){return ok?undefined:tryLoad(i+1)})};
+ return tryLoad(0)}
+function ppBuild(all,f,x){return ppLoadLib().then(function(){return ppBuild2(all,f,x)})}
+function ppBuild2(all,f,x){
  var pres=new window.PptxGenJS();pres.layout="LAYOUT_WIDE";pres.author="PLN Nusa Daya UID Suluttenggo";pres.company="PLN Nusa Daya";pres.title="Pemaparan Evaluasi Sistem Distribusi 20kV "+ppPer(f);
  var E=all.filter(function(e){return ppMatch(e,f,x)}),dt=Nl(E),
   P={pres:pres,n:0,f:f,x:x,all:all,E:E,dt:dt,k:{},secPage:{},flt:ppFilterTxt(f,x),today:new Date().toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}),tren:ppTrenPlan(all,f)};
