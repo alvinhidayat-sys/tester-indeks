@@ -1274,24 +1274,43 @@ function fgRun(entries,f){
  return{kept:kept,dups:dups,exB:exB,exS:exS,exU:exU,cand:cand}
 }
 
-/* --- model tabel: ULP -> feeder -> zona / PMT --- */
+/* --- tata letak baku tabel A (penyulang / PMT) dan B (recloser / GH) per ULP, mengikuti lampiran laporan --- */
+var FG_LAYOUT=[
+ {ulp:"TOMOHON",A:["PMT_SM_1 - LAHENDONG","PMT_SM_2 - TARATARA","PMT_SM_3 - BUKIT INSPIRASI","PMT_SM_6 - KANTOR UP2B"],B:["GH_KAKASKASEN - JUR KAYAWU","GH_KAKASKASEN - JUR WAREMBUNGAN","REC_PINARAS"]},
+ {ulp:"TONDANO",A:["PMT_SM_4 - UNIMA","PMT_SM_5 - TATAARAN","PMT_SS_1 - TANGGARI","PMT_SS_2 - KOMBI","PMT_SS_4 - TONDANO"],B:["GH_LUAAN - JUR DALAM KOTA","GH_LUAAN - JUR MAKAWEIMBENG","REC_LEWET","REC_RANOMERUT","REC_TOLIANG OKI","REC_TONSARU","REC_KULO"]},
+ {ulp:"RATAHAN",A:["PMT_SK_3 - RATAHAN","PMT_SK_7 - RATATOTOK"],B:["REC_LOBU","GH_RATAHAN - JUR BELANG","REC_NOONGAN","GH_RATAHAN - JUR TOMBATU","GH_TOMBATU - INC SP 2","GH_TOMBATU - JUR PEDALAMAN","REC_LAKBAN RATATOTOK","REC_MOLOMPAR","REC_LIWUTUNG","REC_RANOKETANG"]},
+ {ulp:"KAWANGKOAN",A:["PMT_SK_4 - BUKIT KASIH","PMT_SK_5 - LANGOAN"],B:["GH_KAWANGKOAN - JUR TARERAN","GH_KAWANGKOAN - SONDER","GH_LANGOAN - JUR ATEP","GH_LANGOAN - JUR KAKAS","REC_TUMPAAN 2","REC_BETZATA","REC_KAYUWATU"]},
+ {ulp:"AMURANG",A:["PMT_PU_1 - TENGA","PMT_PU_2 - KAPITU","PMT_PU_4 - PT SASA","PMT_SA_1 - MOKUPA","PMT_SA_2 - TAMBALA","PMT_SA_3 - TATELI","PMT_SP_2 - PONDANG","PMT_SP_3 - PT CARGIL","PMT_SP_4 - TUMPAAN"],B:["GH_AMURANG - JUR LOBU","GH_AMURANG - JUR TENGA","REC_MANGATASIK","REC_RANOWANGKO","REC_TAWAANG","REC_TURANGGA","REC_GUSNAR"]},
+ {ulp:"MOTOLING",A:["PMT_PU_3 - MOTOLING"],B:["REC_KAPITU","GH_MOTOLING - JUR RAANAN","GH_MOTOLING - JUR TOMPASO BARU","REC_SINGSINGON","REC_TAMBANG","REC_LINDANGAN"]}
+];
+var FG_LU={};FG_LAYOUT.forEach(function(l,i){FG_LU[l.ulp]=i});
+function fgEq(x){return String(x||"").toUpperCase().replace(/\s+/g," ").trim()}
+function fgLayIdx(u){var v=FG_LU[String(u||"").toUpperCase()];return v==null?-1:v}
+
+/* --- model tabel: ULP -> baris PMT (A) dan baris recloser / GH / LBS (B) --- */
 function fgBuild(entries,f,showZero){
- var R=fgRun(entries,f),names=fgNames(entries),zs={"1":1,"2":1,"3":1},G={};
- R.kept.forEach(function(r){zs[fgZ(r.e)]=1});
- var zones=Object.keys(zs).sort(function(a,b){if(a==="-")return 1;if(b==="-")return-1;return fgNat(a,b)});
- var grp=function(e){var k=[e.dcc,e.up3,e.ulp].join("|");return G[k]||(G[k]={key:k,dcc:e.dcc,up3:e.up3,ulp:e.ulp||"-",all:[],fd:{}})};
- var fdo=function(g,e){var fd=e.feeder&&e.feeder!=="-"?e.feeder:"-";return g.fd[fd]||(g.fd[fd]={feeder:fd,label:fd==="-"?"(tanpa penyulang)":fgFLabel(names,e.dcc,fd),all:[],zone:{},pmt:{},univ:{}})};
- if(showZero)entries.forEach(function(e){if(!e||!fgUnit(e,f))return;var g=grp(e),o=fdo(g,e);o.univ[e.pmt&&e.pmt!=="-"?e.pmt:"-"]=1});
- R.kept.forEach(function(r){var e=r.e,g=grp(e),o=fdo(g,e),z=fgZ(e),p=e.pmt&&e.pmt!=="-"?e.pmt:"-";g.all.push(r);o.all.push(r);(o.zone[z]=o.zone[z]||[]).push(r);(o.pmt[p]=o.pmt[p]||[]).push(r)});
- var groups=Object.keys(G).map(function(k){return G[k]}).filter(function(g){return g.all.length>0||showZero});
- groups.sort(function(a,b){return fgDccRank(a.dcc)-fgDccRank(b.dcc)||fgNat(a.up3,b.up3)||fgNat(a.ulp,b.ulp)});
- groups.forEach(function(g){
-  g.feeders=Object.keys(g.fd).map(function(k){return g.fd[k]}).filter(function(o){return o.all.length>0||showZero}).sort(function(a,b){return fgNat(a.feeder,b.feeder)});
-  g.feeders.forEach(function(o){var ks={};Object.keys(o.pmt).forEach(function(k){ks[k]=1});if(showZero)Object.keys(o.univ).forEach(function(k){ks[k]=1});o.pmts=Object.keys(ks).sort(function(a,b){return fgPmtRank(a)-fgPmtRank(b)||fgNat(a,b)}).map(function(p){return{pmt:p,all:o.pmt[p]||[]}})})
- });
- groups=groups.filter(function(g){return g.feeders.length>0});
+ var R=fgRun(entries,f),G={},has={};
+ var isA=function(e){return/^PMT/i.test(String(e.pmt||"").trim())};
+ var eqName=function(e){return e.pmt&&e.pmt!=="-"?String(e.pmt).trim():(e.feeder&&e.feeder!=="-"?e.feeder:"-")};
+ var grp=function(e){var L=fgLayIdx(e.ulp)>=0,dcc=L?"DCC Manado":e.dcc,up3=L?"MANADO":e.up3,k=[dcc,up3,e.ulp].join("|");return G[k]||(G[k]={key:k,dcc:dcc,up3:up3,ulp:e.ulp||"-",lay:fgLayIdx(e.ulp),all:[],A:{},B:{},uA:{},uB:{}})};
+ var put=function(T,e,r){var k=fgEq(eqName(e));(T[k]=T[k]||{name:eqName(e),all:[]});if(r)T[k].all.push(r)};
+ entries.forEach(function(e){if(!e)return;if(fgLayIdx(e.ulp)>=0&&fgMatch(e,f))has[String(e.ulp).toUpperCase()]=1;if(showZero&&fgUnit(e,f)){var g=grp(e);put(isA(e)?g.uA:g.uB,e,null)}});
+ R.kept.forEach(function(r){var e=r.e,g=grp(e);g.all.push(r);put(isA(e)?g.A:g.B,e,r)});
+ /* ULP baku selalu tampil lengkap (termasuk baris 0) bila ada data di periode & filter unit */
+ FG_LAYOUT.forEach(function(l){if(!has[l.ulp])return;var probe={dcc:"DCC Manado",up3:"MANADO",ulp:l.ulp};if(!ulpOk(f.ulp,l.ulp)||!(f.dcc===FG_ALL||f.dcc==="DCC Manado")||!(f.up3===FG_ALL||f.up3==="MANADO"))return;grp(probe)});
+ var natKeys=function(T,rank){return Object.keys(T).sort(function(a,b){return(rank?fgPmtRank(T[a].name)-fgPmtRank(T[b].name):0)||fgNat(T[a].name,T[b].name)})};
+ var rows=function(g,sec){
+  var T=g[sec],U=g["u"+sec],out=[],used={};
+  if(g.lay>=0)FG_LAYOUT[g.lay][sec].forEach(function(nm){var k=fgEq(nm);used[k]=1;out.push({name:nm,all:(T[k]&&T[k].all)||[]})});
+  var rest={};Object.keys(T).forEach(function(k){if(!used[k])rest[k]=T[k]});if(showZero)Object.keys(U).forEach(function(k){if(!used[k]&&!rest[k])rest[k]=U[k]});
+  natKeys(rest,sec==="B").forEach(function(k){if(g.lay>=0||showZero||rest[k].all.length>0)out.push({name:rest[k].name,all:rest[k].all||[]})});
+  return out};
+ var groups=Object.keys(G).map(function(k){return G[k]}).filter(function(g){return g.all.length>0||showZero||g.lay>=0});
+ groups.sort(function(a,b){var ra=a.lay<0?99:a.lay,rb=b.lay<0?99:b.lay;return ra-rb||fgDccRank(a.dcc)-fgDccRank(b.dcc)||fgNat(a.up3,b.up3)||fgNat(a.ulp,b.ulp)});
+ groups.forEach(function(g){g.rowsA=rows(g,"A");g.rowsB=rows(g,"B");g.allA=[];g.allB=[];g.rowsA.forEach(function(x){g.allA=g.allA.concat(x.all)});g.rowsB.forEach(function(x){g.allB=g.allB.concat(x.all)})});
+ groups=groups.filter(function(g){return g.rowsA.length+g.rowsB.length>0});
  var ups={};groups.forEach(function(g){ups[g.up3]=1});
- return{R:R,zones:zones,groups:groups,names:names,multiUp3:Object.keys(ups).length>1,total:R.kept.length}
+ return{R:R,groups:groups,multiUp3:Object.keys(ups).length>1,total:R.kept.length}
 }
 function fgSortRecs(recs){return recs.slice().sort(function(a,b){return fgDateNum(a.e)-fgDateNum(b.e)||String(fgJam(a.e)).localeCompare(fgJam(b.e))||a.i-b.i})}
 function fgNote(r,kind){
@@ -1377,7 +1396,7 @@ function fgTVal(tg,f,sec,g){var v=tg[fgTKey(f,sec,g)];return v===""||v==null||is
 function fgFile(f,kind){var p=(f.bulan!==FG_ALL?f.bulan:"Semua Bulan")+(f.tahun!==FG_ALL?"_"+f.tahun:"");return"Rekap_FGTM_"+kind+"_"+p.replace(/\s+/g,"_")+".xlsx"}
 
 function fgXlsxRekap(M,f,tg){
- var Z=M.zones,nz=Z.length,rows=[],merges=[],heights={},NC=Math.max(9,8+nz);
+ var rows=[],merges=[],heights={},NC=7;
  var S={
   title:{b:1,sz:12,u:1,h:"center",v:"center"},sec:{b:1,sz:11,v:"center"},
   th:{b:1,sz:10,fill:FG_PINK,bd:1,h:"center",v:"center",wrap:1},ti:{i:1,sz:9,fill:FG_PINK,bd:1,h:"center",v:"center"},
@@ -1392,62 +1411,39 @@ function fgXlsxRekap(M,f,tg){
  put(r,0,"PERIODE "+(f.bulan!==FG_ALL?"BULAN ":"")+per,S.title);mrg(r,0,r,NC-1,S.title);heights[r]=18;r++;
  r++;
  var unitTxt=function(g){return"ULP "+g.ulp+(M.multiUp3?"\nUP3 "+g.up3:"")};
- /* ---- A. per zona ---- */
- put(r,0,"A.  GANGGUAN PENYULANG (PER ZONA)",S.sec);r++;
+ var body=function(sec,rowsKey,allKey){
+  var sumR=0,sumT=0,anyT=false,no=0;
+  M.groups.forEach(function(g){
+   var list=g[rowsKey];if(!list.length)return;
+   no++;var r0=r,tv=fgTVal(tg,f,sec,g);
+   list.forEach(function(x){put(r,2,x.name,S.tl);put(r,3,"Kali",S.td);put(r,5,x.all.length?x.all.length:null,S.td);sumR+=x.all.length;for(var c=0;c<NC;c++)if(!rows[r][c])put(r,c,"",S.td);r++});
+   put(r0,0,no,S.td);put(r0,1,unitTxt(g),S.tu);put(r0,4,tv,S.td);put(r0,6,g[allKey].length,S.td);
+   if(r-1>r0){mrg(r0,0,r-1,0,S.td);mrg(r0,1,r-1,1,S.tu);mrg(r0,4,r-1,4,S.td);mrg(r0,6,r-1,6,S.td)}
+   if(tv!=null){sumT+=tv;anyT=true}
+  });
+  put(r,0,"JUMLAH",S.sum);mrg(r,0,r,3,S.sum);put(r,4,anyT?sumT:"",S.sum);put(r,5,sumR,S.sum);put(r,6,sumR,S.sum);r+=2;
+  return sumR};
+ /* ---- A. penyulang (PMT, zona 1) ---- */
+ put(r,0,"A.  GANGGUAN PENYULANG",S.sec);r++;
  var h0=r;
  put(h0,0,"NO",S.th);mrg(h0,0,h0+2,0,S.th);
  put(h0,1,"UNIT/ULP",S.th);mrg(h0,1,h0+2,1,S.th);
- put(h0,2,"PENYULANG",S.th);mrg(h0,2,h0+2,3,S.th);
- put(h0,4,"SATUAN",S.th);mrg(h0,4,h0+2,4,S.th);
- put(h0,5,"TARGET",S.th);mrg(h0,5,h0+2,5,S.th);
- put(h0,6,"GANGGUAN (KALI)",S.th);mrg(h0,6,h0,7+nz,S.th);
- put(h0+1,6,"REALISASI PER ZONA",S.th);mrg(h0+1,6,h0+1,5+nz,S.th);
- put(h0+1,6+nz,"REALISASI",S.th);mrg(h0+1,6+nz,h0+2,6+nz,S.th);
- put(h0+1,7+nz,"JUMLAH",S.th);mrg(h0+1,7+nz,h0+2,7+nz,S.th);
- Z.forEach(function(z,i){put(h0+2,6+i,fgZName(z),S.th)});
+ put(h0,2,"PENYULANG",S.th);mrg(h0,2,h0+2,2,S.th);
+ put(h0,3,"GANGGUAN (KALI)",S.th);mrg(h0,3,h0,6,S.th);
+ put(h0+1,3,"ZONA 1",S.th);mrg(h0+1,3,h0+1,6,S.th);
+ put(h0+2,3,"SATUAN",S.th);put(h0+2,4,"TARGET",S.th);put(h0+2,5,"REALISASI",S.th);put(h0+2,6,"JUMLAH",S.th);
  r=h0+3;
- var idx=[1,2,3,4,5];for(var i=0;i<nz;i++)idx.push(6);idx.push(7,8);
- put(r,0,1,S.ti);put(r,1,2,S.ti);put(r,2,3,S.ti);mrg(r,2,r,3,S.ti);put(r,4,4,S.ti);put(r,5,5,S.ti);
- mrg(r,6,r,5+nz,S.ti);put(r,6,6,S.ti);put(r,6+nz,7,S.ti);put(r,7+nz,8,S.ti);r++;
- var zsum={},sumReal=0,sumT=0,anyT=false,no=0;
- M.groups.forEach(function(g){
-  no++;var r0=r,n=g.feeders.length,tv=fgTVal(tg,f,"A",g);
-  g.feeders.forEach(function(o,fi){
-   put(r,2,o.label,S.tl);mrg(r,2,r,3,S.tl);put(r,4,"Kali",S.td);
-   Z.forEach(function(z,i){var c=(o.zone[z]||[]).length;put(r,6+i,c||null,S.td);zsum[z]=(zsum[z]||0)+c});
-   put(r,6+nz,o.all.length,S.td);sumReal+=o.all.length;
-   for(var c=0;c<=7+nz;c++)if(!rows[r][c])put(r,c,"",S.td);
-   r++
-  });
-  put(r0,0,no,S.td);put(r0,1,unitTxt(g),S.tu);put(r0,5,tv,S.td);put(r0,7+nz,g.all.length,S.td);
-  if(n>1){mrg(r0,0,r-1,0,S.td);mrg(r0,1,r-1,1,S.tu);mrg(r0,5,r-1,5,S.td);mrg(r0,7+nz,r-1,7+nz,S.td)}
-  if(tv!=null){sumT+=tv;anyT=true}
-  heights[r0]=n===1&&M.multiUp3?30:undefined
- });
- put(r,0,"JUMLAH",S.sum);mrg(r,0,r,3,S.sum);put(r,4,"",S.sum);put(r,5,anyT?sumT:"",S.sum);
- Z.forEach(function(z,i){put(r,6+i,zsum[z]||0,S.sum)});put(r,6+nz,sumReal,S.sum);put(r,7+nz,M.total,S.sum);r+=2;
- /* ---- B. per PMT ---- */
- put(r,0,"B.  GANGGUAN PMT / PERALATAN PER PENYULANG",S.sec);r++;
- var hb=r,hd=["NO","UNIT/ULP","PENYULANG","PMT / PERALATAN","SAT","TARGET","REALISASI","JUMLAH FEEDER","JUMLAH"];
- hd.forEach(function(t,i){put(hb,i,t,S.th)});heights[hb]=30;r++;
- for(var i=0;i<9;i++)put(r,i,i+1,S.ti);r++;
- var sumB=0,sumTB=0,anyTB=false;no=0;
- M.groups.forEach(function(g){
-  no++;var r0=r,tv=fgTVal(tg,f,"B",g);
-  g.feeders.forEach(function(o){
-   var f0=r;
-   o.pmts.forEach(function(p){put(r,3,p.pmt,S.tl);put(r,4,"Kali",S.td);put(r,6,p.all.length,S.td);sumB+=p.all.length;for(var c=0;c<9;c++)if(!rows[r][c])put(r,c,"",S.td);r++});
-   put(f0,2,o.label,S.tl);put(f0,7,o.all.length,S.td);
-   if(r-1>f0){mrg(f0,2,r-1,2,S.tl);mrg(f0,7,r-1,7,S.td)}
-  });
-  put(r0,0,no,S.td);put(r0,1,unitTxt(g),S.tu);put(r0,5,tv,S.td);put(r0,8,g.all.length,S.td);
-  if(r-1>r0){mrg(r0,0,r-1,0,S.td);mrg(r0,1,r-1,1,S.tu);mrg(r0,5,r-1,5,S.td);mrg(r0,8,r-1,8,S.td)}
-  if(tv!=null){sumTB+=tv;anyTB=true}
- });
- put(r,0,"JUMLAH",S.sum);mrg(r,0,r,4,S.sum);put(r,5,anyTB?sumTB:"",S.sum);put(r,6,sumB,S.sum);put(r,7,"",S.sum);put(r,8,M.total,S.sum);r+=2;
- var nt="Keterangan: semua padam trip dihitung (termasuk gangguan sesaat \u2264 5 menit). Tidak dihitung: gangguan binatang/pihak ke-3, sebab lain (masyarakat, aktivitas lingkungan sekitar, vandalisme), serta UFR / dari pembangkit. Jika dalam satu penyulang terdapat jam padam dan hari yang sama pada beberapa PMT (penormalan bertahap), hanya baris paling atas pada sumber data yang dihitung. Total yang dihitung: "+M.total+" kejadian. Dicetak: "+new Date().toLocaleString("id-ID")+".";
+ put(r,0,"",S.ti);put(r,1,1,S.ti);put(r,2,2,S.ti);put(r,3,3,S.ti);put(r,4,4,S.ti);put(r,5,5,S.ti);put(r,6,6,S.ti);r++;
+ var sa=body("A","rowsA","allA");
+ /* ---- B. recloser / GH ---- */
+ put(r,0,"B.  GANGGUAN RECLOSER",S.sec);r++;
+ var hb=r;
+ ["NO","UNIT/ULP","PENYULANG","SAT","TARGET","REALISASI","JUMLAH"].forEach(function(t,i){put(hb,i,t,S.th)});heights[hb]=30;r++;
+ put(r,0,"",S.ti);for(var i=1;i<7;i++)put(r,i,i,S.ti);r++;
+ var sb=body("B","rowsB","allB");
+ var nt="Keterangan: semua padam trip dihitung (termasuk gangguan sesaat \u2264 5 menit). Tidak dihitung: gangguan binatang/pihak ke-3, sebab lain (masyarakat, aktivitas lingkungan sekitar, vandalisme), serta UFR / dari pembangkit. Jika dalam satu penyulang terdapat jam padam dan hari yang sama pada beberapa PMT (penormalan bertahap), hanya baris paling atas pada sumber data yang dihitung. Tabel A memuat PMT penyulang (zona 1); tabel B memuat recloser, GH, dan LBS. Total yang dihitung: "+M.total+" kejadian (A: "+sa+", B: "+sb+"). Dicetak: "+new Date().toLocaleString("id-ID")+".";
  put(r,0,nt,S.note);mrg(r,0,r+1,NC-1,S.note);
- var cols=[6,22,18,34,8,9];for(var i=0;i<nz;i++)cols.push(11);while(cols.length<NC)cols.push(12);
+ var cols=[6,22,42,9,10,12,12];
  return{name:"Rekap FGTM",cols:cols,rows:rows,merges:merges,heights:heights,landscape:true}
 }
 var FG_HD=["No","Tanggal","Jam Padam","Jam Normal","Durasi (menit)","Unit DCC","UP3","ULP","Penyulang","PMT / Peralatan","Zona","Kelompok","Penyebab","Indikasi Relai","Keterangan"],FG_HW=[5,11,10,10,10,14,13,15,14,30,7,18,24,14,52];
@@ -1540,67 +1536,53 @@ function RekapFgtm(P){
  var upd=function(p){setAuto(false);setF(function(s){return Object.assign({},s,p)})},
  o=Ea.useMemo(function(){return trOpts(a,f)},[a,f.tahun,f.dcc,f.up3]),
  M=Ea.useMemo(function(){return fgBuild(a,f,showZero)},[a,f,showZero]),
- R=M.R,Z=M.zones,nz=Z.length,
+ R=M.R,
  setT=function(k,v){setTg(function(t){var n=Object.assign({},t);if(v===""||v==null)delete n[k];else n[k]=Number(v);fgSaveT(n);return n})},
  open=function(title,recs,sub){setDet({title:title,sub:sub,items:recs.map(function(r){return{r:r,k:""}})})},
  num=function(n,title,recs){return n?h("button",{type:"button",className:"fg-num",title:"Klik untuk melihat detail",onClick:function(){open(title,recs,fgPeriod(f))}},n):"0"},
  tgIn=function(sec,g){var k=fgTKey(f,sec,g),v=tg[k];return h("input",{type:"number",min:0,className:"fg-tg",placeholder:"-",value:v==null?"":v,"aria-label":"Target "+g.ulp,onChange:function(ev){setT(k,ev.target.value)}})},
  uCell=function(g){return h("td",{key:"u",className:"fg-u",rowSpan:g.__rs},"ULP "+g.ulp,M.multiUp3&&h("div",{className:"fg-up3"},"UP3 "+g.up3))},
  chip=function(lb,n,items,cls){return h("button",{type:"button",className:"fg-chip "+cls,disabled:!n,onClick:function(){setDet({title:lb,sub:fgPeriod(f),items:items})}},h("span",{className:"fg-chip-n"},n),h("span",null,lb))},
- allRecs=function(){return R.kept},
- /* ---- tabel A ---- */
- zsum={},sumR=0,sumT=0,anyT=false,tA=[];
- M.groups.forEach(function(g,gi){
-  var n=g.feeders.length,tv=tg[fgTKey(f,"A",g)];g.__rs=n;if(tv!=null){sumT+=tv;anyT=true}
-  g.feeders.forEach(function(fd,fi){
-   var c=[];
-   if(fi===0)c.push(h("td",{key:"n",rowSpan:n},gi+1),uCell(g));
-   c.push(h("td",{key:"p",className:"l"},fd.label),h("td",{key:"s"},"Kali"));
-   if(fi===0)c.push(h("td",{key:"t",rowSpan:n},tgIn("A",g)));
-   Z.forEach(function(z){var rs=fd.zone[z]||[];zsum[z]=(zsum[z]||0)+rs.length;c.push(h("td",{key:"z"+z},rs.length?num(rs.length,"ULP "+g.ulp+" \u00B7 "+fd.label+" \u00B7 "+fgZName(z),rs):"-"))});
-   sumR+=fd.all.length;
-   c.push(h("td",{key:"r",className:"fg-re"},num(fd.all.length,"ULP "+g.ulp+" \u00B7 "+fd.label+" \u00B7 semua zona",fd.all)));
-   if(fi===0)c.push(h("td",{key:"j",rowSpan:n,className:"fg-jm"},num(g.all.length,"ULP "+g.ulp+" \u00B7 semua penyulang",g.all)));
-   tA.push(h("tr",{key:g.key+"|"+fd.feeder},c))
-  })
- });
- var idxA=[1,2,3,4,5].concat(Z.map(function(){return 6}),[7,8]),idxAc=[];
- [1,2,3,4,5].forEach(function(n){idxAc.push(h("td",{key:"i"+n},n))});idxAc.push(h("td",{key:"iz",colSpan:nz},6),h("td",{key:"ir"},7),h("td",{key:"ij"},8));
- var tableA=h("table",{className:"fg-t"},
-  h("thead",null,
-   h("tr",null,h("th",{rowSpan:3},"NO"),h("th",{rowSpan:3},"UNIT/ULP"),h("th",{rowSpan:3},"PENYULANG"),h("th",{rowSpan:3},"SATUAN"),h("th",{rowSpan:3},"TARGET"),h("th",{colSpan:nz+2},"GANGGUAN (KALI)")),
-   h("tr",null,h("th",{colSpan:nz},"REALISASI PER ZONA"),h("th",{rowSpan:2},"REALISASI"),h("th",{rowSpan:2},"JUMLAH")),
-   h("tr",null,Z.map(function(z){return h("th",{key:z},fgZName(z))})),
-   h("tr",{className:"fg-idx"},idxAc)),
-  h("tbody",null,tA,
-   h("tr",{className:"fg-sum"},h("td",{colSpan:4},"JUMLAH"),h("td",null,anyT?sumT:""),Z.map(function(z){return h("td",{key:z},zsum[z]?num(zsum[z],"Semua ULP \u00B7 "+fgZName(z),R.kept.filter(function(r){return fgZ(r.e)===z})):0)}),h("td",null,num(sumR,"Semua ULP \u00B7 semua zona",R.kept)),h("td",null,num(M.total,"Semua ULP",R.kept)))));
- /* ---- tabel B ---- */
- var tB=[],sumB=0,sumTB=0,anyTB=false;
- M.groups.forEach(function(g,gi){
-  var n=0;g.feeders.forEach(function(fd){n+=fd.pmts.length});var tv=tg[fgTKey(f,"B",g)];if(tv!=null){sumTB+=tv;anyTB=true}
-  var first=true;
-  g.feeders.forEach(function(fd){
-   fd.pmts.forEach(function(p,pi){
+ allRecs=function(){return R.kept};
+
+ /* ---- tabel A (PMT penyulang, zona 1) dan B (recloser / GH) ---- */
+ var zc=function(n,title,recs){return n?num(n,title,recs):(showZero?"0":"")},
+ mkBody=function(sec,rowsKey,allKey){
+  var out=[],sumR=0,sumT=0,anyT=false,no=0;
+  M.groups.forEach(function(g){
+   var list=g[rowsKey];if(!list.length)return;
+   no++;var n=list.length,tv=tg[fgTKey(f,sec,g)];if(tv!=null){sumT+=tv;anyT=true}
+   list.forEach(function(x,xi){
     var c=[];
-    if(first)c.push(h("td",{key:"n",rowSpan:n},gi+1),h("td",{key:"u",className:"fg-u",rowSpan:n},"ULP "+g.ulp,M.multiUp3&&h("div",{className:"fg-up3"},"UP3 "+g.up3)));
-    if(pi===0)c.push(h("td",{key:"f",className:"l",rowSpan:fd.pmts.length},fd.label));
-    c.push(h("td",{key:"p",className:"l"},p.pmt),h("td",{key:"s"},"Kali"));
-    if(first)c.push(h("td",{key:"t",rowSpan:n},tgIn("B",g)));
-    sumB+=p.all.length;
-    c.push(h("td",{key:"r",className:"fg-re"},num(p.all.length,"ULP "+g.ulp+" \u00B7 "+fd.label+" \u00B7 "+p.pmt,p.all)));
-    if(pi===0)c.push(h("td",{key:"jf",rowSpan:fd.pmts.length,className:"fg-jm"},num(fd.all.length,"ULP "+g.ulp+" \u00B7 "+fd.label+" \u00B7 semua PMT",fd.all)));
-    if(first)c.push(h("td",{key:"j",rowSpan:n,className:"fg-jm"},num(g.all.length,"ULP "+g.ulp+" \u00B7 semua penyulang",g.all)));
-    first=false;
-    tB.push(h("tr",{key:g.key+"|"+fd.feeder+"|"+p.pmt},c))
+    if(xi===0)c.push(h("td",{key:"n",rowSpan:n},no),uCell(g,n));
+    c.push(h("td",{key:"p",className:"l"},x.name),h("td",{key:"s"},"Kali"));
+    if(xi===0)c.push(h("td",{key:"t",rowSpan:n},tgIn(sec,g)));
+    sumR+=x.all.length;
+    c.push(h("td",{key:"r",className:"fg-re"},zc(x.all.length,"ULP "+g.ulp+" \u00B7 "+x.name,x.all)));
+    if(xi===0)c.push(h("td",{key:"j",rowSpan:n,className:"fg-jm"},zc(g[allKey].length,"ULP "+g.ulp+(sec==="A"?" \u00B7 semua penyulang (PMT)":" \u00B7 semua recloser / GH"),g[allKey])));
+    out.push(h("tr",{key:sec+"|"+g.key+"|"+x.name},c))
    })
-  })
- });
- var tableB=h("table",{className:"fg-t"},
+  });
+  return{rows:out,sumR:sumR,sumT:sumT,anyT:anyT}
+ },
+ uCell=function(g,n){return h("td",{key:"u",className:"fg-u",rowSpan:n},"ULP "+g.ulp,M.multiUp3&&h("div",{className:"fg-up3"},"UP3 "+g.up3))},
+ bA=mkBody("A","rowsA","allA"),bB=mkBody("B","rowsB","allB"),
+ allA=[],allB=[];M.groups.forEach(function(g){allA=allA.concat(g.allA);allB=allB.concat(g.allB)});
+ var idx=function(){var c=[h("td",{key:0},"")];for(var n=1;n<=6;n++)c.push(h("td",{key:n},n));return h("tr",{className:"fg-idx"},c)},
+ tableA=h("table",{className:"fg-t"},
   h("thead",null,
-   h("tr",null,["NO","UNIT/ULP","PENYULANG","PMT / PERALATAN","SAT","TARGET","REALISASI","JUMLAH FEEDER","JUMLAH"].map(function(t){return h("th",{key:t},t)})),
-   h("tr",{className:"fg-idx"},[1,2,3,4,5,6,7,8,9].map(function(n){return h("td",{key:n},n)}))),
-  h("tbody",null,tB,
-   h("tr",{className:"fg-sum"},h("td",{colSpan:5},"JUMLAH"),h("td",null,anyTB?sumTB:""),h("td",null,num(sumB,"Semua ULP \u00B7 semua PMT",R.kept)),h("td",null,""),h("td",null,num(M.total,"Semua ULP",R.kept)))));
+   h("tr",null,h("th",{rowSpan:3},"NO"),h("th",{rowSpan:3},"UNIT/ULP"),h("th",{rowSpan:3},"PENYULANG"),h("th",{colSpan:4},"GANGGUAN (KALI)")),
+   h("tr",null,h("th",{colSpan:4},"ZONA 1")),
+   h("tr",null,h("th",null,"SATUAN"),h("th",null,"TARGET"),h("th",null,"REALISASI"),h("th",null,"JUMLAH")),
+   idx()),
+  h("tbody",null,bA.rows,
+   h("tr",{className:"fg-sum"},h("td",{colSpan:4},"JUMLAH"),h("td",null,bA.anyT?bA.sumT:""),h("td",null,zc(bA.sumR,"Semua ULP \u00B7 penyulang (PMT)",allA)),h("td",null,zc(bA.sumR,"Semua ULP \u00B7 penyulang (PMT)",allA))))),
+ tableB=h("table",{className:"fg-t"},
+  h("thead",null,
+   h("tr",null,["NO","UNIT/ULP","PENYULANG","SAT","TARGET","REALISASI","JUMLAH"].map(function(t){return h("th",{key:t},t)})),
+   idx()),
+  h("tbody",null,bB.rows,
+   h("tr",{className:"fg-sum"},h("td",{colSpan:4},"JUMLAH"),h("td",null,bB.anyT?bB.sumT:""),h("td",null,zc(bB.sumR,"Semua ULP \u00B7 recloser / GH",allB)),h("td",null,zc(bB.sumR,"Semua ULP \u00B7 recloser / GH",allB)))));
  var empty=M.groups.length===0,
  unitTxt=[f.dcc!==FG_ALL?f.dcc:"Semua DCC",f.up3!==FG_ALL?"UP3 "+f.up3:"Semua UP3",ulpOn(f.ulp)?"ULP "+ulpTxt(f.ulp):"Semua ULP"].join(" / ");
  return h("div",{className:"bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5",id:"rekap-fgtm"},
@@ -1612,7 +1594,7 @@ function RekapFgtm(P){
     h("div",{className:"fg-ms",ref:mref,style:{width:"auto"}},
      h("button",{type:"button",className:"tr-btn fg-xbtn",onClick:function(){setMenu(!menu)},disabled:empty&&!R.cand,"aria-haspopup":"menu","aria-expanded":menu},"\u2B07 Export Excel \u25BE"),
      menu&&h("div",{className:"fg-pop fg-pop-r fg-menu",role:"menu"},
-      h("button",{type:"button",role:"menuitem",className:"fg-mi",onClick:function(){setMenu(false);fgExportRekap(M,f,tg)}},h("b",null,"Rekapitulasi"),h("span",null,"Format laporan: tabel A (per zona) dan B (per PMT)")),
+      h("button",{type:"button",role:"menuitem",className:"fg-mi",onClick:function(){setMenu(false);fgExportRekap(M,f,tg)}},h("b",null,"Rekapitulasi"),h("span",null,"Format laporan: tabel A (penyulang / PMT) dan B (recloser)")),
       h("button",{type:"button",role:"menuitem",className:"fg-mi",onClick:function(){setMenu(false);fgExportDetail(M,f)}},h("b",null,"Detail"),h("span",null,"Data per kejadian (hanya yang dihitung)")))))),
   h("div",{className:"tr-panel"},
    h("div",{className:"tr-sel-grid"},
@@ -1637,8 +1619,8 @@ function RekapFgtm(P){
     h("li",null,"Export Excel hanya memuat kejadian yang dihitung, sehingga jumlah pada Detail dan Rekapitulasi sama. Klik angka pada tabel untuk melihat rincian kejadian. Kolom TARGET dapat diisi manual per ULP dan tersimpan di perangkat ini."))),
   empty?h("div",{className:"fg-none"},"Tidak ada padam trip untuk filter ini ("+fgPeriod(f)+" \u00B7 "+unitTxt+")."):
   h("div",{className:"space-y-5 mt-4"},
-   h("div",null,h("div",{className:"fg-sec"},"A.  GANGGUAN PENYULANG (PER ZONA)"),h("div",{className:"fg-wrap"},tableA)),
-   h("div",null,h("div",{className:"fg-sec"},"B.  GANGGUAN PMT / PERALATAN PER PENYULANG"),h("div",{className:"fg-wrap"},tableB)),
+   h("div",null,h("div",{className:"fg-sec"},"A.  GANGGUAN PENYULANG"),h("div",{className:"fg-wrap"},tableA)),
+   h("div",null,h("div",{className:"fg-sec"},"B.  GANGGUAN RECLOSER"),h("div",{className:"fg-wrap"},tableB)),
    h("p",{className:"text-[11px] text-slate-500"},"Periode: "+fgPeriod(f)+" \u00B7 "+unitTxt)),
   det&&h(FgDetail,{d:det,onClose:function(){setDet(null)}})
  )
