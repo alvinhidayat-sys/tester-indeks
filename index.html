@@ -526,18 +526,6 @@ html[data-theme="dark"]{--fgh:#5d2c3c;--fght:#ffdbe0;--fgbd:#394067;--fgtx:#e6e9
 .fg-dt tr.fg-skip td{background:rgba(245,154,60,.1)}
 .fg-dt .fg-warn{color:var(--fgacc);font-weight:600}
 @media (max-width:639px){.fg-md{max-height:96vh;border-radius:.9rem}.fg-md-h{flex-direction:column}.fg-pop{min-width:13.5rem}}
-
-.fg-tr-box{padding:.7rem .9rem;border:1px solid var(--fgpopbd);border-radius:.8rem;background:var(--fgsoft);font-size:.78rem;margin-bottom:.8rem;line-height:1.5}
-.fg-tr-sub{opacity:.8;margin-top:.2rem}
-.fg-tr-in{display:flex;flex-wrap:wrap;gap:1rem;font-size:.78rem;margin:.4rem 0 .7rem}
-.fg-tr-in label{display:flex;align-items:center;gap:.5rem;font-weight:600}
-.fg-vd{font-weight:700;font-size:.74rem;white-space:nowrap}
-.fg-ok{color:#17794a}.fg-bad{color:#b3321f}
-html[data-theme="dark"] .fg-ok{color:#7be0ac}html[data-theme="dark"] .fg-bad{color:#ff9a8f}
-.fg-good{color:#17794a;font-weight:800}
-html[data-theme="dark"] .fg-good{color:#7be0ac}
-.fg-dt tr.fg-okrow td{background:rgba(46,204,113,.1)}
-.fg-dur{padding:.4rem .6rem;cursor:pointer}
 </style></head><body><div id="root"></div><script>(()=>{var fh=Object.create;var q2=Object.defineProperty;var Eh=Object.getOwnPropertyDescriptor;var Sh=Object.getOwnPropertyNames;var Dh=Object.getPrototypeOf,Th=Object.prototype.hasOwnProperty;var Jt=(a,t)=>()=>(t||a((t={exports:{}}).exports,t),t.exports);var Lh=(a,t,e,r)=>{if(t&&typeof t=="object"||typeof t=="function")for(let i of Sh(t))!Th.call(a,i)&&i!==e&&q2(a,i,{get:()=>t[i],enumerable:!(r=Eh(t,i))||r.enumerable});return a};var J=(a,t,e)=>(e=a!=null?fh(Dh(a)):{},Lh(t||!a||!a.__esModule?q2(e,"default",{value:a,enumerable:!0}):e,a));var oc=Jt(xa=>{"use strict";function Cl(a,t){var e=a.length;a.push(t);a:for(;0<e;){var r=e-1>>>1,i=a[r];if(0<Wn(i,t))a[r]=t,a[e]=i,e=r;else break a}}function Yt(a){return a.length===0?null:a[0]}function Jn(a){if(a.length===0)return null;var t=a[0],e=a.pop();if(e!==t){a[0]=e;a:for(var r=0,i=a.length,n=i>>>1;r<n;){var o=2*(r+1)-1,l=a[o],d=o+1,h=a[d];if(0>Wn(l,e))d<i&&0>Wn(h,l)?(a[r]=h,a[d]=e,r=d):(a[r]=l,a[o]=e,r=o);else if(d<i&&0>Wn(h,e))a[r]=h,a[d]=e,r=d;else break a}}return t}function Wn(a,t){var e=a.sortIndex-t.sortIndex;return e!==0?e:a.id-t.id}xa.unstable_now=void 0;typeof performance=="object"&&typeof performance.now=="function"?(X2=performance,xa.unstable_now=function(){return X2.now()}):(Ol=Date,Q2=Ol.now(),xa.unstable_now=function(){return Ol.now()-Q2});var X2,Ol,Q2,re=[],xe=[],xh=1,vt=null,tt=3,Il=!1,Ui=!1,Bi=!1,Ul=!1,tc=typeof setTimeout=="function"?setTimeout:null,ec=typeof clearTimeout=="function"?clearTimeout:null,$2=typeof setImmediate<"u"?setImmediate:null;function zn(a){for(var t=Yt(xe);t!==null;){if(t.callback===null)Jn(xe);else if(t.startTime<=a)Jn(xe),t.sortIndex=t.expirationTime,Cl(re,t);else break;t=Yt(xe)}}function Bl(a){if(Bi=!1,zn(a),!Ui)if(Yt(re)!==null)Ui=!0,Br||(Br=!0,Ur());else{var t=Yt(xe);t!==null&&Kl(Bl,t.startTime-a)}}var Br=!1,Ki=-1,rc=5,ic=-1;function nc(){return Ul?!0:!(xa.unstable_now()-ic<rc)}function Pl(){if(Ul=!1,Br){var a=xa.unstable_now();ic=a;var t=!0;try{a:{Ui=!1,Bi&&(Bi=!1,ec(Ki),Ki=-1),Il=!0;var e=tt;try{t:{for(zn(a),vt=Yt(re);vt!==null&&!(vt.expirationTime>a&&nc());){var r=vt.callback;if(typeof r=="function"){vt.callback=null,tt=vt.priorityLevel;var i=r(vt.expirationTime<=a);if(a=xa.unstable_now(),typeof i=="function"){vt.callback=i,zn(a),t=!0;break t}vt===Yt(re)&&Jn(re),zn(a)}else Jn(re);vt=Yt(re)}if(vt!==null)t=!0;else{var n=Yt(xe);n!==null&&Kl(Bl,n.startTime-a),t=!1}}break a}finally{vt=null,tt=e,Il=!1}t=void 0}}finally{t?Ur():Br=!1}}}var Ur;typeof $2=="function"?Ur=function(){$2(Pl)}:typeof MessageChannel<"u"?(jl=new MessageChannel,ac=jl.port2,jl.port1.onmessage=Pl,Ur=function(){ac.postMessage(null)}):Ur=function(){tc(Pl,0)};var jl,ac;function Kl(a,t){Ki=tc(function(){a(xa.unstable_now())},t)}xa.unstable_IdlePriority=5;xa.unstable_ImmediatePriority=1;xa.unstable_LowPriority=4;xa.unstable_NormalPriority=3;xa.unstable_Profiling=null;xa.unstable_UserBlockingPriority=2;xa.unstable_cancelCallback=function(a){a.callback=null};xa.unstable_forceFrameRate=function(a){0>a||125<a?console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"):rc=0<a?Math.floor(1e3/a):5};xa.unstable_getCurrentPriorityLevel=function(){return tt};xa.unstable_next=function(a){switch(tt){case 1:case 2:case 3:var t=3;break;default:t=tt}var e=tt;tt=t;try{return a()}finally{tt=e}};xa.unstable_requestPaint=function(){Ul=!0};xa.unstable_runWithPriority=function(a,t){switch(a){case 1:case 2:case 3:case 4:case 5:break;default:a=3}var e=tt;tt=a;try{return t()}finally{tt=e}};xa.unstable_scheduleCallback=function(a,t,e){var r=xa.unstable_now();switch(typeof e=="object"&&e!==null?(e=e.delay,e=typeof e=="number"&&0<e?r+e:r):e=r,a){case 1:var i=-1;break;case 2:i=250;break;case 5:i=1073741823;break;case 4:i=1e4;break;default:i=5e3}return i=e+i,a={id:xh++,callback:t,priorityLevel:a,startTime:e,expirationTime:i,sortIndex:-1},e>r?(a.sortIndex=e,Cl(xe,a),Yt(re)===null&&a===Yt(xe)&&(Bi?(ec(Ki),Ki=-1):Bi=!0,Kl(Bl,e-r))):(a.sortIndex=i,Cl(re,a),Ui||Il||(Ui=!0,Br||(Br=!0,Ur()))),a};xa.unstable_shouldYield=nc;xa.unstable_wrapCallback=function(a){var t=tt;return function(){var e=tt;tt=t;try{return a.apply(this,arguments)}finally{tt=e}}}});var dc=Jt((YA,lc)=>{"use strict";lc.exports=oc()});var Rc=Jt(X=>{"use strict";var Hl=Symbol.for("react.transitional.element"),vh=Symbol.for("react.portal"),Oh=Symbol.for("react.fragment"),Ph=Symbol.for("react.strict_mode"),jh=Symbol.for("react.profiler"),Ch=Symbol.for("react.consumer"),Ih=Symbol.for("react.context"),Uh=Symbol.for("react.forward_ref"),Bh=Symbol.for("react.suspense"),Kh=Symbol.for("react.memo"),hc=Symbol.for("react.lazy"),Gh=Symbol.for("react.activity"),sc=Symbol.iterator;function yh(a){return a===null||typeof a!="object"?null:(a=sc&&a[sc]||a["@@iterator"],typeof a=="function"?a:null)}var mc={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},kc=Object.assign,Ac={};function Gr(a,t,e){this.props=a,this.context=t,this.refs=Ac,this.updater=e||mc}Gr.prototype.isReactComponent={};Gr.prototype.setState=function(a,t){if(typeof a!="object"&&typeof a!="function"&&a!=null)throw Error("takes an object of state variables to update or a function which returns an object of state variables.");this.updater.enqueueSetState(this,a,t,"setState")};Gr.prototype.forceUpdate=function(a){this.updater.enqueueForceUpdate(this,a,"forceUpdate")};function gc(){}gc.prototype=Gr.prototype;function wl(a,t,e){this.props=a,this.context=t,this.refs=Ac,this.updater=e||mc}var _l=wl.prototype=new gc;_l.constructor=wl;kc(_l,Gr.prototype);_l.isPureReactComponent=!0;var cc=Array.isArray;function yl(){}var Sa={H:null,A:null,T:null,S:null},Mc=Object.prototype.hasOwnProperty;function Vl(a,t,e){var r=e.ref;return{$$typeof:Hl,type:a,key:t,ref:r!==void 0?r:null,props:e}}function Hh(a,t){return Vl(a.type,t,a.props)}function Wl(a){return typeof a=="object"&&a!==null&&a.$$typeof===Hl}function wh(a){var t={"=":"=0",":":"=2"};return"$"+a.replace(/[=:]/g,function(e){return t[e]})}var uc=/\/+/g;function Gl(a,t){return typeof a=="object"&&a!==null&&a.key!=null?wh(""+a.key):t.toString(36)}function _h(a){switch(a.status){case"fulfilled":return a.value;case"rejected":throw a.reason;default:switch(typeof a.status=="string"?a.then(yl,yl):(a.status="pending",a.then(function(t){a.status==="pending"&&(a.status="fulfilled",a.value=t)},function(t){a.status==="pending"&&(a.status="rejected",a.reason=t)})),a.status){case"fulfilled":return a.value;case"rejected":throw a.reason}}throw a}function Kr(a,t,e,r,i){var n=typeof a;(n==="undefined"||n==="boolean")&&(a=null);var o=!1;if(a===null)o=!0;else switch(n){case"bigint":case"string":case"number":o=!0;break;case"object":switch(a.$$typeof){case Hl:case vh:o=!0;break;case hc:return o=a._init,Kr(o(a._payload),t,e,r,i)}}if(o)return i=i(a),o=r===""?"."+Gl(a,0):r,cc(i)?(e="",o!=null&&(e=o.replace(uc,"$&/")+"/"),Kr(i,t,e,"",function(h){return h})):i!=null&&(Wl(i)&&(i=Hh(i,e+(i.key==null||a&&a.key===i.key?"":(""+i.key).replace(uc,"$&/")+"/")+o)),t.push(i)),1;o=0;var l=r===""?".":r+":";if(cc(a))for(var d=0;d<a.length;d++)r=a[d],n=l+Gl(r,d),o+=Kr(r,t,e,n,i);else if(d=yh(a),typeof d=="function")for(a=d.call(a),d=0;!(r=a.next()).done;)r=r.value,n=l+Gl(r,d++),o+=Kr(r,t,e,n,i);else if(n==="object"){if(typeof a.then=="function")return Kr(_h(a),t,e,r,i);throw t=String(a),Error("Objects are not valid as a React child (found: "+(t==="[object Object]"?"object with keys {"+Object.keys(a).join(", ")+"}":t)+"). If you meant to render a collection of children, use an array instead.")}return o}function Yn(a,t,e){if(a==null)return a;var r=[],i=0;return Kr(a,r,"","",function(n){return t.call(e,n,i++)}),r}function Vh(a){if(a._status===-1){var t=a._result;t=t(),t.then(function(e){(a._status===0||a._status===-1)&&(a._status=1,a._result=e)},function(e){(a._status===0||a._status===-1)&&(a._status=2,a._result=e)}),a._status===-1&&(a._status=0,a._result=t)}if(a._status===1)return a._result.default;throw a._result}var pc=typeof reportError=="function"?reportError:function(a){if(typeof window=="object"&&typeof window.ErrorEvent=="function"){var t=new window.ErrorEvent("error",{bubbles:!0,cancelable:!0,message:typeof a=="object"&&a!==null&&typeof a.message=="string"?String(a.message):String(a),error:a});if(!window.dispatchEvent(t))return}else if(typeof process=="object"&&typeof process.emit=="function"){process.emit("uncaughtException",a);return}console.error(a)},Wh={map:Yn,forEach:function(a,t,e){Yn(a,function(){t.apply(this,arguments)},e)},count:function(a){var t=0;return Yn(a,function(){t++}),t},toArray:function(a){return Yn(a,function(t){return t})||[]},only:function(a){if(!Wl(a))throw Error("React.Children.only expected to receive a single React element child.");return a}};X.Activity=Gh;X.Children=Wh;X.Component=Gr;X.Fragment=Oh;X.Profiler=jh;X.PureComponent=wl;X.StrictMode=Ph;X.Suspense=Bh;X.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=Sa;X.__COMPILER_RUNTIME={__proto__:null,c:function(a){return Sa.H.useMemoCache(a)}};X.cache=function(a){return function(){return a.apply(null,arguments)}};X.cacheSignal=function(){return null};X.cloneElement=function(a,t,e){if(a==null)throw Error("The argument must be a React element, but you passed "+a+".");var r=kc({},a.props),i=a.key;if(t!=null)for(n in t.key!==void 0&&(i=""+t.key),t)!Mc.call(t,n)||n==="key"||n==="__self"||n==="__source"||n==="ref"&&t.ref===void 0||(r[n]=t[n]);var n=arguments.length-2;if(n===1)r.children=e;else if(1<n){for(var o=Array(n),l=0;l<n;l++)o[l]=arguments[l+2];r.children=o}return Vl(a.type,i,r)};X.createContext=function(a){return a={$$typeof:Ih,_currentValue:a,_currentValue2:a,_threadCount:0,Provider:null,Consumer:null},a.Provider=a,a.Consumer={$$typeof:Ch,_context:a},a};X.createElement=function(a,t,e){var r,i={},n=null;if(t!=null)for(r in t.key!==void 0&&(n=""+t.key),t)Mc.call(t,r)&&r!=="key"&&r!=="__self"&&r!=="__source"&&(i[r]=t[r]);var o=arguments.length-2;if(o===1)i.children=e;else if(1<o){for(var l=Array(o),d=0;d<o;d++)l[d]=arguments[d+2];i.children=l}if(a&&a.defaultProps)for(r in o=a.defaultProps,o)i[r]===void 0&&(i[r]=o[r]);return Vl(a,n,i)};X.createRef=function(){return{current:null}};X.forwardRef=function(a){return{$$typeof:Uh,render:a}};X.isValidElement=Wl;X.lazy=function(a){return{$$typeof:hc,_payload:{_status:-1,_result:a},_init:Vh}};X.memo=function(a,t){return{$$typeof:Kh,type:a,compare:t===void 0?null:t}};X.startTransition=function(a){var t=Sa.T,e={};Sa.T=e;try{var r=a(),i=Sa.S;i!==null&&i(e,r),typeof r=="object"&&r!==null&&typeof r.then=="function"&&r.then(yl,pc)}catch(n){pc(n)}finally{t!==null&&e.types!==null&&(t.types=e.types),Sa.T=t}};X.unstable_useCacheRefresh=function(){return Sa.H.useCacheRefresh()};X.use=function(a){return Sa.H.use(a)};X.useActionState=function(a,t,e){return Sa.H.useActionState(a,t,e)};X.useCallback=function(a,t){return Sa.H.useCallback(a,t)};X.useContext=function(a){return Sa.H.useContext(a)};X.useDebugValue=function(){};X.useDeferredValue=function(a,t){return Sa.H.useDeferredValue(a,t)};X.useEffect=function(a,t){return Sa.H.useEffect(a,t)};X.useEffectEvent=function(a){return Sa.H.useEffectEvent(a)};X.useId=function(){return Sa.H.useId()};X.useImperativeHandle=function(a,t,e){return Sa.H.useImperativeHandle(a,t,e)};X.useInsertionEffect=function(a,t){return Sa.H.useInsertionEffect(a,t)};X.useLayoutEffect=function(a,t){return Sa.H.useLayoutEffect(a,t)};X.useMemo=function(a,t){return Sa.H.useMemo(a,t)};X.useOptimistic=function(a,t){return Sa.H.useOptimistic(a,t)};X.useReducer=function(a,t,e){return Sa.H.useReducer(a,t,e)};X.useRef=function(a){return Sa.H.useRef(a)};X.useState=function(a){return Sa.H.useState(a)};X.useSyncExternalStore=function(a,t,e){return Sa.H.useSyncExternalStore(a,t,e)};X.useTransition=function(){return Sa.H.useTransition()};X.version="19.2.5"});var Ha=Jt((ZA,bc)=>{"use strict";bc.exports=Rc()});var fc=Jt(it=>{"use strict";var zh=Ha();function Nc(a){var t="https://react.dev/errors/"+a;if(1<arguments.length){t+="?args[]="+encodeURIComponent(arguments[1]);for(var e=2;e<arguments.length;e++)t+="&args[]="+encodeURIComponent(arguments[e])}return"Minified React error #"+a+"; visit "+t+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function ve(){}var rt={d:{f:ve,r:function(){throw Error(Nc(522))},D:ve,C:ve,L:ve,m:ve,X:ve,S:ve,M:ve},p:0,findDOMNode:null},Jh=Symbol.for("react.portal");function Yh(a,t,e){var r=3<arguments.length&&arguments[3]!==void 0?arguments[3]:null;return{$$typeof:Jh,key:r==null?null:""+r,children:a,containerInfo:t,implementation:e}}var Gi=zh.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;function Fn(a,t){if(a==="font")return"";if(typeof t=="string")return t==="use-credentials"?t:""}it.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=rt;it.createPortal=function(a,t){var e=2<arguments.length&&arguments[2]!==void 0?arguments[2]:null;if(!t||t.nodeType!==1&&t.nodeType!==9&&t.nodeType!==11)throw Error(Nc(299));return Yh(a,t,null,e)};it.flushSync=function(a){var t=Gi.T,e=rt.p;try{if(Gi.T=null,rt.p=2,a)return a()}finally{Gi.T=t,rt.p=e,rt.d.f()}};it.preconnect=function(a,t){typeof a=="string"&&(t?(t=t.crossOrigin,t=typeof t=="string"?t==="use-credentials"?t:"":void 0):t=null,rt.d.C(a,t))};it.prefetchDNS=function(a){typeof a=="string"&&rt.d.D(a)};it.preinit=function(a,t){if(typeof a=="string"&&t&&typeof t.as=="string"){var e=t.as,r=Fn(e,t.crossOrigin),i=typeof t.integrity=="string"?t.integrity:void 0,n=typeof t.fetchPriority=="string"?t.fetchPriority:void 0;e==="style"?rt.d.S(a,typeof t.precedence=="string"?t.precedence:void 0,{crossOrigin:r,integrity:i,fetchPriority:n}):e==="script"&&rt.d.X(a,{crossOrigin:r,integrity:i,fetchPriority:n,nonce:typeof t.nonce=="string"?t.nonce:void 0})}};it.preinitModule=function(a,t){if(typeof a=="string")if(typeof t=="object"&&t!==null){if(t.as==null||t.as==="script"){var e=Fn(t.as,t.crossOrigin);rt.d.M(a,{crossOrigin:e,integrity:typeof t.integrity=="string"?t.integrity:void 0,nonce:typeof t.nonce=="string"?t.nonce:void 0})}}else t==null&&rt.d.M(a)};it.preload=function(a,t){if(typeof a=="string"&&typeof t=="object"&&t!==null&&typeof t.as=="string"){var e=t.as,r=Fn(e,t.crossOrigin);rt.d.L(a,e,{crossOrigin:r,integrity:typeof t.integrity=="string"?t.integrity:void 0,nonce:typeof t.nonce=="string"?t.nonce:void 0,type:typeof t.type=="string"?t.type:void 0,fetchPriority:typeof t.fetchPriority=="string"?t.fetchPriority:void 0,referrerPolicy:typeof t.referrerPolicy=="string"?t.referrerPolicy:void 0,imageSrcSet:typeof t.imageSrcSet=="string"?t.imageSrcSet:void 0,imageSizes:typeof t.imageSizes=="string"?t.imageSizes:void 0,media:typeof t.media=="string"?t.media:void 0})}};it.preloadModule=function(a,t){if(typeof a=="string")if(t){var e=Fn(t.as,t.crossOrigin);rt.d.m(a,{as:typeof t.as=="string"&&t.as!=="script"?t.as:void 0,crossOrigin:e,integrity:typeof t.integrity=="string"?t.integrity:void 0})}else rt.d.m(a)};it.requestFormReset=function(a){rt.d.r(a)};it.unstable_batchedUpdates=function(a,t){return a(t)};it.useFormState=function(a,t,e){return Gi.H.useFormState(a,t,e)};it.useFormStatus=function(){return Gi.H.useHostTransitionStatus()};it.version="19.2.5"});var Dc=Jt((XA,Sc)=>{"use strict";function Ec(){if(!(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>"u"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!="function"))try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(Ec)}catch(a){console.error(a)}}Ec(),Sc.exports=fc()});var Kp=Jt(bl=>{"use strict";var _a=dc(),X0=Ha(),Fh=Dc();function x(a){var t="https://react.dev/errors/"+a;if(1<arguments.length){t+="?args[]="+encodeURIComponent(arguments[1]);for(var e=2;e<arguments.length;e++)t+="&args[]="+encodeURIComponent(arguments[e])}return"Minified React error #"+a+"; visit "+t+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function Q0(a){return!(!a||a.nodeType!==1&&a.nodeType!==9&&a.nodeType!==11)}function Dn(a){var t=a,e=a;if(a.alternate)for(;t.return;)t=t.return;else{a=t;do t=a,(t.flags&4098)!==0&&(e=t.return),a=t.return;while(a)}return t.tag===3?e:null}function $0(a){if(a.tag===13){var t=a.memoizedState;if(t===null&&(a=a.alternate,a!==null&&(t=a.memoizedState)),t!==null)return t.dehydrated}return null}function a1(a){if(a.tag===31){var t=a.memoizedState;if(t===null&&(a=a.alternate,a!==null&&(t=a.memoizedState)),t!==null)return t.dehydrated}return null}function Tc(a){if(Dn(a)!==a)throw Error(x(188))}function Zh(a){var t=a.alternate;if(!t){if(t=Dn(a),t===null)throw Error(x(188));return t!==a?null:a}for(var e=a,r=t;;){var i=e.return;if(i===null)break;var n=i.alternate;if(n===null){if(r=i.return,r!==null){e=r;continue}break}if(i.child===n.child){for(n=i.child;n;){if(n===e)return Tc(i),a;if(n===r)return Tc(i),t;n=n.sibling}throw Error(x(188))}if(e.return!==r.return)e=i,r=n;else{for(var o=!1,l=i.child;l;){if(l===e){o=!0,e=i,r=n;break}if(l===r){o=!0,r=i,e=n;break}l=l.sibling}if(!o){for(l=n.child;l;){if(l===e){o=!0,e=n,r=i;break}if(l===r){o=!0,r=n,e=i;break}l=l.sibling}if(!o)throw Error(x(189))}}if(e.alternate!==r)throw Error(x(190))}if(e.tag!==3)throw Error(x(188));return e.stateNode.current===e?a:t}function t1(a){var t=a.tag;if(t===5||t===26||t===27||t===6)return a;for(a=a.child;a!==null;){if(t=t1(a),t!==null)return t;a=a.sibling}return null}var La=Object.assign,qh=Symbol.for("react.element"),Zn=Symbol.for("react.transitional.element"),Ji=Symbol.for("react.portal"),Wr=Symbol.for("react.fragment"),e1=Symbol.for("react.strict_mode"),Sd=Symbol.for("react.profiler"),r1=Symbol.for("react.consumer"),ue=Symbol.for("react.context"),Rs=Symbol.for("react.forward_ref"),Dd=Symbol.for("react.suspense"),Td=Symbol.for("react.suspense_list"),bs=Symbol.for("react.memo"),Oe=Symbol.for("react.lazy"),Ld=Symbol.for("react.activity"),Xh=Symbol.for("react.memo_cache_sentinel"),Lc=Symbol.iterator;function yi(a){return a===null||typeof a!="object"?null:(a=Lc&&a[Lc]||a["@@iterator"],typeof a=="function"?a:null)}var Qh=Symbol.for("react.client.reference");function xd(a){if(a==null)return null;if(typeof a=="function")return a.$$typeof===Qh?null:a.displayName||a.name||null;if(typeof a=="string")return a;switch(a){case Wr:return"Fragment";case Sd:return"Profiler";case e1:return"StrictMode";case Dd:return"Suspense";case Td:return"SuspenseList";case Ld:return"Activity"}if(typeof a=="object")switch(a.$$typeof){case Ji:return"Portal";case ue:return a.displayName||"Context";case r1:return(a._context.displayName||"Context")+".Consumer";case Rs:var t=a.render;return a=a.displayName,a||(a=t.displayName||t.name||"",a=a!==""?"ForwardRef("+a+")":"ForwardRef"),a;case bs:return t=a.displayName||null,t!==null?t:xd(a.type)||"Memo";case Oe:t=a._payload,a=a._init;try{return xd(a(t))}catch{}}return null}var Yi=Array.isArray,q=X0.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,ha=Fh.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,kr={pending:!1,data:null,method:null,action:null},vd=[],zr=-1;function Qt(a){return{current:a}}function Ja(a){0>zr||(a.current=vd[zr],vd[zr]=null,zr--)}function fa(a,t){zr++,vd[zr]=a.current,a.current=t}var Xt=Qt(null),un=Qt(null),we=Qt(null),vo=Qt(null);function Oo(a,t){switch(fa(we,t),fa(un,a),fa(Xt,null),t.nodeType){case 9:case 11:a=(a=t.documentElement)&&(a=a.namespaceURI)?I0(a):0;break;default:if(a=t.tagName,t=t.namespaceURI)t=I0(t),a=Ep(t,a);else switch(a){case"svg":a=1;break;case"math":a=2;break;default:a=0}}Ja(Xt),fa(Xt,a)}function si(){Ja(Xt),Ja(un),Ja(we)}function Od(a){a.memoizedState!==null&&fa(vo,a);var t=Xt.current,e=Ep(t,a.type);t!==e&&(fa(un,a),fa(Xt,e))}function Po(a){un.current===a&&(Ja(Xt),Ja(un)),vo.current===a&&(Ja(vo),fn._currentValue=kr)}var zl,xc;function ur(a){if(zl===void 0)try{throw Error()}catch(e){var t=e.stack.trim().match(/\n( *(at )?)/);zl=t&&t[1]||"",xc=-1<e.stack.indexOf(`
     at`)?" (<anonymous>)":-1<e.stack.indexOf("@")?"@unknown:0:0":""}return`
 `+zl+a+xc}var Jl=!1;function Yl(a,t){if(!a||Jl)return"";Jl=!0;var e=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{var r={DetermineComponentFrameRoot:function(){try{if(t){var b=function(){throw Error()};if(Object.defineProperty(b.prototype,"props",{set:function(){throw Error()}}),typeof Reflect=="object"&&Reflect.construct){try{Reflect.construct(b,[])}catch(c){var m=c}Reflect.construct(a,[],b)}else{try{b.call()}catch(c){m=c}a.call(b.prototype)}}else{try{throw Error()}catch(c){m=c}(b=a())&&typeof b.catch=="function"&&b.catch(function(){})}}catch(c){if(c&&m&&typeof c.stack=="string")return[c.stack,m.stack]}return[null,null]}};r.DetermineComponentFrameRoot.displayName="DetermineComponentFrameRoot";var i=Object.getOwnPropertyDescriptor(r.DetermineComponentFrameRoot,"name");i&&i.configurable&&Object.defineProperty(r.DetermineComponentFrameRoot,"name",{value:"DetermineComponentFrameRoot"});var n=r.DetermineComponentFrameRoot(),o=n[0],l=n[1];if(o&&l){var d=o.split(`
@@ -1248,7 +1236,9 @@ var FG_ALL="SEMUA",FG_LS="fgtm_target_v1";
 function ulpArr(v){return Array.isArray(v)?v:(v==null||v===""||v==="SEMUA")?[]:[v]}
 function ulpOk(sel,v){var a=ulpArr(sel);return a.length===0||a.indexOf(v)>=0}
 function ulpOn(sel){return ulpArr(sel).length>0}
-function ulpTxt(sel){return ulpArr(sel).join(", ")}
+var ULP_NONE="__TIDAK_ADA__";
+function ulpNone(sel){var a=ulpArr(sel);return a.length>0&&a.every(function(x){return x===ULP_NONE})}
+function ulpTxt(sel){var a=ulpArr(sel).filter(function(x){return x!==ULP_NONE});return a.length?a.join(", "):"(tidak ada)"}
 
 function fgNat(a,b){return String(a).localeCompare(String(b),"id",{numeric:true,sensitivity:"base"})}
 function fgJam(e){var j=e.jamPadam&&e.jamPadam!=="-"?e.jamPadam:(e.jamTrip&&e.jamTrip!=="-"?e.jamTrip:"");var m=String(j).match(/(\d{1,2})\s*[:.]\s*(\d{2})/);return m?("0"+m[1]).slice(-2)+":"+m[2]:""}
@@ -1265,45 +1255,34 @@ function fgNames(entries){var m={};entries.forEach(function(e){var x=/^PMT_(.+?)
 function fgFLabel(names,dcc,fd){var n=names[dcc+"|"+String(fd).toUpperCase()];return n?fd+" - "+n:fd}
 function fgDateNum(e){var d=A2(e.tanggal);return d?d.getTime():9e15}
 
-/* --- aturan: FG_RULE "lama" = aturan berlaku, "baru" = tabel A hanya PMT_ dan tabel B hanya GH_/REC_ --- */
-var FG_RULE="baru";
-function fgIsA(e){return/^PMT_/i.test(String(e.pmt||"").trim())}
-function fgIsB(e){return/^(GH_|REC_)/i.test(String(e.pmt||"").trim())}
-function fgOpt(o){var d={minDur:5,dedupe:true,excl:true,scope:FG_RULE==="baru"?"baru":"all",tipe:"Trip"};if(o)for(var k in o)d[k]=o[k];return d}
-function fgInA(l){return FG_RULE==="baru"?l.filter(function(r){return fgIsA(r.e)}):l}
-function fgInB(l){return FG_RULE==="baru"?l.filter(function(r){return fgIsB(r.e)}):l}
-/* --- pipeline: (1) trip > batas durasi sesuai filter, (2) dedupe jam padam sama per feeder (ambil paling atas), (3) keluarkan UFR / binatang / sebab lain --- */
-function fgRun(entries,f,o){
- o=fgOpt(o);
- var kept=[],seen={},dups=[],exB=[],exS=[],exU=[],exO=[],cand=0,trace=o.trace?[]:null,tr=function(e,i,s,k){if(trace)trace.push({e:e,i:i,s:s,k:k||""})};
+/* --- pipeline: (1) semua padam trip sesuai filter (termasuk gangguan sesaat <= 5 menit), (2) dedupe jam padam sama per feeder (ambil paling atas), (3) keluarkan binatang / sebab lain --- */
+function fgRun(entries,f){
+ var kept=[],seen={},dups=[],exB=[],exS=[],exU=[],cand=0;
  for(var i=0;i<entries.length;i++){
   var e=entries[i];
-  if(!e||!fgMatch(e,f))continue;
-  if(o.tipe==="Trip"&&e.tipe!=="Trip"){tr(e,i,"Bukan padam trip (Padam Dilepas)","tipe");continue}
-  if(!(e.durasiPadamMenit>o.minDur)){tr(e,i,"Durasi "+(e.durasiPadamMenit||0)+" mnt (tidak lebih dari "+Math.max(o.minDur,0)+" mnt)","durasi");continue}
-  if(o.scope==="baru"&&!fgIsA(e)&&!fgIsB(e)){var ro={e:e,i:i,skipped:[]};exO.push(ro);tr(e,i,"Bukan PMT_ / GH_ / REC_","O");continue}
+  if(!e||e.tipe!=="Trip"||!fgMatch(e,f))continue;
   cand++;
-  var jm=fgJam(e),fd=e.feeder&&e.feeder!=="-"?e.feeder:"",key=o.dedupe&&jm&&fd?[e.dcc,fd,e.tanggal,jm].join("|"):"";
-  if(key&&seen[key]){seen[key].skipped.push(e);dups.push({e:e,i:i,first:seen[key]});tr(e,i,"Duplikat: jam padam sama dengan "+(seen[key].e.pmt||"-")+" (baris di atasnya)","dup");continue}
+  var jm=fgJam(e),fd=e.feeder&&e.feeder!=="-"?e.feeder:"",key=jm&&fd?[e.dcc,fd,e.tanggal,jm].join("|"):"";
+  if(key&&seen[key]){seen[key].skipped.push(e);dups.push({e:e,i:i,first:seen[key]});continue}
   var r={e:e,i:i,skipped:[]};if(key)seen[key]=r;
-  var x=o.excl?fgExcl(e):"";
-  if(x==="UFR"){exU.push(r);tr(e,i,"UFR / berasal dari pembangkit","UFR");continue}
-  if(x==="Binatang"){exB.push(r);tr(e,i,"Gangguan binatang / pihak ke-3","Binatang");continue}
-  if(x){exS.push(r);tr(e,i,"Sebab lain (masyarakat / lingkungan / vandalisme)","Sebab lain");continue}
-  kept.push(r);tr(e,i,"DIHITUNG","ok")
+  var x=fgExcl(e);
+  if(x==="UFR"){exU.push(r);continue}
+  if(x==="Binatang"){exB.push(r);continue}
+  if(x){exS.push(r);continue}
+  kept.push(r)
  }
- return{kept:kept,dups:dups,exB:exB,exS:exS,exU:exU,exO:exO,cand:cand,trace:trace}
+ return{kept:kept,dups:dups,exB:exB,exS:exS,exU:exU,cand:cand}
 }
 
 /* --- model tabel: ULP -> feeder -> zona / PMT --- */
-function fgModel(kept,entries,f,showZero,names,uni){
- var zs={"1":1,"2":1,"3":1},G={};
- kept.forEach(function(r){zs[fgZ(r.e)]=1});
+function fgBuild(entries,f,showZero){
+ var R=fgRun(entries,f),names=fgNames(entries),zs={"1":1,"2":1,"3":1},G={};
+ R.kept.forEach(function(r){zs[fgZ(r.e)]=1});
  var zones=Object.keys(zs).sort(function(a,b){if(a==="-")return 1;if(b==="-")return-1;return fgNat(a,b)});
  var grp=function(e){var k=[e.dcc,e.up3,e.ulp].join("|");return G[k]||(G[k]={key:k,dcc:e.dcc,up3:e.up3,ulp:e.ulp||"-",all:[],fd:{}})};
  var fdo=function(g,e){var fd=e.feeder&&e.feeder!=="-"?e.feeder:"-";return g.fd[fd]||(g.fd[fd]={feeder:fd,label:fd==="-"?"(tanpa penyulang)":fgFLabel(names,e.dcc,fd),all:[],zone:{},pmt:{},univ:{}})};
- if(showZero)entries.forEach(function(e){if(!e||!fgUnit(e,f)||(uni&&!uni(e)))return;var g=grp(e),o=fdo(g,e);o.univ[e.pmt&&e.pmt!=="-"?e.pmt:"-"]=1});
- kept.forEach(function(r){var e=r.e,g=grp(e),o=fdo(g,e),z=fgZ(e),p=e.pmt&&e.pmt!=="-"?e.pmt:"-";g.all.push(r);o.all.push(r);(o.zone[z]=o.zone[z]||[]).push(r);(o.pmt[p]=o.pmt[p]||[]).push(r)});
+ if(showZero)entries.forEach(function(e){if(!e||!fgUnit(e,f))return;var g=grp(e),o=fdo(g,e);o.univ[e.pmt&&e.pmt!=="-"?e.pmt:"-"]=1});
+ R.kept.forEach(function(r){var e=r.e,g=grp(e),o=fdo(g,e),z=fgZ(e),p=e.pmt&&e.pmt!=="-"?e.pmt:"-";g.all.push(r);o.all.push(r);(o.zone[z]=o.zone[z]||[]).push(r);(o.pmt[p]=o.pmt[p]||[]).push(r)});
  var groups=Object.keys(G).map(function(k){return G[k]}).filter(function(g){return g.all.length>0||showZero});
  groups.sort(function(a,b){return fgDccRank(a.dcc)-fgDccRank(b.dcc)||fgNat(a.up3,b.up3)||fgNat(a.ulp,b.ulp)});
  groups.forEach(function(g){
@@ -1312,24 +1291,11 @@ function fgModel(kept,entries,f,showZero,names,uni){
  });
  groups=groups.filter(function(g){return g.feeders.length>0});
  var ups={};groups.forEach(function(g){ups[g.up3]=1});
- return{zones:zones,groups:groups,multiUp3:Object.keys(ups).length>1,total:kept.length}
-}
-function fgBuild(entries,f,showZero,o){
- var R=fgRun(entries,f,o),op=fgOpt(o),names=fgNames(entries),M={R:R,names:names,total:R.kept.length,minDur:op.minDur};
- if(op.scope==="baru"){M.A=fgModel(R.kept.filter(function(r){return fgIsA(r.e)}),entries,f,showZero,names,fgIsA);M.B=fgModel(R.kept.filter(function(r){return fgIsB(r.e)}),entries,f,showZero,names,fgIsB)}
- else{M.A=M.B=fgModel(R.kept,entries,f,showZero,names,null)}
- M.multiUp3=M.A.multiUp3||M.B.multiUp3;M.empty=M.A.groups.length===0&&M.B.groups.length===0;
- return M
-}
-/* skenario pembanding untuk Telusur Selisih: A = PMT_, B = GH_/REC_ */
-function fgScen(entries,f,base){
- var def=[["Aturan saat ini (dihitung per PMT_ / GH_ / REC_)",{}],["Tanpa batas durasi (semua trip)",{minDur:-1}],["Tanpa pengecualian penyebab (UFR, binatang, sebab lain)",{excl:false}],["Tanpa penyaringan jam padam sama",{dedupe:false}],["Semua trip (tanpa batas durasi, pengecualian, dan penyaringan jam sama)",{minDur:-1,excl:false,dedupe:false}],["Semua padam termasuk Padam Dilepas",{minDur:-1,excl:false,dedupe:false,tipe:"all"}]];
- return def.map(function(d){var o=Object.assign({},base||{},d[1],{scope:"baru"}),R=fgRun(entries,f,o),A=0,B=0;R.kept.forEach(function(r){fgIsA(r.e)?A++:B++});return{lb:d[0],A:A,B:B}})
+ return{R:R,zones:zones,groups:groups,names:names,multiUp3:Object.keys(ups).length>1,total:R.kept.length}
 }
 function fgSortRecs(recs){return recs.slice().sort(function(a,b){return fgDateNum(a.e)-fgDateNum(b.e)||String(fgJam(a.e)).localeCompare(fgJam(b.e))||a.i-b.i})}
 function fgNote(r,kind){
  if(kind==="dup")return"Tidak dihitung: jam padam sama dengan "+(r.first.e.pmt||"-")+" (baris di atasnya) pada feeder yang sama";
- if(kind==="O")return"Tidak dihitung: bukan PMT_ / GH_ / REC_ (peralatan lain)";
  if(kind==="UFR")return"Tidak dihitung: gangguan UFR / berasal dari pembangkit";
  if(kind==="Binatang")return"Tidak dihitung: gangguan binatang / pihak ke-3";
  if(kind==="Sebab lain")return"Tidak dihitung: sebab lain (masyarakat / aktivitas lingkungan / vandalisme)";
@@ -1411,7 +1377,7 @@ function fgTVal(tg,f,sec,g){var v=tg[fgTKey(f,sec,g)];return v===""||v==null||is
 function fgFile(f,kind){var p=(f.bulan!==FG_ALL?f.bulan:"Semua Bulan")+(f.tahun!==FG_ALL?"_"+f.tahun:"");return"Rekap_FGTM_"+kind+"_"+p.replace(/\s+/g,"_")+".xlsx"}
 
 function fgXlsxRekap(M,f,tg){
- var MA=M.A,MB=M.B,Z=MA.zones,nz=Z.length,rows=[],merges=[],heights={},NC=Math.max(9,8+nz);
+ var Z=M.zones,nz=Z.length,rows=[],merges=[],heights={},NC=Math.max(9,8+nz);
  var S={
   title:{b:1,sz:12,u:1,h:"center",v:"center"},sec:{b:1,sz:11,v:"center"},
   th:{b:1,sz:10,fill:FG_PINK,bd:1,h:"center",v:"center",wrap:1},ti:{i:1,sz:9,fill:FG_PINK,bd:1,h:"center",v:"center"},
@@ -1427,7 +1393,7 @@ function fgXlsxRekap(M,f,tg){
  r++;
  var unitTxt=function(g){return"ULP "+g.ulp+(M.multiUp3?"\nUP3 "+g.up3:"")};
  /* ---- A. per zona ---- */
- put(r,0,FG_RULE==="baru"?"A.  GANGGUAN PENYULANG (PMT_) PER ZONA":"A.  GANGGUAN PENYULANG (PER ZONA)",S.sec);r++;
+ put(r,0,"A.  GANGGUAN PENYULANG (PER ZONA)",S.sec);r++;
  var h0=r;
  put(h0,0,"NO",S.th);mrg(h0,0,h0+2,0,S.th);
  put(h0,1,"UNIT/ULP",S.th);mrg(h0,1,h0+2,1,S.th);
@@ -1444,7 +1410,7 @@ function fgXlsxRekap(M,f,tg){
  put(r,0,1,S.ti);put(r,1,2,S.ti);put(r,2,3,S.ti);mrg(r,2,r,3,S.ti);put(r,4,4,S.ti);put(r,5,5,S.ti);
  mrg(r,6,r,5+nz,S.ti);put(r,6,6,S.ti);put(r,6+nz,7,S.ti);put(r,7+nz,8,S.ti);r++;
  var zsum={},sumReal=0,sumT=0,anyT=false,no=0;
- MA.groups.forEach(function(g){
+ M.groups.forEach(function(g){
   no++;var r0=r,n=g.feeders.length,tv=fgTVal(tg,f,"A",g);
   g.feeders.forEach(function(o,fi){
    put(r,2,o.label,S.tl);mrg(r,2,r,3,S.tl);put(r,4,"Kali",S.td);
@@ -1459,14 +1425,14 @@ function fgXlsxRekap(M,f,tg){
   heights[r0]=n===1&&M.multiUp3?30:undefined
  });
  put(r,0,"JUMLAH",S.sum);mrg(r,0,r,3,S.sum);put(r,4,"",S.sum);put(r,5,anyT?sumT:"",S.sum);
- Z.forEach(function(z,i){put(r,6+i,zsum[z]||0,S.sum)});put(r,6+nz,sumReal,S.sum);put(r,7+nz,MA.total,S.sum);r+=2;
+ Z.forEach(function(z,i){put(r,6+i,zsum[z]||0,S.sum)});put(r,6+nz,sumReal,S.sum);put(r,7+nz,M.total,S.sum);r+=2;
  /* ---- B. per PMT ---- */
- put(r,0,FG_RULE==="baru"?"B.  GANGGUAN RECLOSER (GH_ / REC_) PER PENYULANG":"B.  GANGGUAN PMT / PERALATAN PER PENYULANG",S.sec);r++;
+ put(r,0,"B.  GANGGUAN PMT / PERALATAN PER PENYULANG",S.sec);r++;
  var hb=r,hd=["NO","UNIT/ULP","PENYULANG","PMT / PERALATAN","SAT","TARGET","REALISASI","JUMLAH FEEDER","JUMLAH"];
  hd.forEach(function(t,i){put(hb,i,t,S.th)});heights[hb]=30;r++;
  for(var i=0;i<9;i++)put(r,i,i+1,S.ti);r++;
  var sumB=0,sumTB=0,anyTB=false;no=0;
- MB.groups.forEach(function(g){
+ M.groups.forEach(function(g){
   no++;var r0=r,tv=fgTVal(tg,f,"B",g);
   g.feeders.forEach(function(o){
    var f0=r;
@@ -1478,9 +1444,8 @@ function fgXlsxRekap(M,f,tg){
   if(r-1>r0){mrg(r0,0,r-1,0,S.td);mrg(r0,1,r-1,1,S.tu);mrg(r0,5,r-1,5,S.td);mrg(r0,8,r-1,8,S.td)}
   if(tv!=null){sumTB+=tv;anyTB=true}
  });
- put(r,0,"JUMLAH",S.sum);mrg(r,0,r,4,S.sum);put(r,5,anyTB?sumTB:"",S.sum);put(r,6,sumB,S.sum);put(r,7,"",S.sum);put(r,8,MB.total,S.sum);r+=2;
- var md=M.minDur<0?"semua padam trip (tanpa batas durasi)":"hanya padam trip > "+M.minDur+" menit",sc=FG_RULE==="baru"?" Tabel A hanya PMT_, tabel B hanya GH_ dan REC_ (peralatan lain tidak dihitung).":"";
- var nt="Keterangan: "+md+". Tidak dihitung: gangguan binatang/pihak ke-3, sebab lain (masyarakat, aktivitas lingkungan sekitar, vandalisme), serta UFR / dari pembangkit. Jika dalam satu penyulang terdapat jam padam dan hari yang sama pada beberapa PMT (penormalan bertahap), hanya baris paling atas pada sumber data yang dihitung."+sc+" Total yang dihitung: "+M.total+" kejadian. Dicetak: "+new Date().toLocaleString("id-ID")+".";
+ put(r,0,"JUMLAH",S.sum);mrg(r,0,r,4,S.sum);put(r,5,anyTB?sumTB:"",S.sum);put(r,6,sumB,S.sum);put(r,7,"",S.sum);put(r,8,M.total,S.sum);r+=2;
+ var nt="Keterangan: semua padam trip dihitung (termasuk gangguan sesaat \u2264 5 menit). Tidak dihitung: gangguan binatang/pihak ke-3, sebab lain (masyarakat, aktivitas lingkungan sekitar, vandalisme), serta UFR / dari pembangkit. Jika dalam satu penyulang terdapat jam padam dan hari yang sama pada beberapa PMT (penormalan bertahap), hanya baris paling atas pada sumber data yang dihitung. Total yang dihitung: "+M.total+" kejadian. Dicetak: "+new Date().toLocaleString("id-ID")+".";
  put(r,0,nt,S.note);mrg(r,0,r+1,NC-1,S.note);
  var cols=[6,22,18,34,8,9];for(var i=0;i<nz;i++)cols.push(11);while(cols.length<NC)cols.push(12);
  return{name:"Rekap FGTM",cols:cols,rows:rows,merges:merges,heights:heights,landscape:true}
@@ -1512,17 +1477,17 @@ function FgIcon(a){var h=Ea.createElement;return h("svg",Object.assign({},a,{vie
 function UlpCheck(P){
  var h=Ea.createElement,s1=Ea.useState(false),open=s1[0],setOpen=s1[1],s2=Ea.useState(""),q=s2[0],setQ=s2[1],s3=Ea.useState("l"),al=s3[0],setAl=s3[1],ref=Ea.useRef(null);
  fgUseOut(ref,open,setOpen);
- var opts=P.options||[],arr=ulpArr(P.value).filter(function(x){return opts.indexOf(x)>=0}),all=arr.length===0||arr.length===opts.length;
- var isOn=function(o){return all||arr.indexOf(o)>=0},
- tog=function(o){var base=all?opts.slice():arr.slice(),i=base.indexOf(o);if(i>=0){if(base.length===1)return;base.splice(i,1)}else base.push(o);P.onChange(base.length===opts.length?"SEMUA":base)},
- label=all?(P.allLabel||"Semua ULP")+" ("+opts.length+")":arr.length<=2?arr.map(function(x){return"ULP "+x}).join(", "):arr.length+" ULP dipilih",
+ var opts=P.options||[],arr=ulpArr(P.value).filter(function(x){return opts.indexOf(x)>=0}),none=ulpNone(P.value)||(ulpArr(P.value).length>0&&arr.length===0),all=!none&&(arr.length===0||arr.length===opts.length);
+ var isOn=function(o){return all||(!none&&arr.indexOf(o)>=0)},
+ tog=function(o){var base=none?[]:all?opts.slice():arr.slice(),i=base.indexOf(o);if(i>=0)base.splice(i,1);else base.push(o);P.onChange(base.length===opts.length?"SEMUA":base.length===0?[ULP_NONE]:base)},
+ label=none?"Tidak ada ULP dipilih":all?(P.allLabel||"Semua ULP")+" ("+opts.length+")":arr.length<=2?arr.map(function(x){return"ULP "+x}).join(", "):arr.length+" ULP dipilih",
  shown=opts.filter(function(o){return!q||o.toLowerCase().indexOf(q.toLowerCase())>=0}),
  toggleOpen=function(){if(!open&&ref.current){var r=ref.current.getBoundingClientRect();setAl(r.left+270>window.innerWidth?"r":"l")}setOpen(!open)};
  return h("div",{className:"fg-ms",ref:ref},
   h("button",{type:"button",className:(P.cls||TR_SEL)+" fg-ms-btn"+(all?"":" fg-ms-on"),onClick:toggleOpen,"aria-haspopup":"listbox","aria-expanded":open},h("span",{className:"fg-ms-lb"},label)),
   h(Pi,{className:"w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"}),
   open&&h("div",{className:"fg-pop"+(al==="r"?" fg-pop-r":""),role:"listbox"},
-   h("div",{className:"fg-pop-h"},h("button",{type:"button",className:"fg-lnk",onClick:function(){P.onChange("SEMUA")}},"Pilih semua"),h("span",{className:"fg-pop-c"},(all?opts.length:arr.length)+" / "+opts.length+" dipilih")),
+   h("div",{className:"fg-pop-h"},h("button",{type:"button",className:"fg-lnk",onClick:function(){P.onChange(all?[ULP_NONE]:"SEMUA")}},all?"Hapus Semua":"Pilih Semua"),h("span",{className:"fg-pop-c"},(none?0:all?opts.length:arr.length)+" / "+opts.length+" dipilih")),
    opts.length>8&&h("input",{type:"text",className:"fg-q",placeholder:"Cari ULP...",value:q,onChange:function(ev){setQ(ev.target.value)}}),
    h("div",{className:"fg-pop-l"},shown.length===0?h("div",{className:"fg-empty"},"Tidak ada ULP"):shown.map(function(o){return h("label",{key:o,className:"fg-ck"},h("input",{type:"checkbox",checked:isOn(o),onChange:function(){tog(o)}}),h("span",null,"ULP "+o))})))
  )
@@ -1552,37 +1517,6 @@ function FgDetail(P){
  )
 }
 
-
-/* Telusur Selisih: tiap baris sumber + alasan dihitung / tidak, dan pembanding skenario terhadap angka manual */
-function FgTrace(P){
- var h=Ea.createElement,a=P.entries,f=P.f,s1=Ea.useState(""),mA=s1[0],setMA=s1[1],s2=Ea.useState(""),mB=s2[0],setMB=s2[1],s3=Ea.useState(false),allEq=s3[0],setAllEq=s3[1],
- base={minDur:P.minDur},
- T=Ea.useMemo(function(){return fgRun(a,f,Object.assign({trace:true},base))},[a,f,P.minDur]),
- SC=Ea.useMemo(function(){return fgScen(a,f,base)},[a,f,P.minDur]),
- tot=0,ulps={},cnt={};
- a.forEach(function(e){if(!e)return;var ok=(f.tahun===FG_ALL||trYear(e)===f.tahun)&&(f.bulan===FG_ALL||trMon(e)===f.bulan)&&(f.dcc===FG_ALL||e.dcc===f.dcc);if(ok){tot++;if(e.ulp)ulps[e.ulp]=(ulps[e.ulp]||0)+1}});
- var rows=T.trace.filter(function(x){return allEq||fgIsA(x.e)||fgIsB(x.e)}),shown=rows.slice().sort(function(x,y){return fgDateNum(x.e)-fgDateNum(y.e)||String(fgJam(x.e)).localeCompare(fgJam(y.e))||x.i-y.i}),cap=600;
- rows.forEach(function(x){cnt[x.s.split(" (")[0].split(":")[0]]=(cnt[x.s.split(" (")[0].split(":")[0]]||0)+1});
- var verdict=function(sys,man){if(man===""||isNaN(Number(man)))return h("td",{className:"fg-vd"},"-");var d=sys-Number(man);return h("td",{className:"fg-vd "+(d>=0&&d<=5?"fg-ok":"fg-bad")},(d>0?"+":"")+d+(d>=0&&d<=5?" \u2713 dalam toleransi":d<0?" \u2717 sistem kurang":" \u2717 lebih dari 5"))};
- Ea.useEffect(function(){var k=function(ev){ev.key==="Escape"&&P.onClose()},ov=document.body.style.overflow;document.addEventListener("keydown",k);document.body.style.overflow="hidden";return function(){document.removeEventListener("keydown",k);document.body.style.overflow=ov}},[]);
- var ulpList=Object.keys(ulps).sort(fgNat).map(function(u){return u+" ("+ulps[u]+")"}).join(", ");
- return h("div",{className:"fg-ov",onMouseDown:function(ev){ev.target===ev.currentTarget&&P.onClose()}},
-  h("div",{className:"fg-md",role:"dialog","aria-modal":"true","aria-label":"Telusur Selisih"},
-   h("div",{className:"fg-md-h"},h("div",{style:{minWidth:0}},h("div",{className:"fg-md-t"},"Telusur Selisih \u00B7 "+fgPeriod(f)),h("div",{className:"fg-md-s"},[f.dcc!==FG_ALL?f.dcc:"Semua DCC",f.up3!==FG_ALL?"UP3 "+f.up3:"Semua UP3",ulpOn(f.ulp)?"ULP "+ulpTxt(f.ulp):"Semua ULP"].join(" / "))),h("div",{className:"fg-md-a"},h("button",{type:"button",className:"fg-x",onClick:P.onClose,"aria-label":"Tutup"},"\u00D7"))),
-   h("div",{className:"fg-md-b"},
-    h("div",{className:"fg-tr-box"},h("b",null,"Baris di sumber data untuk periode & DCC ini: "+tot),(tot===0?h("span",{className:"fg-bad"}," \u2014 tidak ada satu pun baris. Periksa apakah data arsip periode ini berhasil dimuat (menu Sumber Data)."):h("span",null," \u2014 ULP yang terdeteksi: "+ulpList)),
-     h("div",{className:"fg-tr-sub"},"Baris yang cocok dengan filter unit: "+T.trace.length+". Dari jumlah itu: "+T.kept.length+" dihitung.")),
-    h("div",{className:"fg-sec"},"Pembanding dengan hitungan manual (isi angka manual; selisih 0 s.d. +5 = sistem lebih banyak, masih ditoleransi)"),
-    h("div",{className:"fg-tr-in"},h("label",null,"Manual Tabel A (Penyulang PMT_) ",h("input",{type:"number",min:0,className:"fg-tg",value:mA,onChange:function(ev){setMA(ev.target.value)}})),h("label",null,"Manual Tabel B (Recloser GH_/REC_) ",h("input",{type:"number",min:0,className:"fg-tg",value:mB,onChange:function(ev){setMB(ev.target.value)}}))),
-    h("div",{className:"fg-wrap"},h("table",{className:"fg-t"},h("thead",null,h("tr",null,["Skenario hitung","Sistem A","Selisih A","Sistem B","Selisih B"].map(function(t){return h("th",{key:t},t)}))),
-     h("tbody",null,SC.map(function(s,i){return h("tr",{key:i},h("td",{className:"l"},s.lb),h("td",null,s.A),verdict(s.A,mA),h("td",null,s.B),verdict(s.B,mB))})))),
-    h("div",{className:"fg-sec",style:{marginTop:"1rem"}},"Rincian baris sumber ("+rows.length+(rows.length>cap?", ditampilkan "+cap+" pertama":"")+")"),
-    h("label",{className:"fg-ck",style:{width:"fit-content"}},h("input",{type:"checkbox",checked:allEq,onChange:function(ev){setAllEq(ev.target.checked)}}),h("span",null,"Tampilkan juga peralatan selain PMT_ / GH_ / REC_ (LBS dll.)")),
-    h("div",{className:"fg-wrap"},h("table",{className:"fg-t fg-dt"},h("thead",null,h("tr",null,["No","Tanggal","Jam Padam","Durasi","ULP","Penyulang","PMT / Peralatan","Zona","Tipe","Penyebab","Status"].map(function(t){return h("th",{key:t},t)}))),
-     h("tbody",null,shown.slice(0,cap).map(function(x,i){var e=x.e;return h("tr",{key:i+"|"+x.i,className:x.k==="ok"?"fg-okrow":"fg-skip"},h("td",null,i+1),h("td",{className:"nw"},e.tanggal),h("td",null,fgJam(e)||e.jamPadam),h("td",null,e.durasiPadamMenit+" mnt"),h("td",{className:"l"},e.ulp),h("td",{className:"l nw"},e.feeder),h("td",{className:"l"},e.pmt),h("td",null,fgZ(e)),h("td",null,e.tipe),h("td",{className:"l"},e.subKelompok),h("td",{className:"l fg-ket"+(x.k==="ok"?" fg-good":" fg-warn")},x.s))}))))))
- )
-}
-
 function fgSel(lb,val,opts,onCh,all){
  var h=Ea.createElement;
  return h("div",{key:lb},h("label",{className:"block text-xs font-semibold text-slate-600 mb-1"},lb),h("div",{className:"relative"},
@@ -1600,15 +1534,13 @@ function RekapFgtm(P){
  s4=Ea.useState(null),det=s4[0],setDet=s4[1],
  s5=Ea.useState(false),menu=s5[0],setMenu=s5[1],
  s6=Ea.useState(fgLoadT),tg=s6[0],setTg=s6[1],
- s7=Ea.useState(5),minDur=s7[0],setMinDur=s7[1],
- s8=Ea.useState(false),trc=s8[0],setTrc=s8[1],
  mref=Ea.useRef(null),key=a.length+"|"+(a.length?a[a.length-1].bulan:"");
  fgUseOut(mref,menu,setMenu);
  Ea.useEffect(function(){auto&&setF(fgDefault(a))},[key,auto]);
  var upd=function(p){setAuto(false);setF(function(s){return Object.assign({},s,p)})},
  o=Ea.useMemo(function(){return trOpts(a,f)},[a,f.tahun,f.dcc,f.up3]),
- M=Ea.useMemo(function(){return fgBuild(a,f,showZero,{minDur:minDur})},[a,f,showZero,minDur]),
- R=M.R,MA=M.A,MB=M.B,Z=MA.zones,nz=Z.length,
+ M=Ea.useMemo(function(){return fgBuild(a,f,showZero)},[a,f,showZero]),
+ R=M.R,Z=M.zones,nz=Z.length,
  setT=function(k,v){setTg(function(t){var n=Object.assign({},t);if(v===""||v==null)delete n[k];else n[k]=Number(v);fgSaveT(n);return n})},
  open=function(title,recs,sub){setDet({title:title,sub:sub,items:recs.map(function(r){return{r:r,k:""}})})},
  num=function(n,title,recs){return n?h("button",{type:"button",className:"fg-num",title:"Klik untuk melihat detail",onClick:function(){open(title,recs,fgPeriod(f))}},n):"0"},
@@ -1618,7 +1550,7 @@ function RekapFgtm(P){
  allRecs=function(){return R.kept},
  /* ---- tabel A ---- */
  zsum={},sumR=0,sumT=0,anyT=false,tA=[];
- MA.groups.forEach(function(g,gi){
+ M.groups.forEach(function(g,gi){
   var n=g.feeders.length,tv=tg[fgTKey(f,"A",g)];g.__rs=n;if(tv!=null){sumT+=tv;anyT=true}
   g.feeders.forEach(function(fd,fi){
    var c=[];
@@ -1641,10 +1573,10 @@ function RekapFgtm(P){
    h("tr",null,Z.map(function(z){return h("th",{key:z},fgZName(z))})),
    h("tr",{className:"fg-idx"},idxAc)),
   h("tbody",null,tA,
-   h("tr",{className:"fg-sum"},h("td",{colSpan:4},"JUMLAH"),h("td",null,anyT?sumT:""),Z.map(function(z){return h("td",{key:z},zsum[z]?num(zsum[z],"Semua ULP \u00B7 "+fgZName(z),fgInA(R.kept).filter(function(r){return fgZ(r.e)===z})):0)}),h("td",null,num(sumR,"Semua ULP \u00B7 semua zona",fgInA(R.kept))),h("td",null,num(MA.total,"Semua ULP",fgInA(R.kept))))));
+   h("tr",{className:"fg-sum"},h("td",{colSpan:4},"JUMLAH"),h("td",null,anyT?sumT:""),Z.map(function(z){return h("td",{key:z},zsum[z]?num(zsum[z],"Semua ULP \u00B7 "+fgZName(z),R.kept.filter(function(r){return fgZ(r.e)===z})):0)}),h("td",null,num(sumR,"Semua ULP \u00B7 semua zona",R.kept)),h("td",null,num(M.total,"Semua ULP",R.kept)))));
  /* ---- tabel B ---- */
  var tB=[],sumB=0,sumTB=0,anyTB=false;
- MB.groups.forEach(function(g,gi){
+ M.groups.forEach(function(g,gi){
   var n=0;g.feeders.forEach(function(fd){n+=fd.pmts.length});var tv=tg[fgTKey(f,"B",g)];if(tv!=null){sumTB+=tv;anyTB=true}
   var first=true;
   g.feeders.forEach(function(fd){
@@ -1668,16 +1600,14 @@ function RekapFgtm(P){
    h("tr",null,["NO","UNIT/ULP","PENYULANG","PMT / PERALATAN","SAT","TARGET","REALISASI","JUMLAH FEEDER","JUMLAH"].map(function(t){return h("th",{key:t},t)})),
    h("tr",{className:"fg-idx"},[1,2,3,4,5,6,7,8,9].map(function(n){return h("td",{key:n},n)}))),
   h("tbody",null,tB,
-   h("tr",{className:"fg-sum"},h("td",{colSpan:5},"JUMLAH"),h("td",null,anyTB?sumTB:""),h("td",null,num(sumB,"Semua ULP \u00B7 semua PMT",fgInB(R.kept))),h("td",null,""),h("td",null,num(MB.total,"Semua ULP",fgInB(R.kept))))));
- var empty=M.empty,
+   h("tr",{className:"fg-sum"},h("td",{colSpan:5},"JUMLAH"),h("td",null,anyTB?sumTB:""),h("td",null,num(sumB,"Semua ULP \u00B7 semua PMT",R.kept)),h("td",null,""),h("td",null,num(M.total,"Semua ULP",R.kept)))));
+ var empty=M.groups.length===0,
  unitTxt=[f.dcc!==FG_ALL?f.dcc:"Semua DCC",f.up3!==FG_ALL?"UP3 "+f.up3:"Semua UP3",ulpOn(f.ulp)?"ULP "+ulpTxt(f.ulp):"Semua ULP"].join(" / ");
  return h("div",{className:"bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5",id:"rekap-fgtm"},
   h("div",{className:"flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4"},
    h("div",{className:"flex items-center gap-3"},h("div",{className:"w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0"},h(FgIcon,{className:"w-5 h-5"})),
-    h("div",null,h("h2",{className:"text-base sm:text-lg font-bold text-slate-900"},"Rekapitulasi Kinerja FGTM (Frekuensi Gangguan Tegangan Menengah)"),h("p",{className:"text-xs text-slate-500"},(minDur<0?"Semua padam trip":"Padam trip > 5 menit")+" per ULP, penyulang, zona, dan PMT"))),
+    h("div",null,h("h2",{className:"text-base sm:text-lg font-bold text-slate-900"},"Rekapitulasi Kinerja FGTM (Frekuensi Gangguan Tegangan Menengah)"),h("p",{className:"text-xs text-slate-500"},"Semua padam trip (termasuk gangguan sesaat) per ULP, penyulang, zona, dan PMT"))),
    h("div",{className:"flex flex-wrap gap-2 items-center"},
-    h("button",{type:"button",className:"tr-btn",onClick:function(){setTrc(true)},title:"Lihat setiap baris sumber data dan alasan dihitung / tidak dihitung"},"\uD83D\uDD0D Telusur Selisih"),
-    FG_RULE==="baru"&&h("select",{className:"tr-btn fg-dur",value:minDur,onChange:function(ev){setMinDur(Number(ev.target.value))},"aria-label":"Batas durasi"},h("option",{value:5},"Durasi > 5 menit"),h("option",{value:-1},"Semua trip (tanpa batas durasi)")),
     h("label",{className:"tr-tg"+(showZero?" fg-tg-on":"")},h("input",{type:"checkbox",checked:showZero,onChange:function(ev){setZero(ev.target.checked)}}),h("span",null,"Tampilkan nilai 0")),
     h("div",{className:"fg-ms",ref:mref,style:{width:"auto"}},
      h("button",{type:"button",className:"tr-btn fg-xbtn",onClick:function(){setMenu(!menu)},disabled:empty&&!R.cand,"aria-haspopup":"menu","aria-expanded":menu},"\u2B07 Export Excel \u25BE"),
@@ -1693,27 +1623,24 @@ function RekapFgtm(P){
     h("div",{key:"ULP"},h("label",{className:"block text-xs font-semibold text-slate-600 mb-1"},"ULP"),h(UlpCheck,{value:f.ulp,options:o.ulp,onChange:function(v){upd({ulp:v})},allLabel:"Semua ULP"})))),
   h("div",{className:"fg-chips"},
    chip("Padam trip dihitung",R.kept.length,R.kept.map(function(r){return{r:r,k:""}}),"fg-c-ok"),
-   chip(minDur<0?"Semua trip (sebelum penyaringan)":"Trip > 5 menit (sebelum penyaringan)",R.cand,R.kept.map(function(r){return{r:r,k:""}}).concat(R.exO.map(function(r){return{r:r,k:"O"}}),R.exU.map(function(r){return{r:r,k:"UFR"}}),R.exB.map(function(r){return{r:r,k:"Binatang"}}),R.exS.map(function(r){return{r:r,k:"Sebab lain"}}),R.dups.map(function(d){return{r:d,k:"dup"}})),"fg-c-n"),
-   FG_RULE==="baru"&&chip("Peralatan lain (LBS dll.)",R.exO.length,R.exO.map(function(r){return{r:r,k:"O"}}),"fg-c-x"),
+   chip("Semua padam trip (sebelum penyaringan)",R.cand,R.kept.map(function(r){return{r:r,k:""}}).concat(R.exU.map(function(r){return{r:r,k:"UFR"}}),R.exB.map(function(r){return{r:r,k:"Binatang"}}),R.exS.map(function(r){return{r:r,k:"Sebab lain"}}),R.dups.map(function(d){return{r:d,k:"dup"}})),"fg-c-n"),
    chip("UFR / pembangkit",R.exU.length,R.exU.map(function(r){return{r:r,k:"UFR"}}),"fg-c-x"),
    chip("Binatang / pihak ke-3",R.exB.length,R.exB.map(function(r){return{r:r,k:"Binatang"}}),"fg-c-x"),
    chip("Sebab lain",R.exS.length,R.exS.map(function(r){return{r:r,k:"Sebab lain"}}),"fg-c-x"),
    chip("Duplikat jam sama",R.dups.length,R.dups.map(function(d){return{r:d,k:"dup"}}),"fg-c-d")),
   h("details",{className:"fg-rule"},h("summary",null,"Aturan perhitungan"),
    h("ul",null,
-    h("li",null,minDur<0?"Semua padam trip dihitung (batas durasi dimatikan).":"Hanya padam trip dengan durasi lebih dari 5 menit."),
-    FG_RULE==="baru"&&h("li",null,"Tabel A (Gangguan Penyulang) hanya peralatan PMT_. Tabel B (Gangguan Recloser) hanya GH_ dan REC_. Peralatan lain (LBS dll.) tidak dihitung."),
+    h("li",null,"Semua padam trip dihitung, termasuk gangguan sesaat (\u2264 5 menit) dan reclose berhasil; tidak ada batas durasi minimum. Padam dilepas, manuver, dan penormalan tidak dihitung."),
     h("li",null,"Gangguan UFR atau yang berasal dari pembangkit tidak dihitung."),
     h("li",null,"Gangguan binatang / pihak ke-3 dan sebab lain (masyarakat, aktivitas lingkungan sekitar, vandalisme) tidak dihitung."),
     h("li",null,"Dalam satu penyulang, jika beberapa PMT memiliki jam padam dan hari yang sama (penormalan bertahap), hanya baris paling atas pada sumber data yang dihitung; sebab gangguan mengikuti baris tersebut."),
     h("li",null,"Export Excel hanya memuat kejadian yang dihitung, sehingga jumlah pada Detail dan Rekapitulasi sama. Klik angka pada tabel untuk melihat rincian kejadian. Kolom TARGET dapat diisi manual per ULP dan tersimpan di perangkat ini."))),
-  empty?h("div",{className:"fg-none"},"Tidak ada padam trip > 5 menit untuk filter ini ("+fgPeriod(f)+" \u00B7 "+unitTxt+")."):
+  empty?h("div",{className:"fg-none"},"Tidak ada padam trip untuk filter ini ("+fgPeriod(f)+" \u00B7 "+unitTxt+")."):
   h("div",{className:"space-y-5 mt-4"},
-   h("div",null,h("div",{className:"fg-sec"},FG_RULE==="baru"?"A.  GANGGUAN PENYULANG (PMT_) PER ZONA":"A.  GANGGUAN PENYULANG (PER ZONA)"),h("div",{className:"fg-wrap"},tableA)),
-   h("div",null,h("div",{className:"fg-sec"},FG_RULE==="baru"?"B.  GANGGUAN RECLOSER (GH_ / REC_) PER PENYULANG":"B.  GANGGUAN PMT / PERALATAN PER PENYULANG"),h("div",{className:"fg-wrap"},tableB)),
+   h("div",null,h("div",{className:"fg-sec"},"A.  GANGGUAN PENYULANG (PER ZONA)"),h("div",{className:"fg-wrap"},tableA)),
+   h("div",null,h("div",{className:"fg-sec"},"B.  GANGGUAN PMT / PERALATAN PER PENYULANG"),h("div",{className:"fg-wrap"},tableB)),
    h("p",{className:"text-[11px] text-slate-500"},"Periode: "+fgPeriod(f)+" \u00B7 "+unitTxt)),
-  det&&h(FgDetail,{d:det,onClose:function(){setDet(null)}}),
-  trc&&h(FgTrace,{entries:a,f:f,minDur:minDur,onClose:function(){setTrc(false)}})
+  det&&h(FgDetail,{d:det,onClose:function(){setDet(null)}})
  )
 }
 
