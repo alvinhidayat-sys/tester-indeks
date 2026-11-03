@@ -8,7 +8,6 @@ if(t!=='light'&&t!=='dark')t=(window.matchMedia&&matchMedia('(prefers-color-sche
 document.documentElement.setAttribute('data-theme',t);
 var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',t==='dark'?'#1a1e2d':'#eaecf8')})();</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -151,33 +150,19 @@ tr.sub td{background:var(--tint-cy);font-weight:700;cursor:pointer}tr.sub:hover 
 summary{cursor:pointer;font-weight:600;color:var(--mut)}
 .inf{font-size:12.5px;color:var(--mut);margin-top:10px;white-space:pre-wrap;line-height:1.5}
 #cbOut td[data-m]{cursor:pointer}#cbOut td[data-m]:hover{background:var(--tint-ye);text-decoration:underline dotted}
-#cbSlOut td[data-m]{cursor:pointer}#cbSlOut td[data-m]:hover{background:var(--tint-ye);text-decoration:underline dotted}
 #cbOut tr.tot td[data-m]:hover{background:var(--cy2);color:var(--on-cy)}
-#cbSlOut tr.tot td[data-m]:hover{background:var(--cy2);color:var(--on-cy)}
 #cbOut.wrap{max-height:none}
-#cbSlOut.wrap{max-height:none}
 #cbOut table{min-width:900px;border-collapse:separate;border-spacing:0;font-size:13.5px}
-#cbSlOut table{min-width:900px;border-collapse:separate;border-spacing:0;font-size:13.5px}
 #cbOut th{position:static;text-align:center;white-space:normal;vertical-align:middle;line-height:1.25;padding:10px;border-bottom:2px solid var(--line);border-right:1px solid var(--line)}
-#cbSlOut th{position:static;text-align:center;white-space:normal;vertical-align:middle;line-height:1.25;padding:10px;border-bottom:2px solid var(--line);border-right:1px solid var(--line)}
 #cbOut th.l{text-align:left}#cbOut th.grp{background:linear-gradient(var(--tint-cy),var(--tint-cy)),var(--sf2);border-bottom:1px solid var(--line)}
-#cbSlOut th.l{text-align:left}#cbSlOut th.grp{background:linear-gradient(var(--tint-cy),var(--tint-cy)),var(--sf2);border-bottom:1px solid var(--line)}
 #cbOut th.st{min-width:96px;font-size:11.5px;background:linear-gradient(var(--tint-ye),var(--tint-ye)),var(--sf2)}
-#cbSlOut th.st{min-width:96px;font-size:11.5px;background:linear-gradient(var(--tint-ye),var(--tint-ye)),var(--sf2)}
 #cbOut th.b,#cbOut td.b{border-left:2px solid var(--line)}
-#cbSlOut th.b,#cbSlOut td.b{border-left:2px solid var(--line)}
 #cbOut td{padding:8px 10px;border-right:1px solid var(--line)}
-#cbSlOut td{padding:8px 10px;border-right:1px solid var(--line)}
 #cbOut td.n{text-align:right;font-variant-numeric:tabular-nums}
-#cbSlOut td.n{text-align:right;font-variant-numeric:tabular-nums}
 #cbOut td.pc{text-align:right;font-weight:700;min-width:84px}
-#cbSlOut td.pc{text-align:right;font-weight:700;min-width:84px}
 #cbOut tr.sub td{font-weight:700}
-#cbSlOut tr.sub td{font-weight:700}
 #cbOut tr.u td:first-child{color:var(--mut);font-size:12.5px}#cbOut tr.u td:nth-child(2){padding-left:22px}
-#cbSlOut tr.u td:first-child{color:var(--mut);font-size:12.5px}#cbSlOut tr.u td:nth-child(2){padding-left:22px}
 #cbOut tr.u:hover td{background:var(--tint-cy)}
-#cbSlOut tr.u:hover td{background:var(--tint-cy)}
 .cbn{margin:8px 0 0}
 /* Tombol ganti tema (melayang, mudah dijangkau ibu jari) */
 #thm{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:8;width:52px;height:52px;min-height:0;padding:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,var(--cy2),var(--cy));color:var(--on-cy);box-shadow:var(--raise)}
@@ -202,7 +187,6 @@ label:has(#fU),label:has(#cbU),details label{flex-basis:100%}
 .kpi{grid-template-columns:repeat(2,1fr);gap:10px}.kpi button{padding:12px}.kpi b{font-size:22px}
 .row.tabs,.row:has(#xR){flex:1 1 100%}.tabs button{flex:1}.row:has(#xR) button{flex:1 1 44%}
 #out.wrap,#pOut.wrap,#cbOut.wrap{max-height:none;overflow:visible}
-#out.wrap,#pOut.wrap,#cbSlOut.wrap{max-height:none;overflow:visible}
 .row:has(#pXR){flex:1 1 100%}.row:has(#pXR) button{flex:1 1 44%}#pOut table{min-width:0}
 table{min-width:0}thead{display:none}table,tbody,tr,td{display:block;width:100%}
 tr{background:var(--sf);border-radius:16px;margin-bottom:12px;padding:6px 14px;box-shadow:var(--raise-s)}
@@ -212,7 +196,6 @@ td::before{content:attr(data-l);flex:0 0 45%;text-align:left;color:var(--mut);fo
 tr.sub{background:linear-gradient(var(--tint-cy),var(--tint-cy)),var(--sf)}tr.sub td,tr.tot td{background:transparent}
 tr.tot{background:linear-gradient(145deg,var(--cy2),var(--cy))}tr.tot td{color:var(--on-cy);border-color:rgba(4,48,60,.2)}tr.tot td::before{color:var(--on-cy);opacity:.75}
 #cbOut table{min-width:0}#cbOut td{border-right:0}#cbOut td.b{border-left:0}#cbOut td.pc{min-width:0}#cbOut tr.u td:nth-child(2){padding-left:0}
-#cbSlOut table{min-width:0}#cbSlOut td{border-right:0}#cbSlOut td.b{border-left:0}#cbSlOut td.pc{min-width:0}#cbSlOut tr.u td:nth-child(2){padding-left:0}
 #md{padding:0;align-items:flex-end}#md .box{width:100%;max-height:92vh;max-height:92dvh;border-radius:24px 24px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px))}
 #mi.wrap{padding:4px 10px 10px}
 .cards{grid-template-columns:1fr;gap:16px}.mc .mb{padding:12px 16px 16px}.mc h2{font-size:17px}.mc p{font-size:13px}
@@ -283,6 +266,10 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;po
 .kita-legacy i{display:block;width:92px;height:46px;background:var(--kl) center/contain no-repeat}
 @media(max-width:640px){.kita-legacy{right:calc(74px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));gap:6px}.kita-legacy b{font-size:9.5px}.kita-legacy i{width:72px;height:36px}}
 @media print{.kita-legacy{display:none!important}}
+.kpi>div{background:var(--sf);border-radius:20px;box-shadow:var(--raise);padding:14px 16px}
+.kpi>div span{display:block;font-size:12.5px;font-weight:600;color:var(--mut)}
+.kpi>div b{display:block;font:800 26px/1.15 Montserrat,"Segoe UI",system-ui,sans-serif;color:var(--cyt);margin:2px 0}
+.kpi>div small{font-size:12px;color:var(--mut)}
 </style></head><body>
 <header><a class="btnlink hback" id="hbk" href="#" aria-label="Kembali ke Beranda"><span class="bk">←</span><span class="bt"> Kembali ke Beranda</span></a><div class="hero" id="hr"><video id="hv" src="journey.webm" poster="journey-poster.png" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video></div><div class="brand"><b id="bt">Command Center</b><span id="bs">UIW Papua dan Papua Barat</span></div><h1 id="ht">Dashboard Kinerja dan Administrasi Command Center</h1><p id="hp"></p></header>
 <div id="fl" aria-hidden="true"></div>
@@ -295,6 +282,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;po
 <a class="mc" href="#callback"><svg viewBox="0 0 320 180" role="img" aria-label="Callback pelanggan: telepon, percakapan dan penilaian"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="40" y="26" width="72" height="128" rx="12" fill="#fbf2dc"/><rect x="50" y="42" width="52" height="86" rx="3" fill="#efdcae"/><circle cx="76" cy="142" r="5" fill="#fbf2dc"/><path d="M142 40H282A8 8 0 0 1 290 48V92A8 8 0 0 1 282 100H178L156 120V100H142A8 8 0 0 1 134 92V48A8 8 0 0 1 142 40Z" fill="#fbf2dc"/><circle cx="76" cy="84" r="13" fill="#5f6535"/><path d="M71 84l4 4 8-9" fill="none" stroke="#fbf2dc" stroke-width="3"/></g><text x="212" y="78" text-anchor="middle" font-family="serif" font-size="26" fill="#d49a2a" letter-spacing="2">★★★★★</text><path d="M170 150Q214 172 262 140" fill="none" stroke="#9c3f22" stroke-width="4" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M256 130L272 144L250 150Z" fill="#9c3f22"/><circle cx="288" cy="136" r="15" fill="#fbf2dc" stroke="#7a6247" stroke-width="9" stroke-dasharray="5 4.5"/><circle cx="288" cy="136" r="7" fill="#fbf2dc" stroke="#3a2a1c" stroke-width="3"/></svg><div class="mb"><h2>Callback Pelanggan</h2><p>Rekap callback / Konfirmasi ke pelanggan.</p><span class="go">Buka rekap →</span></div></a>
 <a class="mc" href="#cuti"><svg viewBox="0 0 320 180" role="img" aria-label="Pengajuan cuti: kalender dengan hari cuti ditandai, koper dan matahari"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="30" y="26" width="146" height="128" rx="6" fill="#fbf2dc"/><rect x="30" y="26" width="146" height="24" rx="6" fill="#3a2a1c"/><path d="M62 18V34M144 18V34" fill="none" stroke-width="5"/><rect x="42" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="68" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="94" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="120" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="146" y="66" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="42" y="86" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="68" y="86" width="20" height="14" rx="2" fill="#5f6535"/><rect x="94" y="86" width="20" height="14" rx="2" fill="#5f6535"/><rect x="120" y="86" width="20" height="14" rx="2" fill="#5f6535"/><rect x="146" y="86" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="42" y="106" width="20" height="14" rx="2" fill="#5f6535"/><rect x="68" y="106" width="20" height="14" rx="2" fill="#5f6535"/><rect x="94" y="106" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="120" y="106" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="146" y="106" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="42" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="68" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="94" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="120" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><rect x="146" y="126" width="20" height="14" rx="2" fill="#efdcae" stroke="#c8ae7e" stroke-width="2"/><path d="M118 112l5 5 10-11" fill="none" stroke="#fbf2dc" stroke-width="3"/></g><circle cx="270" cy="40" r="15" fill="#d49a2a" stroke="#3a2a1c" stroke-width="3"/><path d="M270 14V8M270 66V72M244 40H238M296 40H302M252 22l-4-4M288 22l4-4M252 58l-4 4M288 58l4 4" stroke="#d49a2a" stroke-width="3" stroke-linecap="round"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M230 96V88A6 6 0 0 1 236 82H262A6 6 0 0 1 268 88V96" fill="none"/><rect x="198" y="96" width="100" height="62" rx="8" fill="#9c3f22"/><path d="M226 96V158M270 96V158" fill="none" stroke="#fbf2dc" stroke-width="4"/><rect x="241" y="120" width="16" height="12" rx="2" fill="#d49a2a"/></g></svg><div class="mb"><h2>Pengajuan Cuti</h2><p>Ajukan dan pantau cuti pegawai Command Center.</p><span class="go">Buka pengajuan →</span></div></a>
 <a class="mc" href="#absensi"><svg viewBox="0 0 320 180" role="img" aria-label="Rekap absensi dan lembur: daftar hadir, jam dinding dan bulan penanda lembur malam"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="26" y="22" width="108" height="140" rx="6" fill="#fbf2dc"/><rect x="58" y="14" width="44" height="16" rx="5" fill="#d49a2a"/><circle cx="52" cy="52" r="8" fill="#5f6535"/><path d="M48 52l3 3 6-7" fill="none" stroke="#fbf2dc" stroke-width="2.5"/><path d="M72 52H118" fill="none"/><circle cx="52" cy="76" r="8" fill="#5f6535"/><path d="M48 76l3 3 6-7" fill="none" stroke="#fbf2dc" stroke-width="2.5"/><path d="M72 76H118" fill="none"/><circle cx="52" cy="100" r="8" fill="#fbf2dc"/><path d="M72 100H118" fill="none"/><circle cx="52" cy="124" r="8" fill="#5f6535"/><path d="M48 124l3 3 6-7" fill="none" stroke="#fbf2dc" stroke-width="2.5"/><path d="M72 124H118" fill="none"/></g><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><circle cx="220" cy="92" r="52" fill="#fbf2dc"/><circle cx="220" cy="92" r="42" fill="#efdcae" stroke-width="2"/><path d="M220 92V62M220 92L242 104" fill="none" stroke-width="4"/><circle cx="220" cy="92" r="4" fill="#3a2a1c"/><path d="M220 54v5M220 125v5M182 92h5M253 92h5" fill="none" stroke-width="2.5"/></g><path d="M276 28a20 20 0 1 0 22 26a16 16 0 0 1-22-26Z" fill="#d49a2a" stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round"/><circle cx="170" cy="140" r="14" fill="#9c3f22" stroke="#3a2a1c" stroke-width="3"/><path d="M170 133V147M163 140H177" stroke="#fbf2dc" stroke-width="3.5" stroke-linecap="round"/></svg><div class="mb"><h2>Rekap Absensi dan Lembur</h2><p>Rekap absensi dan lembur pegawai.</p><span class="go">Buka rekap →</span></div></a>
+<a class="mc" href="#batal"><svg viewBox="0 0 320 180" role="img" aria-label="Monitoring WO batal: daftar work order dengan tanda batal dan kategori"><rect width="320" height="180" fill="#efdcae"/><path d="M0 45H320M0 90H320M0 135H320M80 0V180M160 0V180M240 0V180" stroke="#c8ae7e" stroke-width="1" opacity=".5"/><g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="36" y="22" width="118" height="136" rx="8" fill="#fbf2dc"/><rect x="72" y="14" width="46" height="16" rx="4" fill="#5f6535"/></g><path d="M52 58H138M52 82H138M52 106H120" fill="none" stroke="#7a6247" stroke-width="3" stroke-linecap="round"/><path d="M50 82H140" stroke="#9c3f22" stroke-width="5" stroke-linecap="round"/><g stroke="#3a2a1c" stroke-width="3"><circle cx="240" cy="92" r="40" fill="#fbf2dc"/></g><path d="M224 76L256 108M256 76L224 108" stroke="#9c3f22" stroke-width="9" stroke-linecap="round"/><text x="240" y="158" text-anchor="middle" font-family="serif" font-size="15" fill="#9c3f22" letter-spacing="2">BATAL</text></svg><div class="mb"><h2>Monitoring WO Batal</h2><p>Filter, rekapitulasi laporan batal dan kategori batal (UIW Papua dan Papua Barat).</p><span class="go">Buka rekap →</span></div></a>
 </div>
 <p class="hnote"><span>sumber data : APKT-EIS-VCC</span></p>
 </main>
@@ -333,15 +321,24 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;po
 <div class="row btns"><button class="alt" id="cbXR">Unduh Excel tampilan tabel</button><button class="alt" id="cbXD">Unduh Excel detail panggilan</button></div></div>
 <div class="wrap" id="cbOut" style="margin-top:10px"></div>
 <div class="clg cbn"><span><b>Total Lapor</b> = laporan di EIS</span><span><b>Percobaan Telp</b> = panggilan keluar (nomor ganda tetap dihitung)</span><span><b>Plgn Dihubungi</b> = nomor sama dalam jeda singkat dihitung 1 kali</span><span><b>% Dihubungi</b> = Plgn Dihubungi ÷ Total Lapor</span></div></div>
-<div class="card" id="cbSlC"><div class="row btns" style="justify-content:space-between;align-items:center"><div><b>Rekap Callback Sumber Lapor</b><div class="clg cbn" style="margin:3px 0 0"><span>Sumber lapor diambil dari sheet detail eis (VLOOKUP berdasarkan No Lapor) untuk laporan yang ada panggilan maupun tidak. Klik angka untuk membuka rincian (pop up, bisa diunduh).</span></div></div>
-<div class="row btns"><button class="alt" id="cbXS">Unduh Excel rekap sumber lapor</button></div></div>
-<div class="wrap" id="cbSlOut" style="margin-top:10px"></div>
-<div class="clg cbn"><span><b>Total Lapor</b> = laporan di EIS per sumber lapor</span><span><b>Plgn Dihubungi</b> = nomor sama dalam jeda singkat dihitung 1 kali</span><span><b>% Dihubungi</b> = Plgn Dihubungi ÷ Total Lapor</span><span><b>Belum Dihubungi</b> = laporan tanpa panggilan keluar</span></div></div>
-<div class="card"><div class="row" style="align-items:flex-end"><div style="flex:1;min-width:220px"><b>Monitoring Sumber Lapor</b><div class="clg cbn" style="margin:3px 0 0"><span>Grafik garis mengikuti filter Bulan / Area / Posko dan diperbarui otomatis tiap sinkron. Klik nama sumber untuk menampilkan atau menyembunyikan garisnya.</span></div></div>
-<label>Tampilkan<select id="cbSlM"><option value="rep">Total Lapor</option><option value="con">Pelanggan Dihubungi</option><option value="try">Percobaan Telp</option><option value="pct">% Dihubungi</option></select></label>
-<label>Periode<select id="cbSlG"><option value="auto">Otomatis</option><option value="d">Harian</option><option value="m">Bulanan</option></select></label></div>
-<div class="row" id="cbSlChips" style="margin-top:10px"></div>
-<div style="position:relative;height:340px;margin-top:10px"><canvas id="cbSlCh"></canvas></div><div class="clg cbn" id="cbSlHint"></div></div>
+</main>
+<main id="mbo" hidden>
+<div class="card"><div class="row">
+<label>Bulan<select id="mbM"></select></label>
+<label>Area (UP3)<select id="mbA"></select></label>
+<label>Posko (ULP)<select id="mbU"></select></label>
+<label>Kategori Batal<select id="mbK"></select></label>
+<button id="mbS">Sinkron sekarang</button><span id="mbSt">Belum sinkron</span></div>
+<div class="clg" id="mbFiles" style="margin-top:8px"></div>
+<div id="mbErr" style="color:var(--bad);margin-top:8px;white-space:pre-wrap"></div></div>
+<div class="kpi" id="mbKpi"></div>
+<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Rekapitulasi Laporan Batal</b><div class="clg" style="margin:3px 0 0"><span>Per area (UP3) dan posko (ULP). Hanya UIW Papua dan Papua Barat.</span></div></div>
+<div class="row"><button class="alt" id="mbXR">Unduh Excel rekap</button></div></div>
+<div id="mbRek" style="margin-top:10px"></div></div>
+<div class="card"><b>Kategori Batal</b><div class="clg" style="margin:3px 0 8px"><span>Klik kategori untuk memfilter. Angka = jumlah WO · persen dari WO batal.</span></div>
+<div id="mbKat" style="display:grid;gap:8px"></div></div>
+<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><b>Detail Laporan Batal</b><div class="row"><button class="alt" id="mbXD">Unduh Excel detail</button></div></div>
+<div class="wrap" id="mbDet" style="margin-top:10px"></div><div class="clg" id="mbN"></div></div>
 </main>
 <main id="abs" hidden>
 <div id="absBox"></div>
@@ -3574,8 +3571,180 @@ function enter(k){if(cur==k&&!$('app').hidden)return;const g=MENUS[k];cur=k;CG=g
  tab='R';lim=200;open.clear();CH.sel=null;$('tR').classList.add('on');$('tD').classList.remove('on');
  $('fM').value='';$('fA').value='';$('fU').value='';R=DATA[k]||[];fill();render();
  $('err').textContent='';$('st').textContent=DATA[k]?'Menyegarkan...':'Belum sinkron';window.scrollTo(0,0);sync()}
-function route(){const h=location.hash.slice(1);if(h=='absensi'){if(window.absEnter)absEnter();return}if(h=='cuti'){if(window.cutEnter)cutEnter();return}if(h=='callback'){if(window.cbEnter)cbEnter();return}MENUS[h]?enter(h):home()}
+function route(){const h=location.hash.slice(1);{const _o=document.getElementById('mbo');if(_o&&h!='batal')_o.hidden=true}if(h=='absensi'){if(window.absEnter)absEnter();return}if(h=='cuti'){if(window.cutEnter)cutEnter();return}if(h=='callback'){if(window.cbEnter)cbEnter();return}if(h=='batal'){if(window.mbEnter)mbEnter();return}MENUS[h]?enter(h):home()}
 addEventListener('hashchange',route);route();setInterval(sync,D.iv*60000);
+</script>
+<script>
+(function(){
+/* ===== Monitoring WO Batal — UIW Papua dan Papua Barat =====
+   Isi BTC.cc.link dan BTC.ppb.link dengan LINK SPREADSHEET (buka file di dalam folder, salin URL-nya).
+   Sumber (folder Drive, dibaca lewat Web App Apps Script di Code.gs):
+    - Kode G (PPB)    : https://drive.google.com/drive/folders/1gwZCpqAylOS8-hDAx02NFqUnXu_q8SVs
+    - COMCEN (cc_p2b) : https://drive.google.com/drive/folders/16bhfFATJ3NcEGeEYJjDo4Qjl9h3XsUvH
+   */
+const $=id=>document.getElementById(id);
+const BTC={
+  /* URL Web App Google Apps Script (lihat Code.gs). Script inilah yang membaca semua file di folder. */
+  webapp:'https://script.google.com/macros/s/AKfycbxvxFYfncRSB36Nzrb13pxKAoM2RxksjjWzNS-2oIydSYDpgsk1VQvIeN0uQrhw707q/exec',
+  areas:['BIAK','JAYAPURA','MANOKWARI','MERAUKE','NABIRE','SORONG','TIMIKA','WAMENA']
+};
+const ML=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nrm=s=>String(s==null?'':s).toLowerCase().replace(/[^a-z0-9]/g,'');
+const trm=s=>String(s==null?'':s).replace(/\s+/g,' ').trim();
+const up=s=>trm(s).toUpperCase();
+const idr=n=>Number(n||0).toLocaleString('id-ID');
+const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'–';
+/* Sembunyikan 5 digit terakhir nomor HP (tampilan & unduhan) */
+const mask=s=>{const d=String(s==null?'':s).replace(/\D/g,'');if(!d)return'';return d.length>5?d.slice(0,-5)+'*****':'*****'};
+const K={wo:['nowo','nomorwo','idwo','nomororder','workorder','wo'],
+  tgl:['tglwo','tglbuat','tglpembuatan','tanggal','tgl','tglbatal','tglorder'],
+  up3:['up3','areaup3','area','uip'],
+  ulp:['ulp','posko','unitulp','unit'],
+  status:['statuswo','statusorder','status','statuslaporan'],
+  kat:['kategoribatal','katbatal','kategori','kategoribatalwo'],
+  alasan:['alasanbatal','keteranganbatal','alasan','ket'],
+  hp:['nohppelanggan','nohp','nomorhp','notelp','notelepon','telepon','nomortelepon','hp']};
+const pick=(o,ks)=>{for(const k of ks){if(o[k])return o[k]}return ''};
+const ARN=s=>{s=up(s);return s&&s!='-'?s:'(Tanpa area)'};
+const ULPN=s=>{s=up(s);return s&&s!='-'?s:'(Tanpa posko)'};
+const papua=r=>BTC.areas.some(a=>r.up3.includes(a));
+
+function csv(t){const R=[];let r=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c=='"')q=true;else if(c==','){r.push(f);f=''}
+  else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;r.push(f);f='';R.push(r);r=[]}else f+=c}
+  if(f.length||r.length){r.push(f);R.push(r)}return R}
+
+/* ambil seluruh isi folder dari Web App (Apps Script) */
+async function fetchFolders(){
+  if(!BTC.webapp)throw new Error('URL Web App belum diisi (BTC.webapp)');
+  const r=await fetch(BTC.webapp+(BTC.webapp.includes('?')?'&':'?')+'_='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const j=await r.json();
+  if(!j.ok)throw new Error(j.error||'Web App mengembalikan error');
+  return j;
+}
+
+/* baris pertama yang berisi teks dianggap header */
+function rowsToObjs(rows){
+  const hi=rows.findIndex(x=>x.some(c=>nrm(c)));if(hi<0)return[];
+  const H=rows[hi].map(nrm);
+  return rows.slice(hi+1).filter(x=>x.some(c=>trm(c))).map(x=>{const o={};H.forEach((h,i)=>{if(h&&!(h in o))o[h]=trm(x[i])});return o});
+}
+
+/* tanggal: dd/mm/yyyy (default) atau mm/dd/yyyy bila hari > 12 */
+function ym(s){const m=String(s||'').match(/^\s*(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);if(!m)return'';
+  const a=+m[1],b=+m[2];let y=+m[3];if(y<100)y+=2000;const mo=b>12?a:b;return mo>=1&&mo<=12?y+'-'+String(mo).padStart(2,'0'):''}
+
+let REC=[],S={bulan:'',area:'',ulp:'',kat:'',init:0},started=false;
+const isKat=r=>!S.kat||(r.kat||'(Tanpa kategori)')==S.kat;
+const base=()=>REC.filter(r=>papua(r)&&(!S.bulan||r.bln==S.bulan)&&(!S.area||r.up3==S.area)&&(!S.ulp||r.ulp==S.ulp));
+const batal=()=>base().filter(r=>r.batal&&isKat(r));
+
+/* kedua sumber memakai header yang sama: digabung, lalu duplikat No WO dibuang */
+function build(rowsList){
+  const seen=new Set();const out=[];
+  rowsList.forEach(o=>{const w=pick(o,K.wo);const key=nrm(w);
+    if(key){if(seen.has(key))return;seen.add(key)}
+    const r={wo:w,tgl:pick(o,K.tgl),up3:ARN(pick(o,K.up3)),ulp:ULPN(pick(o,K.ulp)),status:pick(o,K.status),
+      kat:pick(o,K.kat),alasan:pick(o,K.alasan),hp:pick(o,K.hp)};
+    r.bln=ym(r.tgl);r.batal=/batal/i.test(r.status)||(!r.status&&!!r.kat);
+    if(r.wo||r.tgl)out.push(r)});
+  return out;
+}
+
+function sel(id,list,val,allLabel){const el=$(id);
+  el.innerHTML=`<option value="">${allLabel}</option>`+list.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('');
+  el.value=list.some(([v])=>v==val)?val:'';return el.value}
+function opts(){
+  const P=REC.filter(papua);
+  const months=[...new Set(P.map(r=>r.bln).filter(Boolean))].sort().reverse();
+  if(!S.init){S.bulan=months[0]||'';S.init=1}
+  S.bulan=sel('mbM',months.map(m=>[m,ML[+m.slice(5)-1]+' '+m.slice(0,4)]),S.bulan,'Semua bulan');
+  const areas=BTC.areas.filter(a=>P.some(r=>r.up3.includes(a))).map(a=>[a,a.charAt(0)+a.slice(1).toLowerCase()]);
+  S.area=sel('mbA',areas,S.area,'Semua area (Papua & Papua Barat)');
+  const ulps=[...new Set(P.filter(r=>!S.area||r.up3==S.area).map(r=>r.ulp))].sort().map(u=>[u,u]);
+  S.ulp=sel('mbU',ulps,S.ulp,'Semua posko');
+  const kats=[...new Set(P.filter(r=>r.batal).map(r=>r.kat||'(Tanpa kategori)'))].sort().map(k=>[k,k]);
+  S.kat=sel('mbK',kats,S.kat,'Semua kategori');
+}
+
+function render(){
+  const B=base(),BT=batal(),nb=BT.length,n=B.length;
+  const kc=new Map();BT.forEach(r=>{const k=r.kat||'(Tanpa kategori)';kc.set(k,(kc.get(k)||0)+1)});
+  const top=[...kc].sort((a,b)=>b[1]-a[1])[0];
+  $('mbKpi').innerHTML=[['Total WO',idr(n),'dalam filter'],['WO Batal',idr(nb),'sesuai filter'],['% Batal',pct(nb,n),'WO batal ÷ total WO'],['Kategori terbanyak',top?esc(top[0]):'–',top?idr(top[1])+' WO':'']]
+    .map(k=>`<div><span>${k[0]}</span><b>${k[1]}</b><small>${k[2]}</small></div>`).join('');
+  /* rekapitulasi per area & posko */
+  const g=new Map();
+  B.forEach(r=>{if(!g.has(r.up3))g.set(r.up3,{n:0,b:0,u:new Map()});const A=g.get(r.up3);A.n++;
+    const bb=r.batal&&isKat(r);if(bb)A.b++;
+    if(!A.u.has(r.ulp))A.u.set(r.ulp,{n:0,b:0});const U=A.u.get(r.ulp);U.n++;if(bb)U.b++});
+  let rows='',tn=0,tb=0,xr=[];
+  [...g].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([a,A])=>{tn+=A.n;tb+=A.b;
+    rows+=`<tr class="sub"><td>${esc(a)}</td><td class="n">${idr(A.n)}</td><td class="n">${idr(A.b)}</td><td class="n">${pct(A.b,A.n)}</td></tr>`;
+    xr.push({AREA_UP3:a,POSKO_ULP:'(total area)',TOTAL_WO:A.n,WO_BATAL:A.b,PERSEN_BATAL:pct(A.b,A.n)});
+    [...A.u].sort((x,y)=>x[0].localeCompare(y[0])).forEach(([u,U])=>{
+      rows+=`<tr><td>&nbsp;&nbsp;&nbsp;${esc(u)}</td><td class="n">${idr(U.n)}</td><td class="n">${idr(U.b)}</td><td class="n">${pct(U.b,U.n)}</td></tr>`;
+      xr.push({AREA_UP3:a,POSKO_ULP:u,TOTAL_WO:U.n,WO_BATAL:U.b,PERSEN_BATAL:pct(U.b,U.n)})})});
+  $('mbRek').innerHTML=rows?`<div class="wrap"><table><thead><tr><th>Area (UP3) / Posko (ULP)</th><th class="n">Total WO</th><th class="n">WO Batal</th><th class="n">% Batal</th></tr></thead><tbody>${rows}<tr class="tot"><td>Total</td><td class="n">${idr(tn)}</td><td class="n">${idr(tb)}</td><td class="n">${pct(tb,tn)}</td></tr></tbody></table></div>`:'<div class="emp">Tidak ada data untuk filter ini.</div>';
+  window._mbXR=xr;
+  /* kategori batal */
+  const arr=[...kc].sort((a,b)=>b[1]-a[1]),mx=arr[0]?arr[0][1]:1;
+  $('mbKat').innerHTML=arr.length?arr.map(([k,v])=>`<div class="cb" data-k="${esc(k)}" role="button" tabindex="0"><span class="cl" title="${esc(k)}">${esc(k)}</span><span class="ct"><span class="s" style="width:${v/mx*100}%;background:linear-gradient(180deg,var(--cy2),var(--cy))"></span></span><span class="cv">${idr(v)} · ${pct(v,nb)}</span></div>`).join(''):'<div class="emp">Belum ada WO batal pada filter ini.</div>';
+  /* detail (no HP disamarkan) */
+  const det=[...BT].sort((a,b)=>(a.tgl>b.tgl?1:-1)).slice(0,200);
+  window._mbXD=BT.map(r=>({NO_WO:r.wo,TANGGAL:r.tgl,AREA_UP3:r.up3,POSKO_ULP:r.ulp,STATUS:r.status,KATEGORI_BATAL:r.kat,ALASAN_BATAL:r.alasan,NO_HP:mask(r.hp)}));
+  $('mbDet').innerHTML=det.length?`<table><thead><tr><th>No WO</th><th>Tanggal</th><th>Area</th><th>Posko</th><th>Status</th><th>Kategori Batal</th><th>Alasan Batal</th><th>No HP</th></tr></thead><tbody>${det.map(r=>`<tr><td class="txt">${esc(r.wo)}</td><td>${esc(r.tgl)}</td><td>${esc(r.up3)}</td><td>${esc(r.ulp)}</td><td>${esc(r.status)}</td><td>${esc(r.kat)}</td><td>${esc(r.alasan)}</td><td class="mono">${esc(mask(r.hp))}</td></tr>`).join('')}</tbody></table>`:'<div class="emp">Tidak ada WO batal.</div>';
+  $('mbN').textContent=`Menampilkan ${det.length} dari ${nb} WO batal. No HP ditampilkan tanpa 5 digit terakhir (*****).`;
+}
+
+function xl(rows,name,sheet){if(!rows.length)return;const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),sheet);
+  XLSX.writeFile(wb,name+'_'+new Date().toISOString().slice(0,10)+'.xlsx')}
+
+async function sync(){
+  if(!BTC.webapp){$('mbErr').textContent='URL Web App belum diisi: isi BTC.webapp dengan URL deployment Apps Script.';$('mbSt').textContent='Belum terhubung';return}
+  $('mbSt').textContent='Menyinkronkan...';$('mbErr').textContent='';
+  try{
+    const j=await fetchFolders();
+    let all=[],info=[];
+    j.folders.forEach(f=>f.files.forEach(file=>{
+      if(file.error){info.push(`${f.folder}: ${file.name} (gagal: ${file.error})`);return}
+      const objs=rowsToObjs(file.rows||[]);
+      all=all.concat(objs);
+      info.push(`${f.folder}: ${file.name} (${objs.length} baris)`);
+    }));
+    REC=build(all);opts();render();
+    $('mbFiles').textContent=info.length?'File terbaca: '+info.join(' · '):'Belum ada file spreadsheet di folder.';
+    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' (data: '+new Date(j.generated).toLocaleString('id-ID')+')';
+  }catch(e){$('mbErr').textContent='Gagal membaca sumber data: '+e.message;$('mbSt').textContent='Sinkron gagal'}
+}
+
+function enter(){
+  ['home','app','cb','abs','cut','md'].forEach(id=>{const e=$(id);if(e)e.hidden=true});
+  $('mbo').hidden=false;$('ht').textContent='Monitoring WO Batal';$('hp').textContent='UIW Papua dan Papua Barat';
+  document.title='Monitoring WO Batal';window.scrollTo(0,0);
+  if(!started){started=true;wire()}
+  sync();
+}
+
+function wire(){
+  $('mbM').onchange=e=>{S.bulan=e.target.value;render()};
+  $('mbA').onchange=e=>{S.area=e.target.value;S.ulp='';opts();render()};
+  $('mbU').onchange=e=>{S.ulp=e.target.value;render()};
+  $('mbK').onchange=e=>{S.kat=e.target.value;render()};
+  $('mbS').onclick=sync;
+  $('mbKat').onclick=e=>{const el=e.target.closest('[data-k]');if(!el)return;S.kat=S.kat==el.dataset.k?'':el.dataset.k;opts();render()};
+  $('mbXR').onclick=()=>xl(window._mbXR||[],'Rekap_WO_Batal','Rekap');
+  $('mbXD').onclick=()=>xl(window._mbXD||[],'Detail_WO_Batal','Detail');
+  setInterval(()=>{if(!$('mbo').hidden&&!document.hidden)sync()},180000);
+}
+
+window.mbEnter=enter;
+if(location.hash=='#batal')enter();
+})();
 </script>
 <script>
 (function(){
@@ -3585,11 +3754,10 @@ const CBC={px:'', /* opsional: URL proxy Apps Script (lihat callback-proxy.gs) a
  S:{log:[{n:'log hp operator'},{n:'log hp'},{n:'log panggilan'}],
     apkt:[{n:'data apkt'},{n:'apkt'}],
     eis:[{n:'detail eis'},{n:'data eis'},{n:'eis'},{g:CBG()}],
-    up3:[{n:'data up3'},{n:'up3'}],
-    sl:[{n:'detail eis'}]},
- G:{log:'',apkt:'',eis:'',up3:'',sl:'2003840293'}, /* isi gid sheet bila nama sheet berubah / data terbaca tidak lengkap */
+    up3:[{n:'data up3'},{n:'up3'}]},
+ G:{log:'',apkt:'',eis:'',up3:''}, /* isi gid sheet bila nama sheet berubah / data terbaca tidak lengkap */
  iv:2};
-const UNM='(Tidak terpetakan)',NOA='(Tanpa area)',LAIN='Lainnya',NOSL='(Tanpa sumber lapor)',NOSU='(Nomor tidak terpetakan)';
+const UNM='(Tidak terpetakan)',NOA='(Tanpa area)',LAIN='Lainnya';
 const trm=s=>String(s==null?'':s).replace(/\s+/g,' ').trim();
 /* nomor telepon: 62xxxx / 0xxxx / 8xxxx disamakan menjadi 8xxxx */
 const pk=s=>{let d=ip(s);if(d.startsWith('62'))d=d.slice(2);else if(d.startsWith('0'))d=d.slice(1);return d.length>=7?d:''};
@@ -3633,9 +3801,8 @@ const bApk=h=>{
  return{ph,po,ar,no:cf(h,NOX,['nolapor']),tl:cf(h,TLX,TLX)}};
 const bEis=h=>{
  const no=rq(cf(h,NOX,['nolapor']),'No. Lapor (EIS)',h),po=rq(cf(h,POX,['posko','ulp']),'Posko (EIS)',h),st=rq(cf(h,['status','statuslaporan']),'Status (EIS)',h);
- return{no,po,st,ph:cf(h,PHX,PHI),tl:cf(h,TLX,TLX),ar:cf(h,ARX),nm:cf(h,['nama','namapelapor']),al:cf(h,['alamatpelapor','alamat']),ds:cf(h,['deskripsi']),pb:cf(h,['penyebab']),du:cf(h,['durasi']),sl:cf(h,['sumberlapor','sumber'],['sumberlapor'])}};
+ return{no,po,st,ph:cf(h,PHX,PHI),tl:cf(h,TLX,TLX),ar:cf(h,ARX),nm:cf(h,['nama','namapelapor']),al:cf(h,['alamatpelapor','alamat']),ds:cf(h,['deskripsi']),pb:cf(h,['penyebab']),du:cf(h,['durasi'])}};
 const bUp=h=>({po:rq(cf(h,POX,['posko','ulp']),'Posko/ULP (data UP3)',h),ar:rq(cf(h,['namaup3','up3','namaarea','area'],['up3','area']),'UP3/Area (data UP3)',h)});
-const bSl=h=>({no:rq(cf(h,NOX,['nolapor']),'No. Lapor (sheet sumber lapor)',h),sl:rq(cf(h,['sumberlapor','sumber'],['sumberlapor','sumber']),'Sumber Lapor (sheet detail eis)',h)});
 async function cbLoad(n,g){
  if(CBC.px){const u=CBC.px+(CBC.px.includes('?')?'&':'?')+'n='+encodeURIComponent(n||'')+'&g='+encodeURIComponent(g||'')+'&_='+Date.now(),
   r=await fetch(u,{cache:'no-store'}),t=r.ok?await r.text():'';
@@ -3655,7 +3822,7 @@ function bld(R,o){
  let eBad=0;
  eb.forEach(x=>{const no=trm(x[ec.no]);if(!no||byNo.has(no))return;
   const u=ulpN(x[ec.po]),ar=arN(cell(x,ec.ar)),s=lb(x[ec.st]),r={no,ph:pks(cell(x,ec.ph)),areaRaw:ar,ulp:u,t:ec.tl>=0?pdt(x[ec.tl],eo):NaN,st:s=='-'?'(Tanpa status)':s,eis:true,
-   nm:trm(cell(x,ec.nm)),al:trm(cell(x,ec.al)),ds:trm(cell(x,ec.ds)),pb:trm(cell(x,ec.pb)),du:trm(cell(x,ec.du)),slE:trm(cell(x,ec.sl))};
+   nm:trm(cell(x,ec.nm)),al:trm(cell(x,ec.al)),ds:trm(cell(x,ec.ds)),pb:trm(cell(x,ec.pb)),du:trm(cell(x,ec.du))};
   addC(u,ar);if(ec.tl>=0&&isNaN(r.t))eBad++;recs.push(r);byNo.set(no,r)});
  if(eBad)W.push('EIS: '+eBad+' laporan tanggal lapornya tidak terbaca (tidak ikut bila filter tanggal dipakai).');
  const A=R.apkt,ac=A.c,ab=body(A),ao=ac.tl>=0?pOrd(ab.map(x=>x[ac.tl]),o.ds):'mdy';
@@ -3663,15 +3830,12 @@ function bld(R,o){
   addC(u,ar);let r=no?byNo.get(no):null;
   if(r){ph.forEach(k=>{if(!r.ph.includes(k))r.ph.push(k)});if(!r.areaRaw&&ar)r.areaRaw=ar;if(!r.ulp&&u)r.ulp=u;if(isNaN(r.t)&&!isNaN(t))r.t=t;return}
   if(!ph.length)return;
-  r={no,ph,areaRaw:ar,ulp:u,t,st:'',eis:false,nm:'',al:'',ds:'',pb:'',du:'',slE:''};recs.push(r);if(no)byNo.set(no,r)});
+  r={no,ph,areaRaw:ar,ulp:u,t,st:'',eis:false,nm:'',al:'',ds:'',pb:'',du:''};recs.push(r);if(no)byNo.set(no,r)});
  const am={};for(const u in cnt){let b='',n=0;for(const a in cnt[u])if(cnt[u][a]>n){n=cnt[u][a];b=a}am[u]=b}
  const um={};let upN=0;if(R.up3&&R.up3.c){body(R.up3).forEach(x=>{const u=ulpN(x[R.up3.c.po]),a=arN(x[R.up3.c.ar]);if(u&&a&&!um[u]){um[u]=a;upN++}})}
  let noA=new Set();
  recs.forEach(r=>{r.area=r.areaRaw||um[r.ulp]||am[r.ulp]||NOA;if(r.area==NOA&&r.ulp)noA.add(r.ulp);r.ulp=r.ulp||'-'});
  if(noA.size)W.push('Area tidak ditemukan untuk '+noA.size+' ULP (contoh: '+[...noA].slice(0,3).join(', ')+'). Cek kolom Area di data APKT / sheet data up3.');
- /* VLOOKUP No Lapor -> Sumber Lapor (sheet detail eis), berlaku untuk laporan ada panggilan maupun tidak */
- const slm=new Map();if(R.sl&&R.sl.c){body(R.sl).forEach(x=>{const no=trm(x[R.sl.c.no]),v=trm(x[R.sl.c.sl]);if(no&&v&&v!='-'&&!slm.has(no))slm.set(no,lb(v))})}
- recs.forEach(r=>{r.sl=(r.no&&slm.get(r.no))||(r.slE&&r.slE!='-'?lb(r.slE):'')||NOSL});
  const ix=new Map();recs.forEach(r=>r.ph.forEach(k=>{let a=ix.get(k);if(!a)ix.set(k,a=[]);a.push(r)}));
  /* log HP operator */
  const L=R.log,lc=L.c,lbd=body(L),lo=pOrd(lbd.map(x=>x[lc.dt]),o.ds),rows=[];let noPh=0,noT=0;
@@ -3703,9 +3867,6 @@ function bld(R,o){
  I.push('Data EIS ('+E.src+'): '+eis.length+' laporan (kolom no lapor: '+nmH(E,ec.no)+'; posko: '+nmH(E,ec.po)+'; status: '+nmH(E,ec.st)+'; tgl lapor: '+nmH(E,ec.tl)+'; telepon: '+nmH(E,ec.ph)+'). Rentang: '+rg(eis.map(r=>r.t))+'. Format tanggal: '+eo);
  I.push(R.up3&&R.up3.c?'Data UP3 ('+R.up3.src+'): '+upN+' pemetaan ULP → Area terbaca.':'Data UP3: tidak terbaca (opsional, Area diambil dari data APKT).');
  I.push('Nomor di log yang tidak ditemukan di APKT/EIS: '+unm.size+' nomor ('+calls.filter(c=>!c.rec).length+' panggilan).');
- const slc=recs.filter(r=>r.no&&r.sl!=NOSL).length,sln=recs.filter(r=>r.no).length;
- I.push(R.sl&&R.sl.c?'Sumber Lapor ('+R.sl.src+'): '+slm.size+' No Lapor terbaca; '+slc+' dari '+sln+' laporan tercocokkan (VLOOKUP No Lapor).':'Sumber Lapor: sheet gid '+CBC.G.sl+' tidak terbaca'+(R.slErr?' ('+R.slErr.split('\n')[0]+')':'')+'; kolom sumber lapor di sheet EIS dipakai bila ada.');
- if(!slc)W.push('Sumber Lapor: belum ada No Lapor yang cocok dengan sheet detail eis (gid '+CBC.G.sl+'). Cek kolom "No Lapor" dan "Sumber Lapor".');
  return{recs,eis,calls,sts,W,I}}
 /* ===== agregasi sesuai filter ===== */
 const mkt=t=>new Date(t*1000).toISOString().slice(0,7);
@@ -3737,18 +3898,18 @@ function fillU(){if(!CB.M)return;const a=$('cbA').value,m=CB.M,u=[...new Set(m.e
 /* spesifikasi tabel pop up: v = tampilan, d = detail lengkap */
 function repSpec(list,called){const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0));
  const st=r=>{const c=called.get(r);return c?'Ya ('+c.n+'x)':'Belum'};
- return{v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','Sumber Lapor','No Telp','Dihubungi','Jml Percobaan Telp'],a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,slOf(r),tel(r.ph[0]),st(r),c?c.n:0]})},
-  d:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','Sumber Lapor','No Telp','Nama Pelapor','Alamat','Deskripsi','Penyebab','Durasi (EIS)','Dihubungi','Jml Percobaan Telp','Telp Pertama'],
-   a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,slOf(r),tel(r.ph[0]),mkN(r.nm),mkN(r.al),mkN(r.ds),mkN(r.pb),r.du,c?'Ya':'Belum',c?c.n:0,c?fT(c.t):'']})}}}
+ return{v:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Dihubungi','Jml Percobaan Telp'],a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),st(r),c?c.n:0]})},
+  d:{h:['No','No Lapor','Tgl Lapor','Area','ULP','Status','No Telp','Nama Pelapor','Alamat','Deskripsi','Penyebab','Durasi (EIS)','Dihubungi','Jml Percobaan Telp','Telp Pertama'],
+   a:L.map((r,i)=>{const c=called.get(r);return[i+1,r.no,fT(r.t),r.area,r.ulp,r.st,tel(r.ph[0]),mkN(r.nm),mkN(r.al),mkN(r.ds),mkN(r.pb),r.du,c?'Ya':'Belum',c?c.n:0,c?fT(c.t):'']})}}}
 function callSpec(list,scope,grp){grp=grp!==false;const L=[...list].sort((a,b)=>(a.t||0)-(b.t||0)),sc=scope||L,sl=c=>c.rec?(c.rec.eis?c.rec.st:'Tidak ada di EIS'):'-';
  const kf=c=>c.rec||c.k,tot=new Map();
  sc.forEach(c=>tot.set(kf(c),(tot.get(kf(c))||0)+1));
  const jm=c=>tot.get(kf(c))||'';
  const G1=[],gm=new Map();L.forEach(c=>{const k=kf(c);if(!gm.has(k)){gm.set(k,c);G1.push(c)}});
- const vv=grp?{h:['No','No Lapor','Jumlah Percobaan','Waktu Telp Pertama','No Telp','Nama Kontak','Area','ULP','Status','Sumber Lapor'],a:G1.map((c,i)=>[i+1,c.no||'-',jm(c),fT(c.t),tel(c.k),mkN(c.nm),c.area,c.ulp,sl(c),slC(c)])}
-  :{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Jumlah Percobaan','Area','ULP','Status','Sumber Lapor','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),mkN(c.nm),c.du,c.no||'-',jm(c),c.area,c.ulp,sl(c),slC(c),c.cnt?'Ya':'Ganda'])};
+ const vv=grp?{h:['No','No Lapor','Jumlah Percobaan','Waktu Telp Pertama','No Telp','Nama Kontak','Area','ULP','Status'],a:G1.map((c,i)=>[i+1,c.no||'-',jm(c),fT(c.t),tel(c.k),mkN(c.nm),c.area,c.ulp,sl(c)])}
+  :{h:['No','Waktu Telp','No Telp','Nama Kontak','Durasi Telp','No Lapor','Jumlah Percobaan','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),mkN(c.nm),c.du,c.no||'-',jm(c),c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda'])};
  return{v:vv,
-  d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Jumlah Percobaan','Tgl Lapor','Area','ULP','Status','Sumber Lapor','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),mkP(c.raw),mkN(c.nm),c.ty,c.du,c.no||'-',jm(c),c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),slC(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
+  d:{h:['No','Waktu Telp','No Telp','No Telp (asli log)','Nama Kontak','Tipe Panggilan','Durasi Telp','No Lapor','Jumlah Percobaan','Tgl Lapor','Area','ULP','Status','Dihitung'],a:L.map((c,i)=>[i+1,fT(c.t),tel(c.k),mkP(c.raw),mkN(c.nm),c.ty,c.du,c.no||'-',jm(c),c.rec?fT(c.rec.t):'',c.area,c.ulp,sl(c),c.cnt?'Ya':'Ganda (jeda singkat)'])}}}
 function popC(t,sp){const n='Callback_'+t.replace(/[^\w]+/g,'-').replace(/^-|-$/g,'').slice(0,70),x=[];
  PP={h:sp.v.h,a:sp.v.a,f:[],n:n,sn:'Tampilan',x:x};PP2={h:sp.d.h,a:sp.d.a,n:n+'_detail',x:x};
  $('mt').textContent=t+' ('+sp.v.a.length+' baris)';
@@ -3787,7 +3948,7 @@ function recHtml(){const Z=CB.Z,cols=CB.cols,fa=$('cbA').value;CB.G=[];
  return ctl+'<table><thead><tr>'+BASE.map((h,i)=>`<th rowspan="${g?2:1}" class="${i<2?'l':''}" title="${qa(TT[i])}">${h}</th>`).join('')+(g?`<th colspan="${g}" class="grp">Jumlah Callback per Status</th>`:'')+'</tr>'+
   (g?'<tr>'+cols.map((c,i)=>`<th class="st${i?'':' b'}" title="${qa('Jumlah callback berstatus '+c+' (dari pelanggan yang dihubungi)')}">${e(c)}</th>`).join('')+'</tr>':'')+'</thead><tbody>'+tr+'</tbody></table>'}
 function render(){
- if(!CB.M){$('cbKpi').innerHTML='';$('cbSlOut').innerHTML='';$('cbOut').innerHTML='<div class="emp">Belum ada data. Klik "Sinkron sekarang".</div>';return}
+ if(!CB.M){$('cbKpi').innerHTML='';$('cbOut').innerHTML='<div class="emp">Belum ada data. Klik "Sinkron sekarang".</div>';return}
  const Z=agg(CB.M,filters());CB.Z=Z;
  CB.cols=CB.M.sts.slice();if((Z.T.st[LAIN]||[]).length)CB.cols.push(LAIN);
  if(!CB.init){Z.A.forEach(a=>CB.open.add(a.name));CB.init=true}
@@ -3802,60 +3963,11 @@ function render(){
   {l:'Panggilan Nomor Tidak Terpetakan',v:noF?unm.length:'-',d:()=>({t:'Nomor Tidak Terpetakan',s:callSpec(unm,unm)})}];
  $('cbKpi').innerHTML=CB.KP.map((k,i)=>`<button data-k="${i}"><b>${k.v}</b>${k.l}</button>`).join('');
  $('cbOut').innerHTML=Z.A.length?recHtml():'<div class="emp">Tidak ada data untuk filter ini.</div>';
- if(!Z.A.length)CB.view=null;slRender(Z)}
-/* ===== Sumber Lapor: rekap + grafik garis dinamis + export ===== */
-const slOf=r=>r.sl||NOSL,slC=c=>c.rec?slOf(c.rec):NOSU,SLP=['#2563eb','#e11d48','#16a34a','#f59e0b','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#0d9488','#b45309','#4f46e5'];
-CB.off=new Set();
-function slGrp(Z,kf){const M=new Map(),g=k=>{let x=M.get(k);if(!x)M.set(k,x={k,rep:[],try:[],con:[],st:{}});return x};
- Z.rep.forEach(r=>g(kf(r,slOf(r))).rep.push(r));
- Z.cl.forEach(c=>{const x=g(kf(c.rec||c,slC(c)));x.try.push(c);if(c.cnt){x.con.push(c);(x.st[c.sk]=x.st[c.sk]||[]).push(c)}});return M}
-const slSort=(a,b)=>(a.k==NOSU)-(b.k==NOSU)||(a.k==NOSL)-(b.k==NOSL)||b.rep.length-a.rep.length||a.k.localeCompare(b.k);
-function slRender(Z){const L=[...slGrp(Z,(o,s)=>s).values()].sort(slSort),cols=CB.cols,T={k:'TOTAL',rep:Z.T.rep,try:Z.T.try,con:Z.T.con,st:Z.T.st},
- H=['SUMBER LAPOR','Total Lapor','Percobaan Telp','Plgn Dihubungi','% Dihubungi','Belum Dihubungi'].concat(cols),
- nb=x=>x.rep.filter(r=>!Z.called.has(r)).length,
- row=x=>{const p=pcn(x.con.length,x.rep.length);return[x.k,x.rep.length,x.try.length,x.con.length,p==null?'':+p.toFixed(1),nb(x)].concat(cols.map(c=>(x.st[c]||[]).length))},
- all=L.length>1?L.concat([T]):L,
- td=(m,l,v,gi,c)=>`<td class="n${c||''}" data-l="${qa(l)}" data-m="${m}" data-g="${gi}">${v}</td>`;
- CB.sv={h:H,a:all.map(row)};
- const tr=all.map(x=>{const gi=CB.G.push({G:x,l:'Sumber Lapor: '+x.k})-1,p=pcn(x.con.length,x.rep.length);
-  return `<tr class="${x===T?'tot':''}"><td data-l="SUMBER LAPOR">${e(x.k)}</td>`+td('rep',H[1],x.rep.length,gi)+td('try',H[2],x.try.length,gi)+td('con',H[3],x.con.length,gi)+td('pct',H[4],pcs(p),gi,' pc')+td('pct',H[5],nb(x),gi)+cols.map((c,i)=>td('s'+i,c,(x.st[c]||[]).length,gi,i?'':' b')).join('')+'</tr>'}).join('');
- $('cbSlOut').innerHTML=L.length?'<table><thead><tr>'+H.slice(0,6).map((h,i)=>`<th rowspan="${cols.length?2:1}" class="${i?'':'l'}">${h}</th>`).join('')+(cols.length?`<th colspan="${cols.length}" class="grp">Jumlah Callback per Status</th>`:'')+'</tr>'+(cols.length?'<tr>'+cols.map((c,i)=>`<th class="st${i?'':' b'}">${e(c)}</th>`).join('')+'</tr>':'')+'</thead><tbody>'+tr+'</tbody></table>':'<div class="emp">Tidak ada data untuk filter ini.</div>';
- slChart(Z)}
-function slTrend(Z){const g=$('cbSlG').value=='auto'?($('cbM').value?'d':'m'):$('cbSlG').value,met=$('cbSlM').value,B={},ks=new Set(),
- bk=t=>new Date(t*1000).toISOString().slice(0,g=='d'?10:7),
- put=(s,t,f)=>{if(isNaN(t))return;const k=bk(t);ks.add(k);[s,'TOTAL'].forEach(n=>{const m=B[n]=B[n]||{},o=m[k]=m[k]||{rep:0,try:0,con:0};o[f]++})};
- Z.rep.forEach(r=>put(slOf(r),r.t,'rep'));Z.cl.forEach(c=>{const s=slC(c);put(s,c.mt,'try');if(c.cnt)put(s,c.mt,'con')});
- const so=[...ks].sort(),keys=[];
- if(so.length){const[y,m,d]=so[0].split('-').map(Number),last=so[so.length-1];
-  for(let n=0;n<4000;n++){const k=g=='d'?new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10):new Date(Date.UTC(y,m-1+n,1)).toISOString().slice(0,7);keys.push(k);if(k>=last)break}}
- const sum=n=>Object.values(B[n]).reduce((a,o)=>a+o.rep,0),
- names=['TOTAL'].concat(Object.keys(B).filter(n=>n!='TOTAL').sort((a,b)=>(a==NOSU)-(b==NOSU)||(a==NOSL)-(b==NOSL)||sum(b)-sum(a)||a.localeCompare(b))),
- val=(n,k)=>{const o=(B[n]||{})[k]||{rep:0,try:0,con:0};return met=='pct'?(o.rep?+(o.con/o.rep*100).toFixed(1):null):o[met]};
- return{g,met,keys,names,labels:keys.map(k=>g=='d'?k.slice(8)+'/'+k.slice(5,7):MN[+k.slice(5)-1].slice(0,3)+' '+k.slice(2,4)),series:names.map(n=>keys.map(k=>val(n,k)))}}
-function slChart(Z){const hint=$('cbSlHint');
- if(typeof Chart==='undefined'){hint.textContent='Library grafik gagal dimuat (cek koneksi internet). Tabel tetap bisa dipakai.';return}hint.textContent='';
- const Tn=slTrend(Z),pc=Tn.met=='pct',cs=getComputedStyle(document.body),clr=i=>i?SLP[(i-1)%SLP.length]:cs.color;CB.tr=Tn;
- $('cbSlChips').innerHTML=Tn.names.map((n,i)=>`<button type="button" class="alt" data-s="${qa(n)}" style="border-left:6px solid ${clr(i)};opacity:${CB.off.has(n)?.4:1}">${e(n)}</button>`).join('');
- Chart.defaults.color=cs.color;Chart.defaults.borderColor='rgba(128,128,128,.25)';
- if(CB.ch)CB.ch.destroy();
- CB.ch=new Chart($('cbSlCh'),{type:'line',data:{labels:Tn.labels,datasets:Tn.names.map((n,i)=>({label:n,data:Tn.series[i],hidden:CB.off.has(n),borderColor:clr(i),backgroundColor:clr(i),borderWidth:i?2:3,borderDash:i?[]:[6,4],tension:.25,pointRadius:Tn.keys.length>45?0:3,pointHoverRadius:5,spanGaps:true}))},
-  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+(c.parsed.y==null?'-':String(c.parsed.y).replace('.',',')+(pc?'%':''))}}},
-   scales:{y:{beginAtZero:true,title:{display:true,text:$('cbSlM').options[$('cbSlM').selectedIndex].text},ticks:{callback:v=>pc?v+'%':v}},x:{ticks:{maxRotation:55,autoSkip:true}}}}})}
-$('cbSlM').onchange=$('cbSlG').onchange=()=>{if(CB.Z)slChart(CB.Z)};
-$('cbSlChips').onclick=ev=>{const b=ev.target.closest('button[data-s]');if(!b)return;const n=b.dataset.s;CB.off.has(n)?CB.off.delete(n):CB.off.add(n);if(CB.Z)slChart(CB.Z)};
-$('cbSlOut').onclick=ev=>{const c=ev.target.closest('td[data-m]');if(!c)return;const g=CB.G[+c.dataset.g],k=metricSpec(g,c.dataset.m);popC(k.t,k.s)};
-$('cbXS').onclick=()=>{const Z=CB.Z;if(!Z||!CB.sv||!CB.sv.a.length)return alert('Tidak ada data untuk diunduh.');
- const Tn=slTrend(Z),mt=$('cbSlM').options[$('cbSlM').selectedIndex].text,cols=CB.cols,
- M=[...slGrp(Z,(o,s)=>o.area+'\u0001'+o.ulp+'\u0001'+s).values()].sort((a,b)=>a.k.localeCompare(b.k)),
- pr=x=>{const p=pcn(x.con.length,x.rep.length);return p==null?'':+p.toFixed(1)},
- u={n:'Sumber Lapor per ULP',h:['AREA','ULP','SUMBER LAPOR','Total Lapor','Percobaan Telp','Plgn Dihubungi','% Dihubungi'].concat(cols),a:M.map(x=>x.k.split('\u0001').concat([x.rep.length,x.try.length,x.con.length,pr(x)],cols.map(c=>(x.st[c]||[]).length)))},
- t={n:'Tren '+(Tn.g=='d'?'Harian':'Bulanan'),h:['Periode ('+mt+')'].concat(Tn.names),a:Tn.keys.map((k,i)=>[k].concat(Tn.series.map(v=>v[i]==null?'':v[i])))},
- d=repSpec(Z.rep,Z.called).d;
- dl(CB.sv.h,CB.sv.a,'Callback_SumberLapor'+sfx2(),'Rekap Sumber Lapor',[u,t,{n:'Detail Laporan',h:d.h,a:d.a}])};
+ if(!Z.A.length)CB.view=null}
 const warn=()=>{$('cbErr').textContent=CB.M.W.length?'Perhatian:\n'+CB.M.W.join('\n'):''};
 async function sync(){if(CB.busy)return;CB.busy=true;$('cbErr').textContent='';$('cbSt').textContent='Menyinkronkan...';
- try{const ks=[['log',bLog],['apkt',bApk],['eis',bEis],['up3',bUp],['sl',bSl]],rs=await Promise.allSettled(ks.map(([k,b])=>ldS(k,b))),R={},er=[];
-  rs.forEach((r,i)=>{const k=ks[i][0];if(r.status=='fulfilled')R[k]=r.value;else if(k!='up3'&&k!='sl')er.push(r.reason.message);else{R[k]=null;if(k=='sl')R.slErr=r.reason.message}});
+ try{const ks=[['log',bLog],['apkt',bApk],['eis',bEis],['up3',bUp]],rs=await Promise.allSettled(ks.map(([k,b])=>ldS(k,b))),R={},er=[];
+  rs.forEach((r,i)=>{const k=ks[i][0];if(r.status=='fulfilled')R[k]=r.value;else if(k!='up3')er.push(r.reason.message);else R.up3=null});
   if(er.length)throw Error(er.join('\n\n'));
   CB.raw=R;CB.M=bld(R,opt());fillA();render();
   $('cbSt').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+CB.M.eis.length+' laporan EIS, '+CB.M.calls.length+' panggilan keluar)';warn()
@@ -3874,8 +3986,8 @@ $('cbOut').onclick=ev=>{const b=ev.target.closest('button');
  const c=ev.target.closest('td[data-m]');if(c){const g=CB.G[+c.dataset.g],k=metricSpec(g,c.dataset.m);return popC(k.t,k.s)}
  const t=ev.target.closest('tr[data-a]');if(t){const n=t.dataset.a;CB.open.has(n)?CB.open.delete(n):CB.open.add(n);render()}};
 const sfx2=()=>{const f=[$('cbM').value,$('cbA').value,$('cbU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
-$('cbXR').onclick=()=>{if(!CB.view||!CB.view.a.length)return alert('Tidak ada data untuk diunduh.');dl(CB.view.h,CB.view.a,'Callback_Rekap'+sfx2(),'Rekap Callback',CB.sv?[{n:'SUMBER LAPOR',h:CB.sv.h,a:CB.sv.a}]:[])};
-$('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl,CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan',CB.sv?[{n:'SUMBER LAPOR',h:CB.sv.h,a:CB.sv.a}]:[])};
+$('cbXR').onclick=()=>{if(!CB.view||!CB.view.a.length)return alert('Tidak ada data untuk diunduh.');dl(CB.view.h,CB.view.a,'Callback_Rekap'+sfx2(),'Rekap Callback')};
+$('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl,CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan')};
 $('mx2').onclick=()=>{if(PP2)dl(PP2.h,PP2.a,PP2.n,'Detail',PP2.x)};
 setInterval(()=>{if(!$('cb').hidden&&!document.hidden)sync()},CBC.iv*60000);
 window.__cb={bld,agg,pdt,pk,pks,ulpN,ordOf};
@@ -3915,7 +4027,7 @@ let w=innerWidth;addEventListener('resize',()=>{const m1=w<=640,m2=innerWidth<=6
 <script>
 /* Penanda halaman menu: header menu seragam di semua card menu (tidak berlaku di beranda) */
 (function(){const r=document.documentElement;
-function f(){const h=location.hash.slice(1);r.classList.toggle('hmenu',!!(h&&(h=='absensi'||h=='cuti'||h=='callback'||(typeof MENUS!=='undefined'&&MENUS[h]))))}
+function f(){const h=location.hash.slice(1);r.classList.toggle('hmenu',!!(h&&(h=='absensi'||h=='cuti'||h=='callback'||h=='batal'||(typeof MENUS!=='undefined'&&MENUS[h]))))}
 addEventListener('hashchange',f);f()})();
 </script>
 <script>
