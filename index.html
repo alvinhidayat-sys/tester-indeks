@@ -63,6 +63,8 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 .mb{overflow:auto;padding:12px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--bd);padding:10px 14px;border-radius:8px;font-size:13px;z-index:60;max-width:92vw}
 @media(max-width:640px){.wrap{padding:12px 12px 40px}.fg{min-width:100%}.ch .tools input{min-width:100%}}
+.clk{cursor:pointer}.clk:hover{text-decoration:underline}
+.kc.clk:hover{border-color:var(--a)}
 </style>
 </head>
 <body>
@@ -70,7 +72,6 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
   <header>
     <div>
       <h1>WO Batal — Command Center</h1>
-      <p>Sumber: folder Drive Laporan (p2b) · Periode: <span id="per">–</span></p>
     </div>
     <div class="tools">
       <span class="stat" id="st">Memuat…</span>
@@ -248,7 +249,8 @@ function bcalc(rows){
   return c;
 }
 const bdet=rows=>rows.map(r=>{const t=btipe(gT(r));return{...r,TIPE_BATAL:BTL[t],ALASAN_BATAL:gA(r),KATEGORI_BATAL:t=='cm'?BCAT[bkat(gA(r))][0]:'-'}});
-const ticketRows=list=>bdet(list).map(o=>({Distribusi:o.NAMA_DISTRIBUSI,Area:o.NAMA_AREA,Posko:o.NAMA_POSKO,'No. Laporan':o.NO_LAPORAN,'Tgl Lapor':o.TGL_LAPOR,'Tipe Batal':o.TIPE_BATAL,'Alasan Batal (asli)':o.ALASAN_BATAL,'Kategori Batal':o.KATEGORI_BATAL,'File Sumber':o._FILE}));
+const ticketInfo=r=>{const b=isBt(r),t=btipe(gT(r));return{st:gS(r),tipe:b?BTL[t]:'-',alasan:b?gA(r):'-',kat:b&&t=='cm'?BCAT[bkat(gA(r))][0]:'-'}};
+const ticketRows=list=>list.map(r=>{const x=ticketInfo(r);return{Distribusi:r.NAMA_DISTRIBUSI,Area:r.NAMA_AREA,Posko:r.NAMA_POSKO,'No. Laporan':r.NO_LAPORAN,'Tgl Lapor':r.TGL_LAPOR,'Status APKT':x.st,'Tipe Batal':x.tipe,'Alasan Batal (asli)':x.alasan,'Kategori Batal':x.kat,'File Sumber':r._FILE}});
 function grp(rows,nk){const m=new Map();rows.forEach(r=>{const k=KEYS.slice(0,nk).map(x=>r[x]),s=k.join('|');if(!m.has(s))m.set(s,{k,rows:[]});m.get(s).rows.push(r)});
   return[...m.values()].sort((a,b)=>a.k.join().localeCompare(b.k.join()))}
 
@@ -277,18 +279,34 @@ function periode(){
 }
 
 /* ===== RENDER ===== */
+const uniqueRows=rows=>{const m=new Map();rows.forEach((r,i)=>{const k=r.NO_LAPORAN||'x'+i;if(!m.has(k))m.set(k,r)});return[...m.values()]};
+// daftar data di balik setiap angka (jumlahnya sama dengan angka yang tampil)
+const PK={
+  wo:rows=>uniqueRows(rows),
+  b:rows=>bcalc(rows).list,
+  cm:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='cm'),
+  cmk:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='cm'&&hasKet(gA(r))),
+  cc:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='cc'),
+  cck:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='cc'&&hasKet(gA(r))),
+  pm:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='pm'),
+  pmk:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='pm'&&hasKet(gA(r))),
+  ot:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='ot')
+};
+const catList=j=>rows=>PK.cm(rows).filter(r=>bkat(gA(r))==j);
+let KPI=[];
+
 function render(){
   const rows=sel(),lv=AF.p||AF.a?2:AF.d?1:0,nk=lv+1,unit=['Distribusi','Area','Posko'][lv],kh=['Distribusi','Area','Posko'].slice(0,nk);
   const A=bcalc(rows),G=grp(rows,nk);
-  const kpi=[
-    ['Total WO',i0(A.tot),'laporan terdata','var(--c1)'],
-    ['Total WO Batal',i0(A.b),'laporan berstatus batal','var(--ng)'],
-    ['% Batal',pc(A.tot?A.b/A.tot*100:null),'terhadap total WO','var(--c3)'],
-    ['Batal by Command Center',i0(A.cm),i0(A.cmk)+' ada keterangan','var(--c2)'],
-    ['Batal by Call Center',i0(A.cc),i0(A.cck)+' ada keterangan','var(--c1)'],
-    ['Batal by PLN Mobile',i0(A.pm),i0(A.pmk)+' ada keterangan','var(--c3)']
-  ];
-  $('#kp').innerHTML=kpi.map(k=>`<div class="kc" style="--a:${k[3]}"><div class="l">${k[0]}</div><div class="v" style="color:${k[3]}">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+  KPI=[
+    {t:'Total WO',v:i0(A.tot),s:'laporan terdata',c:'var(--c1)',fn:PK.wo},
+    {t:'Total WO Batal',v:i0(A.b),s:'laporan berstatus batal',c:'var(--ng)',fn:PK.b},
+    {t:'% Batal',v:pc(A.tot?A.b/A.tot*100:null),s:'terhadap total WO',c:'var(--c3)',fn:PK.b},
+    {t:'Batal by Command Center',v:i0(A.cm),s:i0(A.cmk)+' ada keterangan',c:'var(--c2)',fn:PK.cm,sfn:PK.cmk,ss:'ada keterangan'},
+    {t:'Batal by Call Center',v:i0(A.cc),s:i0(A.cck)+' ada keterangan',c:'var(--c1)',fn:PK.cc,sfn:PK.cck,ss:'ada keterangan'},
+    {t:'Batal by PLN Mobile',v:i0(A.pm),s:i0(A.pmk)+' ada keterangan',c:'var(--c3)',fn:PK.pm,sfn:PK.pmk,ss:'ada keterangan'}
+  ].map(k=>({...k,rows}));
+  $('#kp').innerHTML=KPI.map((k,i)=>`<div class="kc clk" data-k="${i}" style="--a:${k.c}"><div class="l">${k.t}</div><div class="v" style="color:${k.c}">${k.v}</div><div class="s">${k.sfn?`<span class="clk" data-k="${i}" data-s="1">${k.s}</span>`:k.s}</div></div>`).join('');
 
   /* Tabel 1: rekap laporan batal, header bertingkat */
   const vals=c=>[c.tot,c.b,c.tot?c.b/c.tot*100:null,c.cm,c.cmk,c.cc,c.cck,c.pm,c.pmk,c.ot];
@@ -296,20 +314,21 @@ function render(){
   TB.t1={q:'#q1',el:'#t1',nk,
     head:[...kh,'Total WO','Total WO Batal','% Batal','WO Batal','Ada Ket.','WO Batal','Ada Ket.','WO Batal','Ada Ket.','Tipe Lain / Kosong'],
     groups:[{l:'Command Center',c:[k+3,k+4]},{l:'Call Center',c:[k+5,k+6]},{l:'PLN Mobile',c:[k+7,k+8]}],
+    kinds:[PK.wo,PK.b,PK.b,PK.cm,PK.cmk,PK.cc,PK.cck,PK.pm,PK.pmk,PK.ot],
     fmt:[i0,i0,pc,i0,i0,i0,i0,i0,i0,i0],cls:['c1','ng','ng','c1','c1','c2','c2','c3','c3',''],
-    items:G.map(g=>{const c=bcalc(g.rows);return{cells:[...g.k,...vals(c)],list:c.list}}),
-    tot:{l:`TOTAL (${G.length} ${unit})`,cells:vals(A)},
+    items:G.map(g=>{const c=bcalc(g.rows);return{cells:[...g.k,...vals(c)],rows:g.rows,list:c.list}}),
+    tot:{l:`TOTAL (${G.length} ${unit})`,cells:vals(A)},allRows:rows,
     detail:()=>A.list,G:true,sc:null,sd:1};
 
   /* Tabel 2: kategori batal ComCen per unit */
   const cnt=rs=>{const a=Array(NC).fill(0);rs.forEach(r=>a[bkat(gA(r))]++);return a};
-  const cmOf=list=>list.filter(r=>btipe(gT(r))=='cm');
-  const cmR=cmOf(A.list);
+  const cmR=PK.cm(rows);
   TB.t2={q:'#q2',el:'#t2',nk,
     head:[...kh,'Total Batal ComCen',...BCAT.map(c=>c[0])],
+    kinds:[PK.cm,...BCAT.map((_,j)=>catList(j))],
     hr:[nk+1],fmt:Array(NC+1).fill(i0),cls:['c1','rd',...Array(NC-1).fill('')],
-    items:G.map(g=>{const cg=cmOf(bcalc(g.rows).list);return{cells:[...g.k,cg.length,...cnt(cg)],list:cg}}),
-    tot:{l:`TOTAL (${G.length} ${unit})`,cells:[cmR.length,...cnt(cmR)]},
+    items:G.map(g=>{const cg=PK.cm(g.rows);return{cells:[...g.k,cg.length,...cnt(cg)],rows:g.rows,list:cg}}),
+    tot:{l:`TOTAL (${G.length} ${unit})`,cells:[cmR.length,...cnt(cmR)]},allRows:rows,
     detail:()=>cmR,G:true,sc:null,sd:1};
 
   drawT(TB.t1);drawT(TB.t2);
@@ -330,22 +349,21 @@ function drawT(t){
   }else r1=t.head.map((h,c)=>th(c,h)).join('');
   if(t.G)r1+=`<th${t.groups?' rowspan="2"':''}>Aksi</th>`;
   const cols=t.head.length+(t.G?1:0);
-  const body=rs.length?rs.map(it=>`<tr>${it.cells.map((v,c)=>c<t.nk?`<td class="k">${esc(v)}</td>`:`<td class="${t.cls[c-t.nk]||''}">${t.fmt[c-t.nk](v)}</td>`).join('')}${t.G?`<td><button class="rb" data-i="${t.items.indexOf(it)}">👁 Rincian</button></td>`:''}</tr>`).join('')
+  const body=rs.length?rs.map(it=>{const idx=t.items.indexOf(it);return `<tr>${it.cells.map((v,c)=>c<t.nk?`<td class="k">${esc(v)}</td>`:`<td class="${t.cls[c-t.nk]||''} clk" data-i="${idx}" data-c="${c-t.nk}">${t.fmt[c-t.nk](v)}</td>`).join('')}${t.G?`<td><button class="rb" data-i="${idx}">👁 Rincian</button></td>`:''}</tr>`}).join('')
     :`<tr><td class="em" colspan="${cols}">Tidak ada data.</td></tr>`;
-  const foot=t.tot?`<tfoot><tr><td colspan="${t.nk}" class="k">${esc(t.tot.l)}</td>${t.tot.cells.map((v,c)=>`<td class="${t.cls[c]||''}">${t.fmt[c](v)}</td>`).join('')}${t.G?'<td></td>':''}</tr></tfoot>`:'';
+  const foot=t.tot?`<tfoot><tr><td colspan="${t.nk}" class="k">${esc(t.tot.l)}</td>${t.tot.cells.map((v,c)=>`<td class="${t.cls[c]||''} clk" data-i="-1" data-c="${c}">${t.fmt[c](v)}</td>`).join('')}${t.G?'<td></td>':''}</tr></tfoot>`:'';
   $(t.el).innerHTML=`<table><thead><tr>${r1}</tr>${r2?`<tr>${r2}</tr>`:''}</thead><tbody>${body}</tbody>${foot}</table>`;
 }
 
-/* ===== RINCIAN TIKET (popup) ===== */
-function openDetail(title,list,file){
+/* ===== RINCIAN (popup) ===== */
+function openDetail(title,list){
   const rows=ticketRows(list),n=rows.length;
-  $('#mt').textContent=`${title} — ${n} laporan batal`;
-  const cols=['No. Laporan','Tgl Lapor','Distribusi','Area','Posko','Tipe Batal','Alasan Batal (asli)','Kategori Batal'];
-  const dt=bdet(list).slice(0,300);
-  $('#mb').innerHTML=`<div class="tw"><table style="min-width:1000px"><thead><tr>${cols.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`+
-    (n?dt.map(o=>`<tr><td class="k">${esc(o.NO_LAPORAN||'-')}</td><td>${esc(o.TGL_LAPOR||'-')}</td><td>${esc(o.NAMA_DISTRIBUSI)}</td><td>${esc(o.NAMA_AREA)}</td><td>${esc(o.NAMA_POSKO)}</td><td>${esc(o.TIPE_BATAL)}</td><td style="text-align:left">${esc(o.ALASAN_BATAL||'-')}</td><td style="text-align:left" class="${o.KATEGORI_BATAL==BCAT[0][0]?'rd':''}">${esc(o.KATEGORI_BATAL)}</td></tr>`).join('')
-      :'<tr><td class="em" colspan="8">Tidak ada data.</td></tr>')+'</tbody></table></div>'+(n>300?'<p class="stat">Menampilkan 300 pertama; Excel berisi seluruh data.</p>':'');
-  MX={file:'Rincian_Batal_'+slug(file),rows};
+  $('#mt').textContent=`${title} — ${n} data`;
+  const keys=rows[0]?Object.keys(rows[0]):['Keterangan'];
+  $('#mb').innerHTML=`<div class="tw"><table style="min-width:1000px"><thead><tr>${keys.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>`+
+    (n?rows.slice(0,300).map(o=>`<tr>${keys.map(x=>`<td class="${x=='Kategori Batal'&&o[x]==BCAT[0][0]?'rd':''}" style="text-align:left">${esc(o[x])}</td>`).join('')}</tr>`).join('')
+      :`<tr><td class="em" colspan="${keys.length}">Tidak ada data.</td></tr>`)+'</tbody></table></div>'+(n>300?'<p class="stat">Menampilkan 300 pertama; Excel berisi seluruh data.</p>':'');
+  MX={file:'Rincian_'+slug(title),rows};
   $('#ov').classList.add('on');
 }
 
@@ -378,9 +396,22 @@ document.querySelectorAll('button[data-x]').forEach(b=>b.onclick=()=>exportT(b.d
   const t=TB[id];if(!t)return;
   const th=e.target.closest('th[data-c]');
   if(th){const c=+th.dataset.c;t.sd=t.sc==c?-t.sd:1;t.sc=c;drawT(t);return}
+  const td=e.target.closest('td.clk');
+  if(td){
+    const i=+td.dataset.i,c=+td.dataset.c,it=i<0?null:t.items[i];
+    const g=t.groups&&t.groups.find(g=>g.c.includes(t.nk+c));
+    const title=(it?it.cells.slice(0,t.nk).join(' / '):t.tot.l)+' — '+(g?g.l+' · ':'')+t.head[t.nk+c];
+    openDetail(title,t.kinds[c](it?it.rows:t.allRows));
+    return;
+  }
   const b=e.target.closest('.rb');
-  if(b){const it=t.items[+b.dataset.i];openDetail(it.cells.slice(0,t.nk).join(' / '),it.list,it.cells.slice(0,t.nk).join('_'))}
+  if(b){const it=t.items[+b.dataset.i];openDetail(it.cells.slice(0,t.nk).join(' / '),it.list)}
 }));
+$('#kp').addEventListener('click',e=>{
+  const el=e.target.closest('[data-k]');if(!el)return;
+  const k=KPI[+el.dataset.k],sub=el.hasAttribute('data-s');
+  openDetail(k.t+(sub?' — '+k.ss:''),(sub?k.sfn:k.fn)(k.rows));
+});
 $('#mc').onclick=()=>$('#ov').classList.remove('on');
 $('#ov').addEventListener('click',e=>{if(e.target.id=='ov')$('#ov').classList.remove('on')});
 document.addEventListener('keydown',e=>{if(e.key=='Escape')$('#ov').classList.remove('on')});
