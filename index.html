@@ -3704,30 +3704,63 @@ function xl(rows,name,sheet){if(!rows.length)return;const wb=XLSX.utils.book_new
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),sheet);
   XLSX.writeFile(wb,name+'_'+new Date().toISOString().slice(0,10)+'.xlsx')}
 
+/* cache lokal (IndexedDB): data terakhir tampil seketika saat dibuka */
+function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('mbcache',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbGet(k){try{const db=await idbOpen();return await new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})}catch(e){return null}}
+async function idbSet(k,v){try{const db=await idbOpen();return await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}catch(e){}}
+
+let busy=false,LASTT=0;
+const MAX_AGE=5*60*1000;   /* data dianggap segar 5 menit */
+
+function applyData(data){
+  REC=build(data.rows);opts();render();
+  $('mbFiles').textContent=data.info.length?'File terbaca: '+data.info.join(' · '):'Belum ada file spreadsheet di folder.';
+}
+
 async function sync(){
-  if(!BTC.webapp){$('mbErr').textContent='URL Web App belum diisi: isi BTC.webapp dengan URL deployment Apps Script.';$('mbSt').textContent='Belum terhubung';return}
+  if(busy)return;                       /* jangan menumpuk permintaan */
+  if(!BTC.webapp){$('mbErr').textContent='URL Web App belum diisi (BTC.webapp).';$('mbSt').textContent='Belum terhubung';return}
+  busy=true;
+  const t0=Date.now();
+  const tick=setInterval(()=>{$('mbSt').textContent='Menyinkronkan... '+Math.round((Date.now()-t0)/1000)+' dtk'},1000);
   $('mbSt').textContent='Menyinkronkan...';$('mbErr').textContent='';
   try{
-    const j=await fetchFolders();
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),120000);
+    let j;
+    try{
+      const r=await fetch(BTC.webapp+(BTC.webapp.includes('?')?'&':'?')+'_='+Date.now(),{cache:'no-store',signal:ctl.signal});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      j=await r.json();
+    }finally{clearTimeout(to)}
+    if(!j.ok)throw new Error(j.error||'Web App mengembalikan error');
     let all=[],info=[];
     j.folders.forEach(f=>f.files.forEach(file=>{
-      if(file.error){info.push(`${f.folder}: ${file.name} (gagal: ${file.error})`);return}
+      if(file.error){info.push(`${f.folder}: ${file.name} (gagal)`);return}
       const objs=rowsToObjs(file.rows||[]);
       all=all.concat(objs);
       info.push(`${f.folder}: ${file.name} (${objs.length} baris)`);
     }));
-    REC=build(all);opts();render();
-    $('mbFiles').textContent=info.length?'File terbaca: '+info.join(' · '):'Belum ada file spreadsheet di folder.';
-    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' (data: '+new Date(j.generated).toLocaleString('id-ID')+')';
-  }catch(e){$('mbErr').textContent='Gagal membaca sumber data: '+e.message;$('mbSt').textContent='Sinkron gagal'}
+    const data={t:Date.now(),generated:j.generated,info:info,rows:all};
+    applyData(data);
+    LASTT=data.t;
+    idbSet('data',data);
+    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · data server '+new Date(j.generated).toLocaleString('id-ID');
+  }catch(e){
+    $('mbErr').textContent=e.name==='AbortError'?'Waktu habis (lebih dari 2 menit). Coba lagi.':'Gagal membaca sumber data: '+e.message;
+    $('mbSt').textContent=REC.length?'Sinkron gagal, menampilkan data terakhir':'Sinkron gagal';
+  }finally{clearInterval(tick);busy=false}
 }
 
-function enter(){
+async function enter(){
   ['home','app','cb','abs','cut','md'].forEach(id=>{const e=$(id);if(e)e.hidden=true});
   $('mbo').hidden=false;$('ht').textContent='Monitoring WO Batal';$('hp').textContent='UIW Papua dan Papua Barat';
   document.title='Monitoring WO Batal';window.scrollTo(0,0);
-  if(!started){started=true;wire()}
-  sync();
+  if(!started){
+    started=true;wire();
+    const c=await idbGet('data');
+    if(c&&c.rows&&!REC.length){LASTT=c.t;applyData(c);$('mbSt').textContent='Data dari cache '+new Date(c.t).toLocaleString('id-ID')}
+  }
+  if(!LASTT||Date.now()-LASTT>MAX_AGE)sync();
 }
 
 function wire(){
@@ -3739,7 +3772,7 @@ function wire(){
   $('mbKat').onclick=e=>{const el=e.target.closest('[data-k]');if(!el)return;S.kat=S.kat==el.dataset.k?'':el.dataset.k;opts();render()};
   $('mbXR').onclick=()=>xl(window._mbXR||[],'Rekap_WO_Batal','Rekap');
   $('mbXD').onclick=()=>xl(window._mbXD||[],'Detail_WO_Batal','Detail');
-  setInterval(()=>{if(!$('mbo').hidden&&!document.hidden)sync()},180000);
+  setInterval(()=>{if(!$('mbo').hidden&&!document.hidden)sync()},300000);
 }
 
 window.mbEnter=enter;
