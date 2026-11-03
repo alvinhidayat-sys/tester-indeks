@@ -68,6 +68,17 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--bd);padding:10px 14px;border-radius:8px;font-size:13px;z-index:60;max-width:92vw}
 @media(max-width:900px){.grid2{grid-template-columns:1fr}}
 @media(max-width:640px){.wrap{padding:12px 12px 40px}.fg{min-width:100%}.ch .tools input{min-width:100%}}
+
+:root{--zb:#14253a}
+:root[data-theme=light]{--zb:#f1f5f8}
+th,td{border-right:1px solid var(--bd)}
+tbody tr:nth-child(even) td{background:var(--zb)}
+tbody tr:hover td{background:var(--card2)}
+td.k,thead th:first-child,tfoot td:first-child{position:sticky;left:0;z-index:2;background:var(--card)}
+thead th:first-child{z-index:3;background:var(--card2)}
+tbody tr:nth-child(even) td.k{background:var(--zb)}
+tfoot td:first-child{background:var(--card2)}
+.dg{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;margin-bottom:16px}.dg summary{cursor:pointer;color:var(--dim);font-size:13px}
 </style>
 </head>
 <body>
@@ -89,12 +100,13 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
     <div class="fg" style="flex:0;min-width:0;justify-content:flex-end"><label>&nbsp;</label><button class="b" id="rs">Reset</button></div>
   </div>
 
+  <details class="dg"><summary>Status data &amp; file</summary><div id="dgb" style="margin-top:10px"></div></details>
   <div class="kpis" id="kp"></div>
 
   <div class="grid2">
     <div class="card full"><h3>Batal per <span id="u1">Area</span> menurut tipe batal</h3><div class="cbox"><canvas id="c1"></canvas></div></div>
     <div class="card"><h3>Kategori Batal Command Center</h3><div class="cbox"><canvas id="c2"></canvas></div></div>
-    <div class="card"><h3>Tren per Bulan</h3><div class="cbox"><canvas id="c3"></canvas></div></div>
+    <div class="card"><h3>WO Batal Per Unit</h3><div class="cbox"><canvas id="c3"></canvas></div></div>
   </div>
 
   <section class="card">
@@ -163,36 +175,61 @@ async function loadSheet(id,name,g){
   const r=csv(txt),h=r[0].map(x=>x.trim().toUpperCase());
   return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:g,_FILE:name};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return o});
 }
+const GS='application/vnd.google-apps.spreadsheet';
+let DIAG=[];
+// aturan tunggal untuk semua file: per bulan, semua baris dari kedua folder digabung per NO_LAPORAN
+// setiap kolom diisi dari file mana pun yang punya nilainya (COMCEN diprioritaskan)
+function assemble(files){
+  files.forEach(f=>{f.per=periodOf(f.rows,f.name);f.rows.forEach(r=>r._PER=f.per)});
+  const periods=[...new Set(files.filter(f=>f.rows.length).map(f=>f.per))].sort((a,b)=>(a||1e9)-(b||1e9));
+  const order=files.slice().sort((a,b)=>(a.g=='cc'?0:1)-(b.g=='cc'?0:1));
+  const all=[],sum=[];
+  for(const p of periods){
+    const M=new Map(),src={cc:0,p2b:0};let anon=0;
+    order.filter(f=>f.per==p).forEach(f=>{src[f.g]+=f.rows.length;
+      f.rows.forEach(r=>{
+        const k=r.NO_LAPORAN||('#'+(anon++));
+        let m=M.get(k);
+        if(!m){M.set(k,{...r,_PER:p,_FILE:f.name,_SHEET:f.g});return}
+        for(const c in r)if((m[c]===undefined||m[c]==='')&&r[c]!=='')m[c]=r[c];
+      })});
+    const rows=[...M.values()];
+    all.push(...rows);
+    sum.push({p,cc:src.cc,kg:src.p2b,uniq:rows.length,rows});
+  }
+  for(const k in KM)delete KM[k];
+  sum.forEach(s=>{const bl=s.rows.filter(isBt);s.bl=bl.length;s.kos=bl.filter(r=>!gT(r)).length;s.area=s.rows.filter(r=>r.NAMA_AREA).length});
+  return{all,files,sum};
+}
+function renderDiag(){
+  const rows=DIAG.map(d=>{const folder=d.g=='cc'?'COMCEN':d.g=='p2b'?'Kode G':'Ringkasan';
+    return`<tr><td class="k">${esc(d.f)}</td><td style="text-align:left">${folder}</td><td style="text-align:left">${d.per?plbl(d.per):'-'}</td><td>${d.n!=null?i0(d.n):'-'}</td><td style="text-align:left;white-space:normal">${esc(d.note)}</td></tr>`}).join('');
+  $('#dgb').innerHTML=`<div class="tw"><table style="min-width:760px"><thead><tr><th>File / Ringkasan</th><th>Folder</th><th>Bulan</th><th>Baris</th><th>Catatan</th></tr></thead><tbody>${rows||'<tr><td class="em" colspan="5">Belum ada data.</td></tr>'}</tbody></table></div>`;
+}
 async function sync(){
   if(busy)return;busy=true;const b=$('#sy');b.disabled=true;$('#syi').classList.add('spin');
   try{
-    const L=await fetchList(),out={p2b:[],cc:[]},bad=[],cnt={p2b:0,cc:0};let changed=0;
+    const L=await fetchList(),files=[],diag=[];
     for(const g of ['p2b','cc']){
       for(const fl of (L[g]||[])){
-        cnt[g]++;
-        const c=CACHE[fl.id];
-        if(c&&c.mt==fl.modifiedTime){out[g].push(...c.rows);continue}
-        try{const rows=await loadSheet(fl.id,fl.name,g);CACHE[fl.id]={mt:fl.modifiedTime,rows};out[g].push(...rows);changed++}
-        catch(e){bad.push(`${fl.name}: ${e.message}`);if(c)out[g].push(...c.rows)}
+        if(fl.mime&&fl.mime!==GS){diag.push({f:fl.name,g,per:0,n:0,note:'bukan Google Sheets: buka file, lalu File → Save as Google Sheets'});continue}
+        try{
+          const c=CACHE[fl.id];let rows;
+          if(c&&c.mt==fl.modifiedTime)rows=c.rows;
+          else{rows=await loadSheet(fl.id,fl.name,g);CACHE[fl.id]={mt:fl.modifiedTime,rows}}
+          files.push({g,name:fl.name,rows});
+        }catch(e){diag.push({f:fl.name,g,per:0,n:0,note:'gagal dibaca: '+e.message})}
       }
     }
-    // gabung dua folder lewat NO_LAPORAN: geografi & WO dari COMCEN (cc), tipe & alasan batal dari Kode G (p2b)
-    const P={};out.p2b.forEach(r=>{if(r.NO_LAPORAN)P[r.NO_LAPORAN]=r});
-    const base=out.cc.length?out.cc:out.p2b;let joined=0;
-    if(out.cc.length)base.forEach(r=>{const p=P[r.NO_LAPORAN];if(!p)return;joined++;
-      ['TIPE_BATAL','ALASAN_BATAL'].forEach(k=>{if(k in p)r[k]=p[k]});
-      if(!r.APKT_STATUS&&p.APKT_STATUS)r.APKT_STATUS=p.APKT_STATUS});
-    // periode per file: dari BLTH, nama file, atau cadangan
-    const byF={};base.forEach(r=>(byF[r._FILE]=byF[r._FILE]||[]).push(r));
-    Object.keys(byF).forEach(n=>{const p=periodOf(byF[n],n);byF[n].forEach(r=>r._PER=p)});
-    D.p2b=base;D.cc=out.cc;
-    for(const k in KM)delete KM[k];
-    const bl=base.filter(isBt),kos=bl.filter(r=>!gT(r)).length,tk=(base[0]&&fkey(base[0],'t',['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN']))||'tidak ditemukan';
-    diag=` · digabung ${joined} laporan · batal ${bl.length}, tipe kosong ${kos} (kolom ${tk})`+(out.cc.length&&out.p2b.length>joined?` · ${out.p2b.length-joined} tidak ada di COMCEN`:'');
-    fillAll();
-    $('#st').className='stat';
-    $('#st').textContent=`${cnt.p2b} file laporan · ${cnt.cc} file periode · update ${new Date().toLocaleTimeString('id-ID')}`+(changed?` · ${changed} file baru/berubah`:'')+diag+(bad.length?' · gagal: '+bad.join('; '):'');
-    if(bad.length)toast('Sebagian file gagal dibaca: '+bad.join('; '),true);
+    const{all,files:fs,sum}=assemble(files);
+    D.p2b=all;D.cc=[];
+    fs.forEach(f=>diag.push({f:f.name,g:f.g,per:f.per,n:f.rows.length,note:!f.rows.length?'kosong':(f.per?'dibaca':'bulan tidak terdeteksi (cek kolom BLTH atau nama file)')}));
+    sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos}`+(x.area?'':' · area & posko tidak tersedia')}));
+    DIAG=diag;
+    fillAll();renderDiag();
+    $('#st').className='stat';$('#st').textContent='Diperbarui '+new Date().toLocaleTimeString('id-ID');
+    const perlu=diag.filter(d=>d.g!='sum'&&d.note!=='dibaca').length;
+    if(perlu)toast(perlu+' file perlu perhatian, lihat Status data',true);
   }catch(e){$('#st').className='stat err';$('#st').textContent=e.message;toast(e.message,true)}
   busy=false;b.disabled=false;$('#syi').classList.remove('spin');
 }
@@ -314,8 +351,8 @@ function render(){
     {t:'Batal by PLN Mobile',v:i0(A.pm),s:i0(A.pmk)+' ada keterangan',c:'var(--c3)',fn:PK.pm,sfn:PK.pmk,ss:'ada keterangan'}
   ].map(k=>({...k,rows}));
   $('#kp').innerHTML=KPI.map((k,i)=>`<div class="kc clk" data-k="${i}" style="--a:${k.c}"><div class="l">${k.t}</div><div class="v" style="color:${k.c}">${k.v}</div><div class="s">${k.sfn?`<span class="clk" data-k="${i}" data-s="1">${k.s}</span>`:k.s}</div></div>`).join('');
-  $('#j1').textContent=`🚫 Rekapitulasi Laporan Batal per ${unit}`;
-  $('#j2').textContent=`🗂️ Kategori Batal Command Center per ${unit}`;
+  $('#j1').textContent='🚫 Rekapitulasi Laporan Batal';
+  $('#j2').textContent='🗂️ Kategori Batal';
   $('#u1').textContent=unit;
 
   const vals=c=>[c.tot,c.b,c.tot?c.b/c.tot*100:null,c.cm,c.cmk,c.cc,c.cck,c.pm,c.pmk,c.ot];
@@ -340,27 +377,54 @@ function render(){
   charts(rows,G);
 }
 
-/* ===== GRAFIK DINAMIS ===== */
+/* ===== GRAFIK ===== */
 const cv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function mk(id,cfg){if(CH[id])CH[id].destroy();if(typeof Chart=='undefined')return;CH[id]=new Chart($('#'+id),cfg)}
+const PAL3=['#E3A857','#4FB6A8','#9B87C4','#E2665A','#6FBF96','#5AA9E6','#D98BB0','#B8C46B','#F28C38','#7FB3D5','#C0392B','#16A085','#8E44AD','#2E86C1','#AAB7B8'];
+function shade(hex,a){const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255,f=v=>Math.max(0,Math.min(255,Math.round(a<0?v*(1+a):v+(255-v)*a)));return`rgb(${f(r)},${f(g)},${f(b)})`}
+// kolom 3D buatan sendiri: bayangan lantai, sisi atas dan kanan, badan bergradasi
+const bar3d={id:'bar3d',afterDatasetsDraw(ch){
+  const cols=(ch.options.plugins.bar3d||{}).colors||[],m=ch.getDatasetMeta(0),ctx=ch.ctx;
+  m.data.forEach((el,i)=>{
+    const v=ch.data.datasets[0].data[i];if(!v)return;
+    const p=el.getProps(['x','y','base','width'],true),c=cols[i%cols.length]||'#E3A857';
+    const w=p.width,d=Math.max(5,Math.min(16,w*.35)),l=p.x-w/2,r=p.x+w/2,t=p.y,b=p.base;
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(p.x+d/2,b+3,w/2+d,4,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=shade(c,-.38);ctx.beginPath();ctx.moveTo(r,t);ctx.lineTo(r+d,t-d);ctx.lineTo(r+d,b-d);ctx.lineTo(r,b);ctx.closePath();ctx.fill();
+    ctx.fillStyle=shade(c,.4);ctx.beginPath();ctx.moveTo(l,t);ctx.lineTo(l+d,t-d);ctx.lineTo(r+d,t-d);ctx.lineTo(r,t);ctx.closePath();ctx.fill();
+    const g=ctx.createLinearGradient(l,0,r,0);g.addColorStop(0,shade(c,.18));g.addColorStop(.5,c);g.addColorStop(1,shade(c,-.2));
+    ctx.fillStyle=g;ctx.fillRect(l,t,w,b-t);
+    ctx.fillStyle=cv('--tx');ctx.font="600 11px 'IBM Plex Mono',monospace";ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillText(i0(v),p.x+d/2,t-d-4);
+    ctx.restore();
+  });
+}};
+// bayangan lembut untuk garis
+const shadowLine={id:'shadowLine',beforeDatasetDraw(ch){const x=ch.ctx;x.save();x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=14;x.shadowOffsetY=8},afterDatasetDraw(ch){ch.ctx.restore()}};
 function charts(rows,G){
-  const tc=cv('--dim'),gc=cv('--bd'),ax=(x)=>({ticks:{color:tc,autoSkip:false,font:{size:11}},grid:{color:gc},...x});
+  const tc=cv('--dim'),gc=cv('--bd'),shortN=s=>s.length>24?s.slice(0,22)+'…':s;
   const vs=G.map(g=>bcalc(g.rows));
   mk('c1',{type:'bar',data:{labels:G.map(g=>g.k[0]),datasets:[
     {label:'Command Center',data:vs.map(c=>c.cm),backgroundColor:'#E3A857'},
     {label:'Call Center',data:vs.map(c=>c.cc),backgroundColor:'#4FB6A8'},
     {label:'PLN Mobile',data:vs.map(c=>c.pm),backgroundColor:'#9B87C4'},
     {label:'Tipe Lain / Kosong',data:vs.map(c=>c.ot),backgroundColor:'#5F7286'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}},scales:{x:ax({stacked:true}),y:{stacked:true,ticks:{color:tc},grid:{color:gc}}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}},
+      scales:{x:{stacked:true,ticks:{color:tc,autoSkip:false,maxRotation:60,font:{size:11}},grid:{display:false}},y:{stacked:true,ticks:{color:tc},grid:{color:gc}}}}});
+
   const cm=PK.cm(rows),cnt=Array(NC).fill(0);cm.forEach(r=>cnt[bkat(gA(r))]++);
-  mk('c2',{type:'bar',data:{labels:BCAT.map(c=>c[0].length>44?c[0].slice(0,42)+'…':c[0]),datasets:[{label:'Batal ComCen',data:cnt,backgroundColor:'#E2665A'}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc},grid:{color:gc}},y:ax({})}}});
-  const base=D.p2b.filter(r=>(!AF.d||r.NAMA_DISTRIBUSI==AF.d)&&(!AF.a||r.NAMA_AREA==AF.a)&&(!AF.p||r.NAMA_POSKO==AF.p));
-  const ps=[...new Set(base.map(r=>r._PER))].sort((a,b)=>(a||1e9)-(b||1e9)),pa=ps.map(p=>bcalc(base.filter(r=>r._PER==p)));
-  mk('c3',{type:'line',data:{labels:ps.map(plbl),datasets:[
-    {label:'Total WO',data:pa.map(c=>c.tot),borderColor:'#E3A857',backgroundColor:'#E3A857',tension:.25},
-    {label:'WO Batal',data:pa.map(c=>c.b),borderColor:'#E2665A',backgroundColor:'#E2665A',tension:.25}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}},scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc},grid:{color:gc}}}}});
+  mk('c2',{type:'bar',data:{labels:BCAT.map(c=>shortN(c[0])),datasets:[{label:'Batal Command Center',data:cnt,backgroundColor:'transparent',borderWidth:0,barPercentage:.6,categoryPercentage:.85}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22,right:14}},
+      plugins:{legend:{display:false},bar3d:{colors:PAL3},tooltip:{callbacks:{title:it=>BCAT[it[0].dataIndex][0]}}},
+      scales:{x:{ticks:{color:tc,autoSkip:false,maxRotation:65,minRotation:45,font:{size:10}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:tc},grid:{color:gc}}}},
+    plugins:[bar3d]});
+
+  const grad=c=>{const{chart:ch}=c;if(!ch.chartArea)return 'rgba(226,102,90,.25)';const g=ch.ctx.createLinearGradient(0,ch.chartArea.top,0,ch.chartArea.bottom);g.addColorStop(0,'rgba(226,102,90,.45)');g.addColorStop(1,'rgba(226,102,90,0)');return g};
+  mk('c3',{type:'line',data:{labels:G.map(g=>g.k[0]),datasets:[{label:'WO Batal',data:vs.map(c=>c.b),borderColor:'#E2665A',borderWidth:3,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'#E2665A',pointBorderColor:'#fff',pointBorderWidth:2,tension:.35,fill:true,backgroundColor:grad}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:10,right:10}},plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:tc,autoSkip:false,maxRotation:60,minRotation:35,font:{size:10}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:tc},grid:{color:gc}}}},
+    plugins:[shadowLine]});
 }
 
 /* ===== TABEL ===== */
