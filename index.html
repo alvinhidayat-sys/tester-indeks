@@ -3717,36 +3717,52 @@ function applyData(data){
   $('mbFiles').textContent=data.info.length?'File terbaca: '+data.info.join(' · '):'Belum ada file spreadsheet di folder.';
 }
 
+async function ambilJson(url,ms){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms||120000);
+  try{
+    const r=await fetch(url,{cache:'no-store',signal:ctl.signal});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||'Web App mengembalikan error');
+    return j;
+  }finally{clearTimeout(to)}
+}
+
 async function sync(){
   if(busy)return;                       /* jangan menumpuk permintaan */
   if(!BTC.webapp){$('mbErr').textContent='URL Web App belum diisi (BTC.webapp).';$('mbSt').textContent='Belum terhubung';return}
   busy=true;
   const t0=Date.now();
-  const tick=setInterval(()=>{$('mbSt').textContent='Menyinkronkan... '+Math.round((Date.now()-t0)/1000)+' dtk'},1000);
-  $('mbSt').textContent='Menyinkronkan...';$('mbErr').textContent='';
+  let prog='Menyinkronkan...';
+  const tick=setInterval(()=>{$('mbSt').textContent=prog+' '+Math.round((Date.now()-t0)/1000)+' dtk'},1000);
+  $('mbErr').textContent='';
+  const sep=BTC.webapp.includes('?')?'&':'?';
   try{
-    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),120000);
-    let j;
-    try{
-      const r=await fetch(BTC.webapp+(BTC.webapp.includes('?')?'&':'?')+'_='+Date.now(),{cache:'no-store',signal:ctl.signal});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      j=await r.json();
-    }finally{clearTimeout(to)}
-    if(!j.ok)throw new Error(j.error||'Web App mengembalikan error');
-    let all=[],info=[];
-    j.folders.forEach(f=>f.files.forEach(file=>{
-      if(file.error){info.push(`${f.folder}: ${file.name} (gagal)`);return}
-      const objs=rowsToObjs(file.rows||[]);
-      all=all.concat(objs);
-      info.push(`${f.folder}: ${file.name} (${objs.length} baris)`);
-    }));
-    const data={t:Date.now(),generated:j.generated,info:info,rows:all};
+    /* 1) daftar file (ringan) */
+    const lst=await ambilJson(BTC.webapp+sep+'_='+Date.now());
+    /* 2) isi tiap file, satu per satu agar memori server dan browser tetap kecil */
+    let all=[],info=[],gagal=0;
+    for(let i=0;i<lst.files.length;i++){
+      const f=lst.files[i];
+      prog='Membaca file '+(i+1)+'/'+lst.files.length+'...';
+      try{
+        const d=await ambilJson(BTC.webapp+sep+'id='+encodeURIComponent(f.id));
+        const objs=rowsToObjs(d.rows||[]);
+        all=all.concat(objs);
+        info.push(`${f.folder}: ${f.name} (${objs.length} baris)`);
+      }catch(e){
+        gagal++;
+        info.push(`${f.folder}: ${f.name} (gagal: ${e.message})`);
+      }
+    }
+    const data={t:Date.now(),generated:lst.generated,info:info,rows:all};
     applyData(data);
     LASTT=data.t;
     idbSet('data',data);
-    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · data server '+new Date(j.generated).toLocaleString('id-ID');
+    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · '+(lst.files.length-gagal)+'/'+lst.files.length+' file terbaca';
+    if(gagal)$('mbErr').textContent=gagal+' file gagal dibaca (lihat daftar file di bawah).';
   }catch(e){
-    $('mbErr').textContent=e.name==='AbortError'?'Waktu habis (lebih dari 2 menit). Coba lagi.':'Gagal membaca sumber data: '+e.message;
+    $('mbErr').textContent=e.name==='AbortError'?'Waktu habis saat mengambil data. Coba lagi.':'Gagal membaca sumber data: '+e.message;
     $('mbSt').textContent=REC.length?'Sinkron gagal, menampilkan data terakhir':'Sinkron gagal';
   }finally{clearInterval(tick);busy=false}
 }
