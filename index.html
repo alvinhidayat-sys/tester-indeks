@@ -172,33 +172,53 @@ async function loadSheet(id,name,g){
   if(!res.ok)throw new Error('HTTP '+res.status);
   const txt=await res.text();
   if(/^\s*<(!doctype|html)/i.test(txt))throw new Error('belum dibagikan sebagai Pelihat');
-  const r=csv(txt),h=r[0].map(x=>x.trim().toUpperCase());
-  return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:g,_FILE:name};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return o});
+  const r=csv(txt),h=r[0].map(x=>x.trim().toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,''));
+  return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:g,_FILE:name};h.forEach((k,i)=>{const v=(x[i]||'').trim();if(o[k]===undefined||o[k]==='')o[k]=v});return o});
 }
 const GS='application/vnd.google-apps.spreadsheet';
 let DIAG=[];
-// aturan tunggal untuk semua file: per bulan, semua baris dari kedua folder digabung per NO_LAPORAN
-// setiap kolom diisi dari file mana pun yang punya nilainya (COMCEN diprioritaskan)
+/* ===== ATURAN BACA DATA (PATEN) =====
+   1. Semua file di kedua folder (Kode G + COMCEN) dibaca otomatis, nama file bebas.
+   2. Semua baris digabung per NO_LAPORAN (dinormalkan), lintas file & lintas bulan; COMCEN diprioritaskan,
+      kolom kosong diisi dari file lain yang punya nilainya.
+   3. Bulan = 2 angka di depan nama file (01-12) untuk semua baris file itu; bila nama tidak berawalan MM:
+      per baris BLTH -> bulan file -> TGL_LAPOR. Penggabungan per (bulan + NO_LAPORAN).
+   4. Kolom status/tipe/alasan batal dicari per baris (bukan per file) setelah penggabungan,
+      jadi tidak tergantung baris pertama di file. */
+const noKey=r=>{const v=String(r.NO_LAPORAN==null?'':r.NO_LAPORAN).trim().replace(/^'+/,'').replace(/\.0+$/,'').replace(/\s+/g,'').toUpperCase();return v};
+function pickCol(r,al,fz){
+  for(const k in r){if(k[0]=='_')continue;const n=k.replace(/[^A-Z0-9]/g,'');
+    if(al.includes(n)||(fz&&fz(n))){const v=r[k];if(v!==''&&v!=null)return v}}
+  return '';
+}
+const A_S=['APKTSTATUS','STATUSAPKT'],A_T=['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN'],A_A=['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL'];
+const fzT=n=>n.includes('BATAL')&&(n.includes('TIPE')||n.includes('JENIS'))&&!n.includes('ALASAN')&&!n.includes('KET');
+function canon(r){r._S=pickCol(r,A_S);r._T=pickCol(r,A_T,fzT);r._A=pickCol(r,A_A)}
+function dateNum(v){const s=String(v||'');let m=s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if(m&&+m[2]>=1&&+m[2]<=12)return +m[1]*100+ +m[2];
+  m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  if(m){let a=+m[1],b=+m[2];const mo=a>12?b:(b>12?a:b);if(mo>=1&&mo<=12)return +m[3]*100+mo}
+  return 0}
 function assemble(files){
-  files.forEach(f=>{f.per=periodOf(f.rows,f.name);f.rows.forEach(r=>r._PER=f.per)});
-  const periods=[...new Set(files.filter(f=>f.rows.length).map(f=>f.per))].sort((a,b)=>(a||1e9)-(b||1e9));
+  files.forEach(f=>{f.byName=!!nameMM(f.name);f.per=periodOf(f.rows,f.name)});
   const order=files.slice().sort((a,b)=>(a.g=='cc'?0:1)-(b.g=='cc'?0:1));
-  const all=[],sum=[];
-  for(const p of periods){
-    const M=new Map(),src={cc:0,p2b:0};let anon=0;
-    order.filter(f=>f.per==p).forEach(f=>{src[f.g]+=f.rows.length;
-      f.rows.forEach(r=>{
-        const k=r.NO_LAPORAN||('#'+(anon++));
-        let m=M.get(k);
-        if(!m){M.set(k,{...r,_PER:p,_FILE:f.name,_SHEET:f.g});return}
-        for(const c in r)if((m[c]===undefined||m[c]==='')&&r[c]!=='')m[c]=r[c];
-      })});
-    const rows=[...M.values()];
-    all.push(...rows);
-    sum.push({p,cc:src.cc,kg:src.p2b,uniq:rows.length,rows});
-  }
+  const M=new Map(),cnt={};let anon=0;
+  const bump=(p,g)=>{(cnt[p]||(cnt[p]={cc:0,p2b:0}))[g]++};
+  order.forEach(f=>{f.months=new Set();
+    f.rows.forEach(r=>{
+      const p=f.byName?f.per:(blthNum(blth(r))||f.per||0);f.months.add(p);bump(p,f.g);
+      const nk=noKey(r),k=nk?(p+'|'+nk):('#'+(anon++));
+      let m=M.get(k);
+      if(!m){m={...r};if(nk)m.NO_LAPORAN=nk;m._PER=p;m._G={cc:0,p2b:0};m._G[f.g]=1;M.set(k,m);return}
+      m._G[f.g]=1;if(!m._PER&&p)m._PER=p;
+      for(const c in r)if(c[0]!='_'&&(m[c]===undefined||m[c]==='')&&r[c]!=='')m[c]=r[c];
+    })});
+  const all=[...M.values()];
+  all.forEach(m=>{canon(m);if(!m._PER)m._PER=dateNum(m.TGL_LAPOR)||0});
   for(const k in KM)delete KM[k];
-  sum.forEach(s=>{const bl=s.rows.filter(isBt);s.bl=bl.length;s.kos=bl.filter(r=>!gT(r)).length;s.area=s.rows.filter(r=>r.NAMA_AREA).length});
+  const by=new Map();all.forEach(m=>{if(!by.has(m._PER))by.set(m._PER,[]);by.get(m._PER).push(m)});
+  const sum=[...by.keys()].sort((a,b)=>(a||1e9)-(b||1e9)).map(p=>{const rows=by.get(p),bl=rows.filter(isBt),c=cnt[p]||{cc:0,p2b:0};
+    return{p,cc:c.cc,kg:c.p2b,uniq:rows.length,rows,bl:bl.length,kos:bl.filter(r=>!gT(r)).length,area:rows.filter(r=>r.NAMA_AREA).length,onlyKG:rows.filter(r=>r._G.p2b&&!r._G.cc).length}});
   return{all,files,sum};
 }
 function renderDiag(){
@@ -223,12 +243,12 @@ async function sync(){
     }
     const{all,files:fs,sum}=assemble(files);
     D.p2b=all;D.cc=[];
-    fs.forEach(f=>diag.push({f:f.name,g:f.g,per:f.per,n:f.rows.length,note:!f.rows.length?'kosong':(f.per?'dibaca':'bulan tidak terdeteksi (cek kolom BLTH atau nama file)')}));
-    sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos}`+(x.area?'':' · area & posko tidak tersedia')}));
+    fs.forEach(f=>{const ms=[...(f.months||[])].filter(Boolean).sort().map(plbl).join(', ');diag.push({f:f.name,g:f.g,per:f.per,n:f.rows.length,note:!f.rows.length?'kosong':(ms?'dibaca · bulan: '+ms:'dibaca · bulan tidak terdeteksi (cek kolom BLTH, TGL_LAPOR atau nama file)')})});
+    sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos} · hanya di Kode G ${x.onlyKG}`+(x.area?'':' · area & posko tidak tersedia')}));
     DIAG=diag;
     fillAll();renderDiag();
     $('#st').className='stat';$('#st').textContent='Diperbarui '+new Date().toLocaleTimeString('id-ID');
-    const perlu=diag.filter(d=>d.g!='sum'&&d.note!=='dibaca').length;
+    const perlu=diag.filter(d=>d.g!='sum'&&!/^dibaca/.test(d.note)).length;
     if(perlu)toast(perlu+' file perlu perhatian, lihat Status data',true);
   }catch(e){$('#st').className='stat err';$('#st').textContent=e.message;toast(e.message,true)}
   busy=false;b.disabled=false;$('#syi').classList.remove('spin');
@@ -274,7 +294,7 @@ function fkey(r,tag,al){const ks=Object.keys(r).map(x=>[x,x.replace(/[^A-Z0-9]/g
   if(tag=='t')return(ks.find(([,n])=>n.includes('BATAL')&&(n.includes('TIPE')||n.includes('JENIS'))&&!n.includes('ALASAN')&&!n.includes('KET'))||[null])[0];
   return null}
 function ck(r,tag,al){const m=KM[r._FILE]||(KM[r._FILE]={});if(!(tag in m))m[tag]=fkey(r,tag,al);return m[tag]?r[m[tag]]:''}
-const gS=r=>ck(r,'s',['APKTSTATUS','STATUSAPKT']),gT=r=>ck(r,'t',['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN']),gA=r=>ck(r,'a',['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL']);
+const gS=r=>r._S||'',gT=r=>r._T||'',gA=r=>r._A||'';
 const isBt=r=>/batal/i.test(gS(r));
 const uq=rows=>new Set(rows.map((r,i)=>r.NO_LAPORAN||'x'+i)).size;
 
@@ -298,15 +318,29 @@ function blthNum(v){let s=String(v==null?'':v).trim();if(!s)return null;
   s=s.replace(/^(\d{6})[.,]0+$/,'$1');const d=s.replace(/\D/g,'');if(d.length!=6)return null;
   const y=+d.slice(0,4),mo=+d.slice(4);return y>=2000&&mo>=1&&mo<=12?y*100+mo:null}
 // kode periode = YYYYMM; 0 bila tidak diketahui
+const BLNK=[['jan','januari','january'],['feb','februari','february'],['mar','maret','march'],['apr','april'],['mei','may'],['jun','juni','june'],['jul','juli','july'],['agu','agt','agus','agustus','aug','august'],['sep','sept','september'],['okt','oct','oktober','october'],['nov','november'],['des','dec','desember','december']];
+function nameMonth(name){
+  const n=nz(name).replace(/(\d+)/g,' $1 '),t=n.split(/\s+/).filter(Boolean);
+  let y=0,mo=-1;
+  t.forEach(x=>{if(/^20\d\d$/.test(x))y=+x;const q=x.match(/^(20\d\d)(0[1-9]|1[0-2])$/);if(q){y=+q[1];mo=+q[2]-1}});
+  if(mo<0)mo=BLNK.findIndex(a=>t.some(x=>a.includes(x)));
+  if(mo<0){const d=t.find(x=>/^(0?[1-9]|1[0-2])$/.test(x));if(d)mo=+d-1}
+  return y&&mo>=0?y*100+mo+1:0}
+// acuan utama: 2 angka di depan nama file = bulan (01..12); tahun dari BLTH / TGL_LAPOR / nama file / tahun berjalan
+const nameMM=name=>{const m=String(name||'').trim().match(/^(0[1-9]|1[0-2])(?!\d)/);return m?+m[1]:0};
+function yearOf(rows,name){
+  const c={};rows.forEach(r=>{const v=blthNum(blth(r));const y=v?Math.floor(v/100):Math.floor(dateNum(r.TGL_LAPOR)/100);if(y)c[y]=(c[y]||0)+1});
+  const t=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];if(t)return +t[0];
+  const ny=(String(name||'').match(/20\d\d/)||[])[0];return ny?+ny:new Date().getFullYear()}
 function periodOf(rows,name){
+  const mm=nameMM(name);if(mm)return yearOf(rows,name)*100+mm;
   const cnt={};rows.forEach(r=>{const v=blthNum(blth(r));if(v)cnt[v]=(cnt[v]||0)+1});
   const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
   if(top)return +top[0];
-  const n=nz(name),y=(n.match(/20\d\d/)||[])[0],mi=BLN.findIndex(m=>n.includes(m.toLowerCase()));
-  if(y&&mi>=0)return +y*100+mi+1;
-  const m2=n.match(/(20\d\d)\s*(\d{2})|(\d{2})\s*(20\d\d)/);
-  if(m2){const yy=m2[1]||m2[4],mm=m2[2]||m2[3];if(+mm>=1&&+mm<=12)return +yy*100+ +mm}
-  return 0;
+  const nm=nameMonth(name);if(nm)return nm;
+  const dc={};rows.forEach(r=>{const v=dateNum(r.TGL_LAPOR);if(v)dc[v]=(dc[v]||0)+1});
+  const dt=Object.entries(dc).sort((a,b)=>b[1]-a[1])[0];
+  return dt?+dt[0]:0;
 }
 const plbl=p=>p?BLN[p%100-1]+' '+Math.floor(p/100):'Tidak diketahui';
 
