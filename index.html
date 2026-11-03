@@ -22,6 +22,7 @@ header p{margin:3px 0 0;color:var(--dim);font-size:12.5px}
 .b:hover{color:var(--tx);border-color:var(--c2)}
 .b:disabled{opacity:.6;cursor:progress}
 .stat{font-size:12px;color:var(--faint);font-family:'IBM Plex Mono',monospace}
+.stat.err{color:var(--ng)}
 .spin{display:inline-block;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .filters{display:flex;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:16px}
@@ -60,7 +61,7 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 .mh{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--bd)}
 .mh b{font-size:15px}
 .mb{overflow:auto;padding:12px}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--bd);padding:10px 14px;border-radius:8px;font-size:13px;z-index:60}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--bd);padding:10px 14px;border-radius:8px;font-size:13px;z-index:60;max-width:92vw}
 @media(max-width:640px){.wrap{padding:12px 12px 40px}.fg{min-width:100%}.ch .tools input{min-width:100%}}
 </style>
 </head>
@@ -69,11 +70,11 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
   <header>
     <div>
       <h1>WO Batal — Command Center</h1>
-      <p>Sumber: sheet p2b &amp; sutg (APKT_STATUS = Batal) · Periode: <span id="per">–</span></p>
+      <p>Sumber: folder Drive Laporan (p2b) · Periode: <span id="per">–</span></p>
     </div>
     <div class="tools">
       <span class="stat" id="st">Memuat…</span>
-      <button class="b" id="sy" title="Ambil data terbaru dari spreadsheet"><span id="syi">⟳</span> Sinkron</button>
+      <button class="b" id="sy" title="Cek folder Drive dan ambil data terbaru"><span id="syi">⟳</span> Sinkron</button>
       <button class="b" id="th" title="Ganti tema terang/gelap">🌙 / ☀️</button>
     </div>
   </header>
@@ -122,41 +123,81 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 
 <script>
 /* ===== KONFIGURASI ===== */
-const ID='199yFxZpD1S4AVoaRdjI_g8vv9hGmQVcXVImnik9MLjc';
-const SH=['p2b','sutg','cc_p2b','cc_sutg'];   // dibaca semua (cc_* hanya untuk periode)
-const BSH=['p2b','sutg'];                      // sumber laporan batal
-const KEYS=['NAMA_DISTRIBUSI','NAMA_AREA','NAMA_POSKO'];
+// URL Web app Apps Script (lihat Code.gs), berakhiran /exec
+const APPS_URL='https://script.google.com/macros/s/AKfycbwj07hp-nTx4ghx0E8g6eHcHEqN8hiamt8izoQeo5FMhquHOKM6L0KMoGG5sMXhwkSN/exec';
+// Folder Drive (dipakai untuk label, daftar file diambil dari Apps Script)
+const FOLDER={p2b:'folder laporan',cc:'folder periode'};
+const AUTO_MS=180000;                         // cek folder otomatis tiap 3 menit
 const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const KEYS=['NAMA_DISTRIBUSI','NAMA_AREA','NAMA_POSKO'];
 
 /* ===== UTIL ===== */
-const $=s=>document.querySelector(s),D={},KM={},TB={};
+const $=s=>document.querySelector(s),D={p2b:[],cc:[]},KM={},TB={},CACHE={};
 let AF={d:'',a:'',p:''},MX=null,busy=false;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const f=(v,d=0)=>v==null||isNaN(v)?'-':Number(v).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
 const i0=v=>f(v,0),pc=v=>v==null?'-':f(v,2)+'%';
 const slug=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,50)||'Data';
-const toast=(m,err)=>{const t=$('#tst');t.textContent=m;t.hidden=false;t.style.borderLeft='3px solid '+(err?'var(--ng)':'var(--ok)');clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,3500)};
+const toast=(m,err)=>{const t=$('#tst');t.textContent=m;t.hidden=false;t.style.borderLeft='3px solid '+(err?'var(--ng)':'var(--ok)');clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,4500)};
 
-/* ===== BACA SPREADSHEET (gviz CSV, sheet harus "Siapa saja yang memiliki link") ===== */
+/* ===== BACA FOLDER DRIVE & SPREADSHEET ===== */
+// Daftar spreadsheet per folder dari Apps Script (satu panggilan per sinkron)
+let LIST=null;
+async function listFolder(g){
+  if(!LIST){
+    const r=await fetch(APPS_URL+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error('Apps Script HTTP '+r.status);
+    const j=await r.json();
+    if(j.error)throw new Error(j.error);
+    LIST=j;
+  }
+  if(!LIST[g])throw new Error('folder '+g+' tidak ada di respons');
+  return LIST[g];
+}
+// Parser CSV (sama seperti versi sebelumnya)
 function csv(t){const r=[];let w=[],c='',q=0;for(let i=0;i<t.length;i++){const x=t[i];
   if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=0}else c+=x}
   else if(x=='"')q=1;else if(x==','){w.push(c);c=''}else if(x=='\n'){w.push(c);r.push(w);w=[];c=''}else if(x!='\r')c+=x}
   if(c||w.length){w.push(c);r.push(w)}return r}
-async function load(n){
-  const res=await fetch(`https://docs.google.com/spreadsheets/d/${ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(n)}&_=${Date.now()}`,{cache:'no-store'});
-  if(!res.ok)throw new Error(res.status);
+// Ambil isi spreadsheet (tab pertama) lewat gviz CSV
+async function loadSheet(id,name,g){
+  const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&_=${Date.now()}`,{cache:'no-store'});
+  if(!res.ok)throw new Error('HTTP '+res.status);
   const txt=await res.text();
-  if(/^\s*<(!doctype|html)/i.test(txt))throw new Error('tidak publik');
+  if(/^\s*<(!doctype|html)/i.test(txt))throw new Error('belum dibagikan sebagai Pelihat');
   const r=csv(txt),h=r[0].map(x=>x.trim().toUpperCase());
-  return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:n};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return o});
+  return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:g,_FILE:name};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return o});
 }
+
 async function sync(){
   if(busy)return;busy=true;const b=$('#sy');b.disabled=true;$('#syi').classList.add('spin');
-  const rs=await Promise.allSettled(SH.map(load)),bad=[];let ok=0;
-  rs.forEach((r,i)=>{if(r.status=='fulfilled'){D[SH[i]]=r.value;ok++}else bad.push(SH[i])});
-  for(const k in KM)delete KM[k];
-  if(ok){fdist();periode();$('#st').textContent='Update '+new Date().toLocaleTimeString('id-ID')+(bad.length?' · gagal: '+bad.join(', '):'')}
-  else{$('#st').textContent='Gagal memuat';toast('Gagal memuat. Pastikan spreadsheet dibagikan "Siapa saja yang memiliki link (Viewer)".',true)}
+  try{
+    if(APPS_URL.startsWith('ISI_'))throw new Error('URL Apps Script belum diisi (lihat konfigurasi di awal script)');
+    LIST=null;
+    const out={},bad=[];let fileN={},changed=0;
+    for(const g of Object.keys(FOLDER)){
+      out[g]=[];fileN[g]=0;
+      let files=[];
+      try{files=await listFolder(g)}catch(e){bad.push(`folder ${g}: ${e.message}`);continue}
+      fileN[g]=files.length;
+      for(const fl of files){
+        const c=CACHE[fl.id];
+        if(c&&c.mt==fl.modifiedTime){out[g].push(...c.rows);continue}   // belum berubah: pakai cache
+        try{const rows=await loadSheet(fl.id,fl.name,g);CACHE[fl.id]={mt:fl.modifiedTime,rows};out[g].push(...rows);changed++}
+        catch(e){bad.push(`${fl.name}: ${e.message}`);if(c)out[g].push(...c.rows)}
+      }
+    }
+    if(out.p2b.length||out.cc.length){
+      D.p2b=out.p2b;D.cc=out.cc;
+      for(const k in KM)delete KM[k];
+      fdist();periode();
+      const ok=`${fileN.p2b} file laporan · ${fileN.cc} file periode · update ${new Date().toLocaleTimeString('id-ID')}`+(changed?` · ${changed} file baru/berubah`:'');
+      $('#st').className='stat';$('#st').textContent=ok+(bad.length?' · gagal: '+bad.join('; '):'');
+      if(bad.length)toast('Sebagian file gagal dibaca: '+bad.join('; '),true);
+    }else{
+      $('#st').className='stat err';$('#st').textContent='Gagal memuat';toast(bad.join('; ')||'Tidak ada file',true);
+    }
+  }catch(e){$('#st').className='stat err';$('#st').textContent=e.message;toast(e.message,true)}
   busy=false;b.disabled=false;$('#syi').classList.remove('spin');
 }
 
@@ -194,25 +235,25 @@ function bkat(raw){const n=nz(raw);if(emptyN(n))return BTK;if(bkC.has(n))return 
 const btipe=raw=>{const n=nz(raw);if(/com\s*cen|command/.test(n))return'cm';if(/call|\bcc\b|contact/.test(n))return'cc';if(/mobile|\bpm\b/.test(n))return'pm';return'ot'};
 const hasKet=v=>!emptyN(nz(v));
 
-/* kolom dicari fleksibel: abaikan spasi/underscore/huruf besar-kecil */
-function ck(r,tag,al){const m=KM[r._SHEET]||(KM[r._SHEET]={});if(!(tag in m))m[tag]=Object.keys(r).find(k=>al.includes(k.replace(/[^A-Z0-9]/g,'')))||null;return m[tag]?r[m[tag]]:''}
+/* kolom dicari fleksibel: abaikan spasi/underscore/huruf besar-kecil (cache per file) */
+function ck(r,tag,al){const m=KM[r._FILE]||(KM[r._FILE]={});if(!(tag in m))m[tag]=Object.keys(r).find(k=>al.includes(k.replace(/[^A-Z0-9]/g,'')))||null;return m[tag]?r[m[tag]]:''}
 const gS=r=>ck(r,'s',['APKTSTATUS','STATUSAPKT']),gT=r=>ck(r,'t',['TIPEBATAL','BATALBY']),gA=r=>ck(r,'a',['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL']);
 const isBt=r=>/batal/i.test(gS(r));
 const uq=rows=>new Set(rows.map((r,i)=>r.NO_LAPORAN||'x'+i)).size;
 
 function bcalc(rows){
-  const m=new Map();rows.forEach((r,i)=>{if(isBt(r))m.set(r.NO_LAPORAN||'x'+i+r._SHEET,r)});
+  const m=new Map();rows.forEach((r,i)=>{if(isBt(r))m.set(r.NO_LAPORAN||'x'+i+r._FILE,r)});
   const c={tot:uq(rows),b:m.size,cm:0,cmk:0,cc:0,cck:0,pm:0,pmk:0,ot:0,list:[...m.values()]};
   m.forEach(r=>{const t=btipe(gT(r));c[t]++;if(t!='ot'&&hasKet(gA(r)))c[t+'k']++});
   return c;
 }
 const bdet=rows=>rows.map(r=>{const t=btipe(gT(r));return{...r,TIPE_BATAL:BTL[t],ALASAN_BATAL:gA(r),KATEGORI_BATAL:t=='cm'?BCAT[bkat(gA(r))][0]:'-'}});
-const ticketRows=list=>bdet(list).map(o=>({Distribusi:o.NAMA_DISTRIBUSI,Area:o.NAMA_AREA,Posko:o.NAMA_POSKO,'No. Laporan':o.NO_LAPORAN,'Tgl Lapor':o.TGL_LAPOR,'Tipe Batal':o.TIPE_BATAL,'Alasan Batal (asli)':o.ALASAN_BATAL,'Kategori Batal':o.KATEGORI_BATAL,'Sumber Sheet':o._SHEET}));
+const ticketRows=list=>bdet(list).map(o=>({Distribusi:o.NAMA_DISTRIBUSI,Area:o.NAMA_AREA,Posko:o.NAMA_POSKO,'No. Laporan':o.NO_LAPORAN,'Tgl Lapor':o.TGL_LAPOR,'Tipe Batal':o.TIPE_BATAL,'Alasan Batal (asli)':o.ALASAN_BATAL,'Kategori Batal':o.KATEGORI_BATAL,'File Sumber':o._FILE}));
 function grp(rows,nk){const m=new Map();rows.forEach(r=>{const k=KEYS.slice(0,nk).map(x=>r[x]),s=k.join('|');if(!m.has(s))m.set(s,{k,rows:[]});m.get(s).rows.push(r)});
   return[...m.values()].sort((a,b)=>a.k.join().localeCompare(b.k.join()))}
 
 /* ===== FILTER (Distribusi → Area → Posko, bertingkat) ===== */
-const src=()=>BSH.flatMap(n=>D[n]||[]);
+const src=()=>D.p2b;
 const sel=()=>src().filter(r=>(!AF.d||r.NAMA_DISTRIBUSI==AF.d)&&(!AF.a||r.NAMA_AREA==AF.a)&&(!AF.p||r.NAMA_POSKO==AF.p));
 function opts(id,vals,ph){const e=$(id),v=e.value;e.innerHTML=`<option value="">${ph}</option>`+[...new Set(vals.filter(Boolean))].sort().map(x=>`<option>${esc(x)}</option>`).join('');if(vals.includes(v))e.value=v}
 function fdist(){opts('#fd',src().map(r=>r.NAMA_DISTRIBUSI),'Semua Distribusi');farea()}
@@ -220,15 +261,15 @@ function farea(){const d=$('#fd').value;opts('#fa',src().filter(r=>!d||r.NAMA_DI
 function fpos(){const d=$('#fd').value,a=$('#fa').value;opts('#fp',src().filter(r=>(!d||r.NAMA_DISTRIBUSI==d)&&(!a||r.NAMA_AREA==a)).map(r=>r.NAMA_POSKO),'Semua Posko');readF();render()}
 function readF(){AF={d:$('#fd').value,a:$('#fa').value,p:$('#fp').value}}
 
-/* ===== PERIODE (kolom BLTH dari cc_p2b / cc_sutg) ===== */
+/* ===== PERIODE (kolom BLTH dari folder cc; cadangan: folder p2b) ===== */
 const blth=r=>{const k=Object.keys(r).find(x=>x.replace(/[^A-Z0-9]/g,'')=='BLTH');return k?r[k]:''};
 function blthNum(v){let s=String(v==null?'':v).trim();if(!s)return null;
   let m=s.match(/^(\d{1,2})[\/\-.](\d{4})$/);if(m&&+m[1]>=1&&+m[1]<=12)return +m[2]*100+ +m[1];
   s=s.replace(/^(\d{6})[.,]0+$/,'$1');const d=s.replace(/\D/g,'');if(d.length!=6)return null;
   const y=+d.slice(0,4),mo=+d.slice(4);return y>=2000&&mo>=1&&mo<=12?y*100+mo:null}
 function periode(){
-  const vals=n=>(D[n]||[]).map(r=>blthNum(blth(r))).filter(Boolean);
-  let v=['cc_p2b','cc_sutg'].flatMap(vals);if(!v.length)v=['p2b','sutg'].flatMap(vals);
+  let v=D.cc.map(r=>blthNum(blth(r))).filter(Boolean);
+  if(!v.length)v=D.p2b.map(r=>blthNum(blth(r))).filter(Boolean);
   const u=[...new Set(v)].sort((a,b)=>a-b),L=p=>BLN[p%100-1]+' '+Math.floor(p/100);
   let txt='-';
   if(u.length){const a=u[0],b=u[u.length-1];txt=a==b?L(a):(Math.floor(a/100)==Math.floor(b/100)?BLN[a%100-1]+' – '+L(b):L(a)+' – '+L(b))}
@@ -256,7 +297,7 @@ function render(){
     head:[...kh,'Total WO','Total WO Batal','% Batal','WO Batal','Ada Ket.','WO Batal','Ada Ket.','WO Batal','Ada Ket.','Tipe Lain / Kosong'],
     groups:[{l:'Command Center',c:[k+3,k+4]},{l:'Call Center',c:[k+5,k+6]},{l:'PLN Mobile',c:[k+7,k+8]}],
     fmt:[i0,i0,pc,i0,i0,i0,i0,i0,i0,i0],cls:['c1','ng','ng','c1','c1','c2','c2','c3','c3',''],
-    items:G.map(g=>({cells:[...g.k,...vals(bcalc(g.rows))],list:bcalc(g.rows).list})),
+    items:G.map(g=>{const c=bcalc(g.rows);return{cells:[...g.k,...vals(c)],list:c.list}}),
     tot:{l:`TOTAL (${G.length} ${unit})`,cells:vals(A)},
     detail:()=>A.list,G:true,sc:null,sd:1};
 
@@ -319,8 +360,7 @@ function exportT(id,mode){
   if(mode=='rekap'){
     const top=t.groups?t.head.map((h,c)=>{const g=t.groups.find(g=>g.c.includes(c));return g?g.l:''}):null;
     const aoa=[...(top?[top]:[]),t.head,...t.items.map(it=>it.cells),[t.tot.l,...Array(t.nk-1).fill(''),...t.tot.cells]];
-    const ws=XLSX.utils.aoa_to_sheet(aoa);
-    saveXlsx([{name:'Rekap',ws}],id=='t1'?'Rekap_Laporan_Batal':'Kategori_Batal_Comcen');
+    saveXlsx([{name:'Rekap',ws:XLSX.utils.aoa_to_sheet(aoa)}],id=='t1'?'Rekap_Laporan_Batal':'Kategori_Batal_Comcen');
   }else{
     const rows=ticketRows(t.detail());
     if(!rows.length){toast('Tidak ada tiket batal',true);return}
@@ -339,7 +379,7 @@ document.querySelectorAll('button[data-x]').forEach(b=>b.onclick=()=>exportT(b.d
   const th=e.target.closest('th[data-c]');
   if(th){const c=+th.dataset.c;t.sd=t.sc==c?-t.sd:1;t.sc=c;drawT(t);return}
   const b=e.target.closest('.rb');
-  if(b){const it=t.items[+b.dataset.i];openDetail((it.cells.slice(0,t.nk).join(' / ')),it.list,it.cells.slice(0,t.nk).join('_'))}
+  if(b){const it=t.items[+b.dataset.i];openDetail(it.cells.slice(0,t.nk).join(' / '),it.list,it.cells.slice(0,t.nk).join('_'))}
 }));
 $('#mc').onclick=()=>$('#ov').classList.remove('on');
 $('#ov').addEventListener('click',e=>{if(e.target.id=='ov')$('#ov').classList.remove('on')});
@@ -352,7 +392,7 @@ try{theme(localStorage.getItem('wo-batal-tema')||'dark')}catch(e){theme('dark')}
 
 render();
 sync();
-setInterval(()=>{if(!document.hidden)sync()},180000);
+setInterval(()=>{if(!document.hidden)sync()},AUTO_MS);
 </script>
 </body>
 </html>
