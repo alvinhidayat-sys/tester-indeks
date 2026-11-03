@@ -176,22 +176,19 @@ async function sync(){
         catch(e){bad.push(`${fl.name}: ${e.message}`);if(c)out[g].push(...c.rows)}
       }
     }
-    // periode tiap file laporan: dari kolom BLTH, nama file, atau file cc dengan nama sama
-    const ccBy={},byF={};
-    out.cc.forEach(r=>(ccBy[r._FILE]=ccBy[r._FILE]||[]).push(r));
-    out.p2b.forEach(r=>(byF[r._FILE]=byF[r._FILE]||[]).push(r));
-    Object.keys(byF).forEach(n=>{let p=periodOf(byF[n],n);if(!p&&ccBy[n])p=periodOf(ccBy[n],n);byF[n].forEach(r=>r._PER=p)});
-    D.p2b=out.p2b;D.cc=out.cc;
-    // pelengkapan: baris batal tanpa tipe/alasan diisi dari folder COMCEN (cc) bila NO_LAPORAN sama
+    // gabung dua folder lewat NO_LAPORAN: geografi & WO dari COMCEN (cc), tipe & alasan batal dari Kode G (p2b)
+    const P={};out.p2b.forEach(r=>{if(r.NO_LAPORAN)P[r.NO_LAPORAN]=r});
+    const base=out.cc.length?out.cc:out.p2b;let joined=0;
+    if(out.cc.length)base.forEach(r=>{const p=P[r.NO_LAPORAN];if(!p)return;joined++;
+      ['TIPE_BATAL','ALASAN_BATAL'].forEach(k=>{if(k in p)r[k]=p[k]});
+      if(!r.APKT_STATUS&&p.APKT_STATUS)r.APKT_STATUS=p.APKT_STATUS});
+    // periode per file: dari BLTH, nama file, atau cadangan
+    const byF={};base.forEach(r=>(byF[r._FILE]=byF[r._FILE]||[]).push(r));
+    Object.keys(byF).forEach(n=>{const p=periodOf(byF[n],n);byF[n].forEach(r=>r._PER=p)});
+    D.p2b=base;D.cc=out.cc;
     for(const k in KM)delete KM[k];
-    const CCM={};out.cc.forEach(r=>{const no=r.NO_LAPORAN;if(!no)return;const t=gT(r),a=gA(r);if(t||a)CCM[no]={t,a}});
-    let filled=0;
-    out.p2b.forEach(r=>{if(!isBt(r))return;const m=CCM[r.NO_LAPORAN];if(!m)return;
-      if(!gT(r)&&m.t){r[fkey(r,'t',['TIPEBATAL','BATALBY','JENISBATAL','TIPEPEMBATALAN'])||'TIPE_BATAL']=m.t;filled++}
-      if(!gA(r)&&m.a){r[fkey(r,'a',['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL'])||'ALASAN_BATAL']=m.a}});
-    for(const k in KM)delete KM[k];
-    const bl=out.p2b.filter(isBt),kos=bl.filter(r=>!gT(r)).length,tk=(out.p2b[0]&&fkey(out.p2b[0],'t',['TIPEBATAL','BATALBY','JENISBATAL','TIPEPEMBATALAN']))||'tidak ditemukan';
-    diag=` · tipe batal: kolom ${tk}, ${kos} dari ${bl.length} kosong`+(filled?`, ${filled} dilengkapi dari COMCEN`:'');
+    const bl=base.filter(isBt),kos=bl.filter(r=>!gT(r)).length,tk=(base[0]&&fkey(base[0],'t',['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN']))||'tidak ditemukan';
+    diag=` · digabung ${joined} laporan · batal ${bl.length}, tipe kosong ${kos} (kolom ${tk})`+(out.cc.length&&out.p2b.length>joined?` · ${out.p2b.length-joined} tidak ada di COMCEN`:'');
     fillAll();
     $('#st').className='stat';
     $('#st').textContent=`${cnt.p2b} file laporan · ${cnt.cc} file periode · update ${new Date().toLocaleTimeString('id-ID')}`+(changed?` · ${changed} file baru/berubah`:'')+diag+(bad.length?' · gagal: '+bad.join('; '):'');
@@ -235,11 +232,12 @@ const btipe=raw=>{const n=nz(raw);if(/com\s*cen|command/.test(n))return'cm';if(/
 const hasKet=v=>!emptyN(nz(v));
 
 /* kolom dicari fleksibel: abaikan spasi/underscore/huruf besar-kecil (cache per file) */
-function fkey(r,tag,al){const ks=Object.keys(r);let k=ks.find(x=>al.includes(x.replace(/[^A-Z0-9]/g,'')));
-  if(!k&&tag=='t')k=ks.find(x=>{const n=x.replace(/[^A-Z0-9]/g,'');return n.includes('BATAL')&&(n.includes('TIPE')||n.includes('JENIS')||n.endsWith('BY'))&&!n.includes('ALASAN')&&!n.includes('KET')});
-  return k||null}
+function fkey(r,tag,al){const ks=Object.keys(r).map(x=>[x,x.replace(/[^A-Z0-9]/g,'')]);
+  for(const a of al){const h=ks.find(([,n])=>n==a);if(h)return h[0]}
+  if(tag=='t')return(ks.find(([,n])=>n.includes('BATAL')&&(n.includes('TIPE')||n.includes('JENIS'))&&!n.includes('ALASAN')&&!n.includes('KET'))||[null])[0];
+  return null}
 function ck(r,tag,al){const m=KM[r._FILE]||(KM[r._FILE]={});if(!(tag in m))m[tag]=fkey(r,tag,al);return m[tag]?r[m[tag]]:''}
-const gS=r=>ck(r,'s',['APKTSTATUS','STATUSAPKT']),gT=r=>ck(r,'t',['TIPEBATAL','BATALBY','JENISBATAL','TIPEPEMBATALAN']),gA=r=>ck(r,'a',['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL']);
+const gS=r=>ck(r,'s',['APKTSTATUS','STATUSAPKT']),gT=r=>ck(r,'t',['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN']),gA=r=>ck(r,'a',['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL']);
 const isBt=r=>/batal/i.test(gS(r));
 const uq=rows=>new Set(rows.map((r,i)=>r.NO_LAPORAN||'x'+i)).size;
 
