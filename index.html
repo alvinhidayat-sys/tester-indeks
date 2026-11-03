@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{--bg:#0B1622;--card:#111F30;--card2:#17293C;--bd:rgba(255,255,255,.09);--tx:#E7EEF5;--dim:#93A6BA;--faint:#5F7286;--c1:#E3A857;--c2:#4FB6A8;--c3:#9B87C4;--ng:#E2665A;--ok:#6FBF96;--rd:#ff6b6b}
 :root[data-theme=light]{--bg:#F2F4F6;--card:#fff;--card2:#F7F9FA;--bd:rgba(15,30,45,.12);--tx:#152233;--dim:#54687C;--faint:#8A99A8;--c1:#B97A1E;--c2:#1C8C7E;--c3:#6B55A8;--ng:#C93B2E;--ok:#1E8E55;--rd:#dc2626}
@@ -16,7 +17,6 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height
 .wrap{max-width:1320px;margin:0 auto;padding:18px 22px 60px}
 header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--bd);margin-bottom:18px}
 h1{font-size:18px;margin:0;font-weight:600}
-header p{margin:3px 0 0;color:var(--dim);font-size:12.5px}
 .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .b{border:1px solid var(--bd);background:var(--card);color:var(--dim);font:inherit;font-size:12.5px;padding:8px 12px;border-radius:6px;cursor:pointer}
 .b:hover{color:var(--tx);border-color:var(--c2)}
@@ -26,7 +26,7 @@ header p{margin:3px 0 0;color:var(--dim);font-size:12.5px}
 .spin{display:inline-block;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .filters{display:flex;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:16px}
-.fg{display:flex;flex-direction:column;gap:5px;min-width:200px;flex:1}
+.fg{display:flex;flex-direction:column;gap:5px;min-width:180px;flex:1}
 .fg label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600}
 select,input.s{background:var(--card2);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:9px 11px;font:inherit;font-size:13.5px;min-height:40px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
@@ -37,22 +37,26 @@ select,input.s{background:var(--card2);color:var(--tx);border:1px solid var(--bd
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:18px;min-width:0}
 .ch{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .ch h2{margin:0;font-size:16px;font-weight:600}
-.ch small{display:block;color:var(--faint);font-size:12px;margin-top:2px}
 .ch .tools input{min-width:240px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.grid2 .full{grid-column:1/-1}
+.grid2 h3{margin:0 0 8px;font-size:13.5px;font-weight:600}
+.cbox{position:relative;height:320px}
 .tw{overflow:auto;max-height:520px;border:1px solid var(--bd);border-radius:8px}
 table{border-collapse:collapse;width:100%;min-width:900px;font-size:12.5px}
 th,td{padding:8px 10px;border-bottom:1px solid var(--bd);white-space:nowrap}
-thead th{position:sticky;top:0;background:var(--card2);z-index:1;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--faint);cursor:pointer;text-align:center;border-left:1px solid var(--bd)}
+thead th{position:sticky;top:0;background:var(--card2);z-index:1;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--tx);font-weight:600;cursor:pointer;text-align:center;border-left:1px solid var(--bd)}
 thead tr:nth-child(2) th{top:34px}
 thead th:first-child{border-left:0}
-thead th.gh{color:var(--tx);cursor:default;font-weight:700}
 th i{font-style:normal;opacity:.6}
 td{color:var(--dim);text-align:right;font-family:'IBM Plex Mono',monospace}
 td.k{text-align:left;color:var(--tx);font-family:'IBM Plex Sans',sans-serif;font-weight:600}
 tfoot td{font-weight:700;color:var(--tx);background:var(--card2)}
 tbody tr:hover td{background:var(--card2)}
-.c1{color:var(--c1)!important}.c2{color:var(--c2)!important}.c3{color:var(--c3)!important}.ng{color:var(--ng)!important}.ok{color:var(--ok)!important}
+.c1{color:var(--c1)!important}.c2{color:var(--c2)!important}.c3{color:var(--c3)!important}.ng{color:var(--ng)!important}
 th.rd,td.rd{color:var(--rd)!important;font-weight:800}
+.clk{cursor:pointer}.clk:hover{text-decoration:underline}
+.kc.clk:hover{border-color:var(--a)}
 .rb{border:0;background:rgba(79,182,168,.16);color:var(--c2);border-radius:6px;padding:5px 9px;cursor:pointer;font:600 12px 'IBM Plex Sans',sans-serif;white-space:nowrap}
 .em{text-align:center;color:var(--faint);padding:24px;font-family:inherit}
 .ov{position:fixed;inset:0;background:rgba(5,10,15,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
@@ -62,25 +66,23 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 .mh b{font-size:15px}
 .mb{overflow:auto;padding:12px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--bd);padding:10px 14px;border-radius:8px;font-size:13px;z-index:60;max-width:92vw}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
 @media(max-width:640px){.wrap{padding:12px 12px 40px}.fg{min-width:100%}.ch .tools input{min-width:100%}}
-.clk{cursor:pointer}.clk:hover{text-decoration:underline}
-.kc.clk:hover{border-color:var(--a)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <h1>WO Batal — Command Center</h1>
-    </div>
+    <h1>WO Batal — Command Center</h1>
     <div class="tools">
       <span class="stat" id="st">Memuat…</span>
-      <button class="b" id="sy" title="Cek folder Drive dan ambil data terbaru"><span id="syi">⟳</span> Sinkron</button>
+      <button class="b" id="sy" title="Cek folder dan ambil data terbaru"><span id="syi">⟳</span> Sinkron</button>
       <button class="b" id="th" title="Ganti tema terang/gelap">🌙 / ☀️</button>
     </div>
   </header>
 
   <div class="filters">
+    <div class="fg"><label for="fb">Bulan</label><select id="fb"></select></div>
     <div class="fg"><label for="fd">Distribusi</label><select id="fd"></select></div>
     <div class="fg"><label for="fa">Area</label><select id="fa"></select></div>
     <div class="fg"><label for="fp">Posko</label><select id="fp"></select></div>
@@ -89,11 +91,17 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 
   <div class="kpis" id="kp"></div>
 
+  <div class="grid2">
+    <div class="card full"><h3>Batal per <span id="u1">Area</span> menurut tipe batal</h3><div class="cbox"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h3>Kategori Batal Command Center</h3><div class="cbox"><canvas id="c2"></canvas></div></div>
+    <div class="card"><h3>Tren per Bulan</h3><div class="cbox"><canvas id="c3"></canvas></div></div>
+  </div>
+
   <section class="card">
     <div class="ch">
-      <div><h2>🚫 Rekapitulasi Laporan Batal</h2><small>Total WO, WO batal, dan rincian per tipe batal (Command Center, Call Center, PLN Mobile)</small></div>
+      <div><h2 id="j1">🚫 Rekapitulasi Laporan Batal</h2></div>
       <div class="tools">
-        <input class="s" id="q1" placeholder="🔍 Cari Distribusi, Area, Posko…">
+        <input class="s" id="q1" placeholder="🔍 Cari…">
         <button class="b" data-x="t1" data-m="rekap">⬇ Rekap</button>
         <button class="b" data-x="t1" data-m="detail">⬇ Detail</button>
       </div>
@@ -103,9 +111,9 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 
   <section class="card">
     <div class="ch">
-      <div><h2>🗂️ Kategori Batal Command Center</h2><small>Hanya tipe batal by Comcen. Alasan batal dikelompokkan otomatis (toleran terhadap spasi, tanda baca, dan salah ketik).</small></div>
+      <div><h2 id="j2">🗂️ Kategori Batal Command Center</h2><small style="color:var(--faint);font-size:12px">Hanya tipe batal by Comcen. Alasan batal dikelompokkan otomatis.</small></div>
       <div class="tools">
-        <input class="s" id="q2" placeholder="🔍 Cari Distribusi, Area, Posko…">
+        <input class="s" id="q2" placeholder="🔍 Cari…">
         <button class="b" data-x="t2" data-m="rekap">⬇ Rekap</button>
         <button class="b" data-x="t2" data-m="detail">⬇ Detail</button>
       </div>
@@ -124,43 +132,29 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 
 <script>
 /* ===== KONFIGURASI ===== */
-// URL Web app Apps Script (lihat Code.gs), berakhiran /exec
 const APPS_URL='https://script.google.com/macros/s/AKfycbwj07hp-nTx4ghx0E8g6eHcHEqN8hiamt8izoQeo5FMhquHOKM6L0KMoGG5sMXhwkSN/exec';
-// Folder Drive (dipakai untuk label, daftar file diambil dari Apps Script)
-const FOLDER={p2b:'folder laporan',cc:'folder periode'};
-const AUTO_MS=180000;                         // cek folder otomatis tiap 3 menit
+const AUTO_MS=180000;
 const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-const KEYS=['NAMA_DISTRIBUSI','NAMA_AREA','NAMA_POSKO'];
 
-/* ===== UTIL ===== */
-const $=s=>document.querySelector(s),D={p2b:[],cc:[]},KM={},TB={},CACHE={};
-let AF={d:'',a:'',p:''},MX=null,busy=false;
+/* ===== UTIL & STATE ===== */
+const $=s=>document.querySelector(s),D={p2b:[],cc:[]},KM={},TB={},CACHE={},CH={};
+let AF={d:'',a:'',p:''},MX=null,KPI=[],busy=false;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const f=(v,d=0)=>v==null||isNaN(v)?'-':Number(v).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
 const i0=v=>f(v,0),pc=v=>v==null?'-':f(v,2)+'%';
 const slug=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,50)||'Data';
 const toast=(m,err)=>{const t=$('#tst');t.textContent=m;t.hidden=false;t.style.borderLeft='3px solid '+(err?'var(--ng)':'var(--ok)');clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,4500)};
 
-/* ===== BACA FOLDER DRIVE & SPREADSHEET ===== */
-// Daftar spreadsheet per folder dari Apps Script (satu panggilan per sinkron)
-let LIST=null;
-async function listFolder(g){
-  if(!LIST){
-    const r=await fetch(APPS_URL+'?t='+Date.now(),{cache:'no-store'});
-    if(!r.ok)throw new Error('Apps Script HTTP '+r.status);
-    const j=await r.json();
-    if(j.error)throw new Error(j.error);
-    LIST=j;
-  }
-  if(!LIST[g])throw new Error('folder '+g+' tidak ada di respons');
-  return LIST[g];
+/* ===== BACA DATA (daftar file dari Apps Script, isi dari gviz) ===== */
+async function fetchList(){
+  const r=await fetch(APPS_URL+'?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw new Error('Apps Script HTTP '+r.status);
+  const j=await r.json();if(j.error)throw new Error(j.error);return j;
 }
-// Parser CSV (sama seperti versi sebelumnya)
 function csv(t){const r=[];let w=[],c='',q=0;for(let i=0;i<t.length;i++){const x=t[i];
   if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=0}else c+=x}
   else if(x=='"')q=1;else if(x==','){w.push(c);c=''}else if(x=='\n'){w.push(c);r.push(w);w=[];c=''}else if(x!='\r')c+=x}
   if(c||w.length){w.push(c);r.push(w)}return r}
-// Ambil isi spreadsheet (tab pertama) lewat gviz CSV
 async function loadSheet(id,name,g){
   const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&_=${Date.now()}`,{cache:'no-store'});
   if(!res.ok)throw new Error('HTTP '+res.status);
@@ -169,40 +163,35 @@ async function loadSheet(id,name,g){
   const r=csv(txt),h=r[0].map(x=>x.trim().toUpperCase());
   return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:g,_FILE:name};h.forEach((k,i)=>o[k]=(x[i]||'').trim());return o});
 }
-
 async function sync(){
   if(busy)return;busy=true;const b=$('#sy');b.disabled=true;$('#syi').classList.add('spin');
   try{
-    if(APPS_URL.startsWith('ISI_'))throw new Error('URL Apps Script belum diisi (lihat konfigurasi di awal script)');
-    LIST=null;
-    const out={},bad=[];let fileN={},changed=0;
-    for(const g of Object.keys(FOLDER)){
-      out[g]=[];fileN[g]=0;
-      let files=[];
-      try{files=await listFolder(g)}catch(e){bad.push(`folder ${g}: ${e.message}`);continue}
-      fileN[g]=files.length;
-      for(const fl of files){
+    const L=await fetchList(),out={p2b:[],cc:[]},bad=[],cnt={p2b:0,cc:0};let changed=0;
+    for(const g of ['p2b','cc']){
+      for(const fl of (L[g]||[])){
+        cnt[g]++;
         const c=CACHE[fl.id];
-        if(c&&c.mt==fl.modifiedTime){out[g].push(...c.rows);continue}   // belum berubah: pakai cache
+        if(c&&c.mt==fl.modifiedTime){out[g].push(...c.rows);continue}
         try{const rows=await loadSheet(fl.id,fl.name,g);CACHE[fl.id]={mt:fl.modifiedTime,rows};out[g].push(...rows);changed++}
         catch(e){bad.push(`${fl.name}: ${e.message}`);if(c)out[g].push(...c.rows)}
       }
     }
-    if(out.p2b.length||out.cc.length){
-      D.p2b=out.p2b;D.cc=out.cc;
-      for(const k in KM)delete KM[k];
-      fdist();periode();
-      const ok=`${fileN.p2b} file laporan · ${fileN.cc} file periode · update ${new Date().toLocaleTimeString('id-ID')}`+(changed?` · ${changed} file baru/berubah`:'');
-      $('#st').className='stat';$('#st').textContent=ok+(bad.length?' · gagal: '+bad.join('; '):'');
-      if(bad.length)toast('Sebagian file gagal dibaca: '+bad.join('; '),true);
-    }else{
-      $('#st').className='stat err';$('#st').textContent='Gagal memuat';toast(bad.join('; ')||'Tidak ada file',true);
-    }
+    // periode tiap file laporan: dari kolom BLTH, nama file, atau file cc dengan nama sama
+    const ccBy={},byF={};
+    out.cc.forEach(r=>(ccBy[r._FILE]=ccBy[r._FILE]||[]).push(r));
+    out.p2b.forEach(r=>(byF[r._FILE]=byF[r._FILE]||[]).push(r));
+    Object.keys(byF).forEach(n=>{let p=periodOf(byF[n],n);if(!p&&ccBy[n])p=periodOf(ccBy[n],n);byF[n].forEach(r=>r._PER=p)});
+    D.p2b=out.p2b;D.cc=out.cc;
+    for(const k in KM)delete KM[k];
+    fillAll();
+    $('#st').className='stat';
+    $('#st').textContent=`${cnt.p2b} file laporan · ${cnt.cc} file periode · update ${new Date().toLocaleTimeString('id-ID')}`+(changed?` · ${changed} file baru/berubah`:'')+(bad.length?' · gagal: '+bad.join('; '):'');
+    if(bad.length)toast('Sebagian file gagal dibaca: '+bad.join('; '),true);
   }catch(e){$('#st').className='stat err';$('#st').textContent=e.message;toast(e.message,true)}
   busy=false;b.disabled=false;$('#syi').classList.remove('spin');
 }
 
-/* ===== KLASIFIKASI ALASAN BATAL ===== */
+/* ===== KLASIFIKASI ALASAN BATAL (tidak berubah) ===== */
 const BCAT=[
  ['Batal Tidak Sesuai Prosedur',[/(tidak|tdk|tak|bkn|ga|gak)\s*(sesuai|sesui|sesua|sesuay)/,/pros[ei]?du?r/,/\bsop\b/]],
  ['Belum Ada Petugas Yantek / Unit Blankspot',[/belum\s*ada\s*(petugas|yantek|regu)/,/blank\s*spot|blankspot|blank\s*sport/,/petugas\s*yantek|unit\s*blank/]],
@@ -254,33 +243,40 @@ const ticketRows=list=>list.map(r=>{const x=ticketInfo(r);return{Distribusi:r.NA
 function grp(rows,nk){const m=new Map();rows.forEach(r=>{const k=KEYS.slice(0,nk).map(x=>r[x]),s=k.join('|');if(!m.has(s))m.set(s,{k,rows:[]});m.get(s).rows.push(r)});
   return[...m.values()].sort((a,b)=>a.k.join().localeCompare(b.k.join()))}
 
-/* ===== FILTER (Distribusi → Area → Posko, bertingkat) ===== */
-const src=()=>D.p2b;
-const sel=()=>src().filter(r=>(!AF.d||r.NAMA_DISTRIBUSI==AF.d)&&(!AF.a||r.NAMA_AREA==AF.a)&&(!AF.p||r.NAMA_POSKO==AF.p));
-function opts(id,vals,ph){const e=$(id),v=e.value;e.innerHTML=`<option value="">${ph}</option>`+[...new Set(vals.filter(Boolean))].sort().map(x=>`<option>${esc(x)}</option>`).join('');if(vals.includes(v))e.value=v}
-function fdist(){opts('#fd',src().map(r=>r.NAMA_DISTRIBUSI),'Semua Distribusi');farea()}
-function farea(){const d=$('#fd').value;opts('#fa',src().filter(r=>!d||r.NAMA_DISTRIBUSI==d).map(r=>r.NAMA_AREA),'Semua Area');fpos()}
-function fpos(){const d=$('#fd').value,a=$('#fa').value;opts('#fp',src().filter(r=>(!d||r.NAMA_DISTRIBUSI==d)&&(!a||r.NAMA_AREA==a)).map(r=>r.NAMA_POSKO),'Semua Posko');readF();render()}
-function readF(){AF={d:$('#fd').value,a:$('#fa').value,p:$('#fp').value}}
 
-/* ===== PERIODE (kolom BLTH dari folder cc; cadangan: folder p2b) ===== */
+/* ===== PERIODE (bulan dari file) ===== */
 const blth=r=>{const k=Object.keys(r).find(x=>x.replace(/[^A-Z0-9]/g,'')=='BLTH');return k?r[k]:''};
 function blthNum(v){let s=String(v==null?'':v).trim();if(!s)return null;
   let m=s.match(/^(\d{1,2})[\/\-.](\d{4})$/);if(m&&+m[1]>=1&&+m[1]<=12)return +m[2]*100+ +m[1];
   s=s.replace(/^(\d{6})[.,]0+$/,'$1');const d=s.replace(/\D/g,'');if(d.length!=6)return null;
   const y=+d.slice(0,4),mo=+d.slice(4);return y>=2000&&mo>=1&&mo<=12?y*100+mo:null}
-function periode(){
-  let v=D.cc.map(r=>blthNum(blth(r))).filter(Boolean);
-  if(!v.length)v=D.p2b.map(r=>blthNum(blth(r))).filter(Boolean);
-  const u=[...new Set(v)].sort((a,b)=>a-b),L=p=>BLN[p%100-1]+' '+Math.floor(p/100);
-  let txt='-';
-  if(u.length){const a=u[0],b=u[u.length-1];txt=a==b?L(a):(Math.floor(a/100)==Math.floor(b/100)?BLN[a%100-1]+' – '+L(b):L(a)+' – '+L(b))}
-  $('#per').textContent=txt;
+// kode periode = YYYYMM; 0 bila tidak diketahui
+function periodOf(rows,name){
+  const cnt={};rows.forEach(r=>{const v=blthNum(blth(r));if(v)cnt[v]=(cnt[v]||0)+1});
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+  if(top)return +top[0];
+  const n=nz(name),y=(n.match(/20\d\d/)||[])[0],mi=BLN.findIndex(m=>n.includes(m.toLowerCase()));
+  if(y&&mi>=0)return +y*100+mi+1;
+  const m2=n.match(/(20\d\d)\s*(\d{2})|(\d{2})\s*(20\d\d)/);
+  if(m2){const yy=m2[1]||m2[4],mm=m2[2]||m2[3];if(+mm>=1&&+mm<=12)return +yy*100+ +mm}
+  return 0;
 }
+const plbl=p=>p?BLN[p%100-1]+' '+Math.floor(p/100):'Tidak diketahui';
 
-/* ===== RENDER ===== */
+/* ===== FILTER BERTINGKAT: Bulan → Distribusi → Area → Posko ===== */
+const mrows=()=>{const b=$('#fb').value;return D.p2b.filter(r=>!b||String(r._PER)==b)};
+function opts(id,vals,ph){const e=$(id),v=e.value;e.innerHTML=`<option value="">${ph}</option>`+[...new Set(vals.filter(Boolean))].sort().map(x=>`<option>${esc(x)}</option>`).join('');if(vals.includes(v))e.value=v}
+function fillMonth(){const ps=[...new Set(D.p2b.map(r=>r._PER))].sort((a,b)=>(a||1e9)-(b||1e9)),v=$('#fb').value;
+  $('#fb').innerHTML='<option value="">Semua Bulan</option>'+ps.map(p=>`<option value="${p}">${plbl(p)}</option>`).join('');if(ps.map(String).includes(v))$('#fb').value=v}
+function fillDist(){opts('#fd',mrows().map(r=>r.NAMA_DISTRIBUSI),'Semua Distribusi')}
+function fillArea(){const d=$('#fd').value;opts('#fa',mrows().filter(r=>!d||r.NAMA_DISTRIBUSI==d).map(r=>r.NAMA_AREA),'Semua Area')}
+function fillPos(){const d=$('#fd').value,a=$('#fa').value;opts('#fp',mrows().filter(r=>(!d||r.NAMA_DISTRIBUSI==d)&&(!a||r.NAMA_AREA==a)).map(r=>r.NAMA_POSKO),'Semua Posko')}
+function readF(){AF={d:$('#fd').value,a:$('#fa').value,p:$('#fp').value}}
+function fillAll(){fillMonth();fillDist();fillArea();fillPos();readF();render()}
+const sel=()=>mrows().filter(r=>(!AF.d||r.NAMA_DISTRIBUSI==AF.d)&&(!AF.a||r.NAMA_AREA==AF.a)&&(!AF.p||r.NAMA_POSKO==AF.p));
+
+/* ===== DAFTAR DATA DI BALIK SETIAP ANGKA ===== */
 const uniqueRows=rows=>{const m=new Map();rows.forEach((r,i)=>{const k=r.NO_LAPORAN||'x'+i;if(!m.has(k))m.set(k,r)});return[...m.values()]};
-// daftar data di balik setiap angka (jumlahnya sama dengan angka yang tampil)
 const PK={
   wo:rows=>uniqueRows(rows),
   b:rows=>bcalc(rows).list,
@@ -293,11 +289,12 @@ const PK={
   ot:rows=>bcalc(rows).list.filter(r=>btipe(gT(r))=='ot')
 };
 const catList=j=>rows=>PK.cm(rows).filter(r=>bkat(gA(r))==j);
-let KPI=[];
+const grpBy=(rows,fn)=>{const m=new Map();rows.forEach(r=>{const k=String(fn(r)??'');if(!m.has(k))m.set(k,{k:[k],rows:[]});m.get(k).rows.push(r)});return[...m.values()].sort((a,b)=>a.k[0].localeCompare(b.k[0]))};
 
+/* ===== RENDER ===== */
 function render(){
-  const rows=sel(),lv=AF.p||AF.a?2:AF.d?1:0,nk=lv+1,unit=['Distribusi','Area','Posko'][lv],kh=['Distribusi','Area','Posko'].slice(0,nk);
-  const A=bcalc(rows),G=grp(rows,nk);
+  const rows=sel(),unit=AF.a?'Posko':'Area',fn=AF.a?(r=>r.NAMA_POSKO):(r=>r.NAMA_AREA);
+  const A=bcalc(rows),G=grpBy(rows,fn);
   KPI=[
     {t:'Total WO',v:i0(A.tot),s:'laporan terdata',c:'var(--c1)',fn:PK.wo},
     {t:'Total WO Batal',v:i0(A.b),s:'laporan berstatus batal',c:'var(--ng)',fn:PK.b},
@@ -307,33 +304,56 @@ function render(){
     {t:'Batal by PLN Mobile',v:i0(A.pm),s:i0(A.pmk)+' ada keterangan',c:'var(--c3)',fn:PK.pm,sfn:PK.pmk,ss:'ada keterangan'}
   ].map(k=>({...k,rows}));
   $('#kp').innerHTML=KPI.map((k,i)=>`<div class="kc clk" data-k="${i}" style="--a:${k.c}"><div class="l">${k.t}</div><div class="v" style="color:${k.c}">${k.v}</div><div class="s">${k.sfn?`<span class="clk" data-k="${i}" data-s="1">${k.s}</span>`:k.s}</div></div>`).join('');
+  $('#j1').textContent=`🚫 Rekapitulasi Laporan Batal per ${unit}`;
+  $('#j2').textContent=`🗂️ Kategori Batal Command Center per ${unit}`;
+  $('#u1').textContent=unit;
 
-  /* Tabel 1: rekap laporan batal, header bertingkat */
   const vals=c=>[c.tot,c.b,c.tot?c.b/c.tot*100:null,c.cm,c.cmk,c.cc,c.cck,c.pm,c.pmk,c.ot];
-  const k=nk;
-  TB.t1={q:'#q1',el:'#t1',nk,
-    head:[...kh,'Total WO','Total WO Batal','% Batal','WO Batal','Ada Ket.','WO Batal','Ada Ket.','WO Batal','Ada Ket.','Tipe Lain / Kosong'],
-    groups:[{l:'Command Center',c:[k+3,k+4]},{l:'Call Center',c:[k+5,k+6]},{l:'PLN Mobile',c:[k+7,k+8]}],
+  TB.t1={q:'#q1',el:'#t1',nk:1,
+    head:[unit,'Total WO','Total WO Batal','% Batal','WO Batal','Ada Ket.','WO Batal','Ada Ket.','WO Batal','Ada Ket.','Tipe Lain / Kosong'],
+    groups:[{l:'Command Center',c:[4,5]},{l:'Call Center',c:[6,7]},{l:'PLN Mobile',c:[8,9]}],
     kinds:[PK.wo,PK.b,PK.b,PK.cm,PK.cmk,PK.cc,PK.cck,PK.pm,PK.pmk,PK.ot],
-    fmt:[i0,i0,pc,i0,i0,i0,i0,i0,i0,i0],cls:['c1','ng','ng','c1','c1','c2','c2','c3','c3',''],
+    fmt:[i0,i0,pc,i0,i0,i0,i0,i0,i0,i0],cls:['','ng','ng','c1','c1','c2','c2','c3','c3',''],
     items:G.map(g=>{const c=bcalc(g.rows);return{cells:[...g.k,...vals(c)],rows:g.rows,list:c.list}}),
-    tot:{l:`TOTAL (${G.length} ${unit})`,cells:vals(A)},allRows:rows,
-    detail:()=>A.list,G:true,sc:null,sd:1};
+    tot:{l:`TOTAL (${G.length} ${unit})`,cells:vals(A)},allRows:rows,G:true,sc:null,sd:1};
 
-  /* Tabel 2: kategori batal ComCen per unit */
   const cnt=rs=>{const a=Array(NC).fill(0);rs.forEach(r=>a[bkat(gA(r))]++);return a};
   const cmR=PK.cm(rows);
-  TB.t2={q:'#q2',el:'#t2',nk,
-    head:[...kh,'Total Batal ComCen',...BCAT.map(c=>c[0])],
+  TB.t2={q:'#q2',el:'#t2',nk:1,
+    head:[unit,'Total Batal ComCen',...BCAT.map(c=>c[0])],
     kinds:[PK.cm,...BCAT.map((_,j)=>catList(j))],
-    hr:[nk+1],fmt:Array(NC+1).fill(i0),cls:['c1','rd',...Array(NC-1).fill('')],
+    hr:[2],fmt:Array(NC+1).fill(i0),cls:['c1','rd',...Array(NC-1).fill('')],
     items:G.map(g=>{const cg=PK.cm(g.rows);return{cells:[...g.k,cg.length,...cnt(cg)],rows:g.rows,list:cg}}),
-    tot:{l:`TOTAL (${G.length} ${unit})`,cells:[cmR.length,...cnt(cmR)]},allRows:rows,
-    detail:()=>cmR,G:true,sc:null,sd:1};
+    tot:{l:`TOTAL (${G.length} ${unit})`,cells:[cmR.length,...cnt(cmR)]},allRows:rows,G:true,sc:null,sd:1};
 
   drawT(TB.t1);drawT(TB.t2);
+  charts(rows,G);
 }
 
+/* ===== GRAFIK DINAMIS ===== */
+const cv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function mk(id,cfg){if(CH[id])CH[id].destroy();if(typeof Chart=='undefined')return;CH[id]=new Chart($('#'+id),cfg)}
+function charts(rows,G){
+  const tc=cv('--dim'),gc=cv('--bd'),ax=(x)=>({ticks:{color:tc,autoSkip:false,font:{size:11}},grid:{color:gc},...x});
+  const vs=G.map(g=>bcalc(g.rows));
+  mk('c1',{type:'bar',data:{labels:G.map(g=>g.k[0]),datasets:[
+    {label:'Command Center',data:vs.map(c=>c.cm),backgroundColor:'#E3A857'},
+    {label:'Call Center',data:vs.map(c=>c.cc),backgroundColor:'#4FB6A8'},
+    {label:'PLN Mobile',data:vs.map(c=>c.pm),backgroundColor:'#9B87C4'},
+    {label:'Tipe Lain / Kosong',data:vs.map(c=>c.ot),backgroundColor:'#5F7286'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}},scales:{x:ax({stacked:true}),y:{stacked:true,ticks:{color:tc},grid:{color:gc}}}}});
+  const cm=PK.cm(rows),cnt=Array(NC).fill(0);cm.forEach(r=>cnt[bkat(gA(r))]++);
+  mk('c2',{type:'bar',data:{labels:BCAT.map(c=>c[0].length>44?c[0].slice(0,42)+'…':c[0]),datasets:[{label:'Batal ComCen',data:cnt,backgroundColor:'#E2665A'}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc},grid:{color:gc}},y:ax({})}}});
+  const base=D.p2b.filter(r=>(!AF.d||r.NAMA_DISTRIBUSI==AF.d)&&(!AF.a||r.NAMA_AREA==AF.a)&&(!AF.p||r.NAMA_POSKO==AF.p));
+  const ps=[...new Set(base.map(r=>r._PER))].sort((a,b)=>(a||1e9)-(b||1e9)),pa=ps.map(p=>bcalc(base.filter(r=>r._PER==p)));
+  mk('c3',{type:'line',data:{labels:ps.map(plbl),datasets:[
+    {label:'Total WO',data:pa.map(c=>c.tot),borderColor:'#E3A857',backgroundColor:'#E3A857',tension:.25},
+    {label:'WO Batal',data:pa.map(c=>c.b),borderColor:'#E2665A',backgroundColor:'#E2665A',tension:.25}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}},scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc},grid:{color:gc}}}}});
+}
+
+/* ===== TABEL ===== */
 function drawT(t){
   const q=($(t.q).value||'').toLowerCase();
   let rs=t.items.filter(it=>!q||it.cells.slice(0,t.nk).join(' ').toLowerCase().includes(q));
@@ -343,7 +363,7 @@ function drawT(t){
   if(t.groups){
     for(let c=0;c<t.head.length;c++){
       const g=t.groups.find(g=>g.c[0]==c);
-      if(g){r1+=`<th class="gh" colspan="${g.c.length}">${esc(g.l)}</th>`;g.c.forEach(x=>r2+=th(x,t.head[x]))}
+      if(g){r1+=`<th colspan="${g.c.length}">${esc(g.l)}</th>`;g.c.forEach(x=>r2+=th(x,t.head[x]))}
       else if(!t.groups.some(g=>g.c.includes(c)))r1+=th(c,t.head[c],'rowspan="2"');
     }
   }else r1=t.head.map((h,c)=>th(c,h)).join('');
@@ -351,7 +371,7 @@ function drawT(t){
   const cols=t.head.length+(t.G?1:0);
   const body=rs.length?rs.map(it=>{const idx=t.items.indexOf(it);return `<tr>${it.cells.map((v,c)=>c<t.nk?`<td class="k">${esc(v)}</td>`:`<td class="${t.cls[c-t.nk]||''} clk" data-i="${idx}" data-c="${c-t.nk}">${t.fmt[c-t.nk](v)}</td>`).join('')}${t.G?`<td><button class="rb" data-i="${idx}">👁 Rincian</button></td>`:''}</tr>`}).join('')
     :`<tr><td class="em" colspan="${cols}">Tidak ada data.</td></tr>`;
-  const foot=t.tot?`<tfoot><tr><td colspan="${t.nk}" class="k">${esc(t.tot.l)}</td>${t.tot.cells.map((v,c)=>`<td class="${t.cls[c]||''} clk" data-i="-1" data-c="${c}">${t.fmt[c](v)}</td>`).join('')}${t.G?'<td></td>':''}</tr></tfoot>`:'';
+  const foot=t.tot?`<tfoot><tr><td class="k">${esc(t.tot.l)}</td>${t.tot.cells.map((v,c)=>`<td class="${t.cls[c]||''} clk" data-i="-1" data-c="${c}">${t.fmt[c](v)}</td>`).join('')}${t.G?'<td></td>':''}</tr></tfoot>`:'';
   $(t.el).innerHTML=`<table><thead><tr>${r1}</tr>${r2?`<tr>${r2}</tr>`:''}</thead><tbody>${body}</tbody>${foot}</table>`;
 }
 
@@ -377,18 +397,25 @@ function exportT(id,mode){
   const t=TB[id];if(!t||!t.items.length){toast('Tidak ada data untuk diexport',true);return}
   if(mode=='rekap'){
     const top=t.groups?t.head.map((h,c)=>{const g=t.groups.find(g=>g.c.includes(c));return g?g.l:''}):null;
-    const aoa=[...(top?[top]:[]),t.head,...t.items.map(it=>it.cells),[t.tot.l,...Array(t.nk-1).fill(''),...t.tot.cells]];
+    const aoa=[...(top?[top]:[]),t.head,...t.items.map(it=>it.cells),[t.tot.l,...t.tot.cells]];
     saveXlsx([{name:'Rekap',ws:XLSX.utils.aoa_to_sheet(aoa)}],id=='t1'?'Rekap_Laporan_Batal':'Kategori_Batal_Comcen');
   }else{
-    const rows=ticketRows(t.detail());
+    const rows=ticketRows(t.allRows.length?(id=='t1'?PK.b(t.allRows):PK.cm(t.allRows)):[]);
     if(!rows.length){toast('Tidak ada tiket batal',true);return}
     saveXlsx([{name:'Detail Tiket',ws:XLSX.utils.json_to_sheet(rows)}],id=='t1'?'Detail_Laporan_Batal':'Detail_Kategori_Batal_Comcen');
   }
 }
 
-/* ===== INIT: event & jalankan ===== */
-$('#fd').onchange=farea;$('#fa').onchange=fpos;$('#fp').onchange=()=>{readF();render()};
-$('#rs').onclick=()=>{$('#fd').value='';$('#fa').value='';$('#fp').value='';fdist()};
+/* ===== EVENT ===== */
+$('#fb').onchange=fillAll;
+$('#fd').onchange=()=>{fillArea();fillPos();readF();render()};
+$('#fa').onchange=()=>{const a=$('#fa').value,d=$('#fd').value;
+  if(a){const r=mrows().find(x=>x.NAMA_AREA==a&&(!d||x.NAMA_DISTRIBUSI==d));if(r)$('#fd').value=r.NAMA_DISTRIBUSI}
+  fillAll()};
+$('#fp').onchange=()=>{const p=$('#fp').value,a=$('#fa').value,d=$('#fd').value;
+  if(p){const r=mrows().find(x=>x.NAMA_POSKO==p&&(!a||x.NAMA_AREA==a)&&(!d||x.NAMA_DISTRIBUSI==d));if(r){$('#fd').value=r.NAMA_DISTRIBUSI;$('#fa').value=r.NAMA_AREA}}
+  fillAll()};
+$('#rs').onclick=()=>{$('#fd').value='';$('#fa').value='';$('#fp').value='';fillAll()};
 $('#sy').onclick=sync;
 $('#q1').oninput=()=>drawT(TB.t1);$('#q2').oninput=()=>drawT(TB.t2);
 document.querySelectorAll('button[data-x]').forEach(b=>b.onclick=()=>exportT(b.dataset.x,b.dataset.m));
@@ -399,13 +426,12 @@ document.querySelectorAll('button[data-x]').forEach(b=>b.onclick=()=>exportT(b.d
   const td=e.target.closest('td.clk');
   if(td){
     const i=+td.dataset.i,c=+td.dataset.c,it=i<0?null:t.items[i];
-    const g=t.groups&&t.groups.find(g=>g.c.includes(t.nk+c));
-    const title=(it?it.cells.slice(0,t.nk).join(' / '):t.tot.l)+' — '+(g?g.l+' · ':'')+t.head[t.nk+c];
+    const title=(it?it.cells[0]:t.tot.l)+' — '+t.head[t.nk+c];
     openDetail(title,t.kinds[c](it?it.rows:t.allRows));
     return;
   }
   const b=e.target.closest('.rb');
-  if(b){const it=t.items[+b.dataset.i];openDetail(it.cells.slice(0,t.nk).join(' / '),it.list)}
+  if(b){const it=t.items[+b.dataset.i];openDetail(it.cells[0],it.list)}
 }));
 $('#kp').addEventListener('click',e=>{
   const el=e.target.closest('[data-k]');if(!el)return;
@@ -417,11 +443,11 @@ $('#ov').addEventListener('click',e=>{if(e.target.id=='ov')$('#ov').classList.re
 document.addEventListener('keydown',e=>{if(e.key=='Escape')$('#ov').classList.remove('on')});
 $('#mx').onclick=()=>{if(MX&&MX.rows.length)saveXlsx([{name:'Rincian Tiket Batal',ws:XLSX.utils.json_to_sheet(MX.rows)}],MX.file);else toast('Tidak ada data untuk diexport',true)};
 
-function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('wo-batal-tema',t)}catch(e){}}
+function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('wo-batal-tema',t)}catch(e){}if(D.p2b.length)render()}
 $('#th').onclick=()=>theme(document.documentElement.dataset.theme=='light'?'dark':'light');
-try{theme(localStorage.getItem('wo-batal-tema')||'dark')}catch(e){theme('dark')}
+try{document.documentElement.dataset.theme=localStorage.getItem('wo-batal-tema')||'dark'}catch(e){}
 
-render();
+fillAll();
 sync();
 setInterval(()=>{if(!document.hidden)sync()},AUTO_MS);
 </script>
