@@ -167,13 +167,32 @@ function csv(t){const r=[];let w=[],c='',q=0;for(let i=0;i<t.length;i++){const x
   if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=0}else c+=x}
   else if(x=='"')q=1;else if(x==','){w.push(c);c=''}else if(x=='\n'){w.push(c);r.push(w);w=[];c=''}else if(x!='\r')c+=x}
   if(c||w.length){w.push(c);r.push(w)}return r}
-async function loadSheet(id,name,g){
-  const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&_=${Date.now()}`,{cache:'no-store'});
+const NEED=new Set(['NOLAPORAN','NAMADISTRIBUSI','NAMAAREA','NAMAPOSKO','TGLLAPOR','BLTH','APKTSTATUS','STATUSAPKT','TIPEBATAL','JENISBATAL','TIPEPEMBATALAN','ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL','BATALBY']);
+const normH=x=>String(x).trim().toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+const isNeed=h=>{const n=h.replace(/[^A-Z0-9]/g,'');return NEED.has(n)||(n.includes('BATAL')&&(n.includes('TIPE')||n.includes('JENIS'))&&!n.includes('ALASAN')&&!n.includes('KET'))};
+const colL=i=>{let s='';for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
+async function gv(id,q){
+  const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${q?'&tq='+encodeURIComponent(q):''}&_=${Date.now()}`,{cache:'no-store'});
   if(!res.ok)throw new Error('HTTP '+res.status);
   const txt=await res.text();
   if(/^\s*<(!doctype|html)/i.test(txt))throw new Error('belum dibagikan sebagai Pelihat');
-  const r=csv(txt),h=r[0].map(x=>x.trim().toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,''));
+  return csv(txt);
+}
+function toRows(r,name,g){
+  const h=r[0].map(normH);
   return r.slice(1).filter(x=>x.some(v=>v!=='')).map(x=>{const o={_SHEET:g,_FILE:name};h.forEach((k,i)=>{const v=(x[i]||'').trim();if(o[k]===undefined||o[k]==='')o[k]=v});return o});
+}
+// ambil hanya kolom yang dipakai dashboard (jauh lebih kecil & cepat); bila gagal, ambil semua kolom
+async function loadSheet(id,name,g){
+  try{
+    const hd=(await gv(id,'select * limit 1'))[0]||[];
+    const idx=[];hd.forEach((x,i)=>{if(isNeed(normH(x)))idx.push(i)});
+    if(idx.some(i=>normH(hd[i])=='NO_LAPORAN')){
+      const r=await gv(id,'select '+idx.map(colL).join(','));
+      if(r.length&&r[0].length==idx.length)return toRows(r,name,g);
+    }
+  }catch(e){if(/belum dibagikan/.test(e.message))throw e}
+  return toRows(await gv(id,''),name,g);
 }
 const GS='application/vnd.google-apps.spreadsheet';
 let DIAG=[];
@@ -193,7 +212,9 @@ function pickCol(r,al,fz){
 }
 const A_S=['APKTSTATUS','STATUSAPKT'],A_T=['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN'],A_A=['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL'];
 const fzT=n=>n.includes('BATAL')&&(n.includes('TIPE')||n.includes('JENIS'))&&!n.includes('ALASAN')&&!n.includes('KET');
-function canon(r){r._S=pickCol(r,A_S);r._T=pickCol(r,A_T,fzT);r._A=pickCol(r,A_A)}
+function canon(r){r._S=pickCol(r,A_S);r._T=pickCol(r,A_T,fzT);r._A=pickCol(r,A_A);
+  // skema tanpa kolom TIPE_BATAL (mis. Kode G Oktober): batal dengan alasan / BATAL_BY terisi = dibatalkan Command Center
+  if(!r._T&&/batal/i.test(r._S)&&(r._A||pickCol(r,['BATALBY']))){r._T='Batal by Comcen';r._TD=1}}
 function dateNum(v){const s=String(v||'');let m=s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
   if(m&&+m[2]>=1&&+m[2]<=12)return +m[1]*100+ +m[2];
   m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
@@ -218,7 +239,7 @@ function assemble(files){
   for(const k in KM)delete KM[k];
   const by=new Map();all.forEach(m=>{if(!by.has(m._PER))by.set(m._PER,[]);by.get(m._PER).push(m)});
   const sum=[...by.keys()].sort((a,b)=>(a||1e9)-(b||1e9)).map(p=>{const rows=by.get(p),bl=rows.filter(isBt),c=cnt[p]||{cc:0,p2b:0};
-    return{p,cc:c.cc,kg:c.p2b,uniq:rows.length,rows,bl:bl.length,kos:bl.filter(r=>!gT(r)).length,area:rows.filter(r=>r.NAMA_AREA).length,onlyKG:rows.filter(r=>r._G.p2b&&!r._G.cc).length}});
+    return{p,cc:c.cc,kg:c.p2b,uniq:rows.length,rows,bl:bl.length,kos:bl.filter(r=>!gT(r)).length,turun:bl.filter(r=>r._TD).length,area:rows.filter(r=>r.NAMA_AREA).length,onlyKG:rows.filter(r=>r._G.p2b&&!r._G.cc).length}});
   return{all,files,sum};
 }
 function renderDiag(){
@@ -226,27 +247,40 @@ function renderDiag(){
     return`<tr><td class="k">${esc(d.f)}</td><td style="text-align:left">${folder}</td><td style="text-align:left">${d.per?plbl(d.per):'-'}</td><td>${d.n!=null?i0(d.n):'-'}</td><td style="text-align:left;white-space:normal">${esc(d.note)}</td></tr>`}).join('');
   $('#dgb').innerHTML=`<div class="tw"><table style="min-width:760px"><thead><tr><th>File / Ringkasan</th><th>Folder</th><th>Bulan</th><th>Baris</th><th>Catatan</th></tr></thead><tbody>${rows||'<tr><td class="em" colspan="5">Belum ada data.</td></tr>'}</tbody></table></div>`;
 }
+const idb=(()=>{let p;const open=()=>p||(p=new Promise((ok,no)=>{try{const q=indexedDB.open('wo-batal',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}}));
+  return{get:k=>open().then(d=>new Promise(r=>{const q=d.transaction('f').objectStore('f').get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r()})).catch(()=>{}),
+    set:(k,v)=>open().then(d=>{d.transaction('f','readwrite').objectStore('f').put(v,k)}).catch(()=>{})}})();
+function finish(files,diag){
+  const{all,files:fs,sum}=assemble(files);
+  D.p2b=all;D.cc=[];
+  fs.forEach(f=>{const ms=[...(f.months||[])].filter(Boolean).sort().map(plbl).join(', ');diag.push({f:f.name,g:f.g,per:f.per,n:f.rows.length,note:!f.rows.length?'kosong':(ms?'dibaca · bulan: '+ms:'dibaca · bulan tidak terdeteksi (cek nama file berawalan MM, kolom BLTH atau TGL_LAPOR)')})});
+  sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos} · hanya di Kode G ${x.onlyKG}`+(x.turun?` · tipe diturunkan dari alasan/BATAL_BY ${x.turun}`:'')+(x.area?'':' · area & posko tidak tersedia')}));
+  DIAG=diag;fillAll();renderDiag();
+}
+async function boot(){   // tampilkan data tersimpan lebih dulu, lalu sinkron di latar
+  try{const sn=await idb.get('snap');
+    if(sn&&sn.length){sn.forEach(x=>{CACHE[x.id]={mt:x.mt,rows:x.rows}});finish(sn.map(x=>({g:x.g,name:x.name,rows:x.rows})),[]);
+      $('#st').className='stat';$('#st').textContent='Data tersimpan · memperbarui…'}}catch(e){}
+  sync();
+}
 async function sync(){
   if(busy)return;busy=true;const b=$('#sy');b.disabled=true;$('#syi').classList.add('spin');
   try{
-    const L=await fetchList(),files=[],diag=[];
-    for(const g of ['p2b','cc']){
-      for(const fl of (L[g]||[])){
-        if(fl.mime&&fl.mime!==GS){diag.push({f:fl.name,g,per:0,n:0,note:'bukan Google Sheets: buka file, lalu File → Save as Google Sheets'});continue}
+    const L=await fetchList(),diag=[],jobs=[];
+    for(const g of ['p2b','cc'])for(const fl of (L[g]||[])){
+      if(fl.mime&&fl.mime!==GS){diag.push({f:fl.name,g,per:0,n:0,note:'bukan Google Sheets: tunggu konversi otomatis atau jalankan ulang Apps Script'});continue}
+      jobs.push((async()=>{
         try{
           const c=CACHE[fl.id];let rows;
           if(c&&c.mt==fl.modifiedTime)rows=c.rows;
           else{rows=await loadSheet(fl.id,fl.name,g);CACHE[fl.id]={mt:fl.modifiedTime,rows}}
-          files.push({g,name:fl.name,rows});
-        }catch(e){diag.push({f:fl.name,g,per:0,n:0,note:'gagal dibaca: '+e.message})}
-      }
+          return{g,name:fl.name,id:fl.id,mt:fl.modifiedTime,rows};
+        }catch(e){diag.push({f:fl.name,g,per:0,n:0,note:'gagal dibaca: '+e.message});return null}
+      })());
     }
-    const{all,files:fs,sum}=assemble(files);
-    D.p2b=all;D.cc=[];
-    fs.forEach(f=>{const ms=[...(f.months||[])].filter(Boolean).sort().map(plbl).join(', ');diag.push({f:f.name,g:f.g,per:f.per,n:f.rows.length,note:!f.rows.length?'kosong':(ms?'dibaca · bulan: '+ms:'dibaca · bulan tidak terdeteksi (cek kolom BLTH, TGL_LAPOR atau nama file)')})});
-    sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos} · hanya di Kode G ${x.onlyKG}`+(x.area?'':' · area & posko tidak tersedia')}));
-    DIAG=diag;
-    fillAll();renderDiag();
+    const files=(await Promise.all(jobs)).filter(Boolean);   // semua file diunduh bersamaan
+    finish(files,diag);
+    idb.set('snap',files);
     $('#st').className='stat';$('#st').textContent='Diperbarui '+new Date().toLocaleTimeString('id-ID');
     const perlu=diag.filter(d=>d.g!='sum'&&!/^dibaca/.test(d.note)).length;
     if(perlu)toast(perlu+' file perlu perhatian, lihat Status data',true);
@@ -556,7 +590,7 @@ $('#th').onclick=()=>theme(document.documentElement.dataset.theme=='light'?'dark
 try{document.documentElement.dataset.theme=localStorage.getItem('wo-batal-tema')||'dark'}catch(e){}
 
 fillAll();
-sync();
+boot();
 setInterval(()=>{if(!document.hidden)sync()},AUTO_MS);
 </script>
 </body>
