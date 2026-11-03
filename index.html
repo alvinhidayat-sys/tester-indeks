@@ -3599,76 +3599,100 @@ const idr=n=>Number(n||0).toLocaleString('id-ID');
 const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'–';
 /* Sembunyikan 5 digit terakhir nomor HP (tampilan & unduhan) */
 const mask=s=>{const d=String(s==null?'':s).replace(/\D/g,'');if(!d)return'';return d.length>5?d.slice(0,-5)+'*****':'*****'};
-const K={wo:['nowo','nomorwo','idwo','nomororder','workorder','wo'],
-  tgl:['tglwo','tglbuat','tglpembuatan','tanggal','tgl','tglbatal','tglorder'],
-  up3:['up3','areaup3','area','uip'],
-  ulp:['ulp','posko','unitulp','unit'],
-  status:['statuswo','statusorder','status','statuslaporan'],
-  kat:['kategoribatal','katbatal','kategori','kategoribatalwo'],
-  alasan:['alasanbatal','keteranganbatal','alasan','ket'],
-  hp:['nohppelanggan','nohp','nomorhp','notelp','notelepon','telepon','nomortelepon','hp']};
-const pick=(o,ks)=>{for(const k of ks){if(o[k])return o[k]}return ''};
-const ARN=s=>{s=up(s);return s&&s!='-'?s:'(Tanpa area)'};
-const ULPN=s=>{s=up(s);return s&&s!='-'?s:'(Tanpa posko)'};
-const papua=r=>BTC.areas.some(a=>r.up3.includes(a));
+const MNAMA={januari:1,februari:2,maret:3,april:4,mei:5,juni:6,juli:7,agustus:8,september:9,oktober:10,november:11,desember:12};
+const MB={jan:1,feb:2,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,agu:8,agt:8,aug:8,sep:9,okt:10,oct:10,nov:11,des:12,dec:12};
+const pad=n=>String(n).padStart(2,'0');
 
+/* nama kolom yang dikenali (sudah dinormalisasi: huruf kecil, tanpa spasi/simbol) */
+const K={
+  wo:['nowo','nomorwo','idwo','nomororder','noorder','workorder','wo','nolaporan','nomorlaporan'],
+  tgl:['tglwo','tglbuat','tglpembuatan','tanggal','tgl','tglbatal','tglorder','tgllapor','tanggalwo'],
+  up3:['up3','areaup3','area','uip','unitup3','unit','uip3'],
+  ulp:['ulp','posko','unitulp','poskoulp'],
+  status:['statuswo','statusorder','status','statuslaporan'],
+  kat:['kategoribatal','katbatal','kategori','jenisbatal','kategoriwobatal'],
+  alasan:['alasanbatal','keteranganbatal','alasan','ket','keterangan'],
+  hp:['nohppelanggan','nohp','nomorhp','notelp','notelepon','telepon','nomortelepon','hp','nohandphone']};
+const KEYS=new Set(Object.values(K).flat());
+const pick=(o,ks)=>{for(const k of ks){if(o[k])return o[k]}return ''};
+const ARN=s=>up(s)||'(TANPA AREA)';
+const ULPN=s=>up(s)||'(TANPA POSKO)';
+const papua=()=>true;   /* data sumber sudah khusus UIW Papua dan Papua Barat */
+
+/* CSV ringan (dipakai bila perlu) */
 function csv(t){const R=[];let r=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];
   if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
   else if(c=='"')q=true;else if(c==','){r.push(f);f=''}
   else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;r.push(f);f='';R.push(r);r=[]}else f+=c}
   if(f.length||r.length){r.push(f);R.push(r)}return R}
 
-/* ambil seluruh isi folder dari Web App (Apps Script) */
-async function fetchFolders(){
-  if(!BTC.webapp)throw new Error('URL Web App belum diisi (BTC.webapp)');
-  const r=await fetch(BTC.webapp+(BTC.webapp.includes('?')?'&':'?')+'_='+Date.now(),{cache:'no-store'});
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  const j=await r.json();
-  if(!j.ok)throw new Error(j.error||'Web App mengembalikan error');
-  return j;
+/* baca tabel: header dicari di 40 baris pertama (baris dengan paling banyak kolom dikenali) */
+function parseFile(rows){
+  let best=-1,bs=0;
+  rows.slice(0,40).forEach((x,i)=>{const n=x.reduce((k,c)=>k+(KEYS.has(nrm(c))?1:0),0);if(n>bs){bs=n;best=i}});
+  if(best<0)best=rows.findIndex(x=>x.some(c=>trm(c)));
+  if(best<0)return {objs:[],kurang:['(file kosong)']};
+  const H=rows[best].map(nrm);
+  const kurang=Object.keys(K).filter(k=>!K[k].some(x=>H.includes(x)));
+  const objs=rows.slice(best+1).filter(x=>x.some(c=>trm(c))).map(x=>{const o={};H.forEach((h,i)=>{if(h&&!(h in o))o[h]=trm(x[i])});return o});
+  return {objs,kurang};
 }
 
-/* baris pertama yang berisi teks dianggap header */
-function rowsToObjs(rows){
-  const hi=rows.findIndex(x=>x.some(c=>nrm(c)));if(hi<0)return[];
-  const H=rows[hi].map(nrm);
-  return rows.slice(hi+1).filter(x=>x.some(c=>trm(c))).map(x=>{const o={};H.forEach((h,i)=>{if(h&&!(h in o))o[h]=trm(x[i])});return o});
+/* tanggal -> 'YYYY-MM' (dd/mm/yyyy, yyyy-mm-dd, 03-Sep-2026, dll) */
+function tglBln(s){
+  s=trm(s);if(!s)return'';
+  let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);if(m)return m[1]+'-'+pad(+m[2]);
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(m){let a=+m[1],b=+m[2],y=+m[3];if(y<100)y+=2000;const mo=b>12?a:b;return mo>=1&&mo<=12?y+'-'+pad(mo):''}
+  m=s.match(/^(\d{1,2})[\s\-\/]([a-zA-Z]{3,})[\s\-\/,.]*(\d{2,4})/);
+  if(m){const mo=MB[m[2].slice(0,3).toLowerCase()];let y=+m[3];if(y<100)y+=2000;return mo?y+'-'+pad(mo):''}
+  return'';
 }
 
-/* tanggal: dd/mm/yyyy (default) atau mm/dd/yyyy bila hari > 12 */
-function ym(s){const m=String(s||'').match(/^\s*(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);if(!m)return'';
-  const a=+m[1],b=+m[2];let y=+m[3];if(y<100)y+=2000;const mo=b>12?a:b;return mo>=1&&mo<=12?y+'-'+String(mo).padStart(2,'0'):''}
+/* periode dari nama file: "09. KODE G SEPTEMBER PPB 2026" atau "09. Performa CC 2026" */
+function blnDariNama(nama){
+  const n=String(nama);const y=n.match(/(20\d{2})/);if(!y)return'';
+  const m=n.match(/(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)/i);
+  if(m)return y[1]+'-'+pad(MNAMA[m[1].toLowerCase()]);
+  const d=n.match(/^\s*(\d{1,2})\s*[.\-_ ]/);
+  if(d&&+d[1]>=1&&+d[1]<=12)return y[1]+'-'+pad(+d[1]);
+  return'';
+}
 
 let REC=[],S={bulan:'',area:'',ulp:'',kat:'',init:0},started=false;
 const isKat=r=>!S.kat||(r.kat||'(Tanpa kategori)')==S.kat;
 const base=()=>REC.filter(r=>papua(r)&&(!S.bulan||r.bln==S.bulan)&&(!S.area||r.up3==S.area)&&(!S.ulp||r.ulp==S.ulp));
 const batal=()=>base().filter(r=>r.batal&&isKat(r));
 
-/* kedua sumber memakai header yang sama: digabung, lalu duplikat No WO dibuang */
-function build(rowsList){
-  const seen=new Set();const out=[];
-  rowsList.forEach(o=>{const w=pick(o,K.wo);const key=nrm(w);
-    if(key){if(seen.has(key))return;seen.add(key)}
-    const r={wo:w,tgl:pick(o,K.tgl),up3:ARN(pick(o,K.up3)),ulp:ULPN(pick(o,K.ulp)),status:pick(o,K.status),
-      kat:pick(o,K.kat),alasan:pick(o,K.alasan),hp:pick(o,K.hp)};
-    r.bln=ym(r.tgl);r.batal=/batal/i.test(r.status)||(!r.status&&!!r.kat);
-    if(r.wo||r.tgl)out.push(r)});
+/* gabung semua baris; No WO yang sama pada periode yang sama dihitung sekali */
+function build(rows){
+  const seen=new Set(),out=[];
+  rows.forEach(o=>{
+    const w=pick(o,K.wo);
+    const r={wo:w,tgl:pick(o,K.tgl),up3:ARN(pick(o,K.up3)),ulp:ULPN(pick(o,K.ulp)),
+      status:pick(o,K.status),kat:pick(o,K.kat),alasan:pick(o,K.alasan),hp:pick(o,K.hp)};
+    r.bln=tglBln(r.tgl)||o._per||'';
+    const key=nrm(w)+'|'+r.bln;
+    if(nrm(w)){if(seen.has(key))return;seen.add(key)}
+    r.batal=/batal/i.test(r.status)||(!r.status&&!!r.kat);
+    if(r.wo||r.tgl)out.push(r);
+  });
   return out;
 }
 
 function sel(id,list,val,allLabel){const el=$(id);
   el.innerHTML=`<option value="">${allLabel}</option>`+list.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('');
   el.value=list.some(([v])=>v==val)?val:'';return el.value}
+
 function opts(){
-  const P=REC.filter(papua);
-  const months=[...new Set(P.map(r=>r.bln).filter(Boolean))].sort().reverse();
+  const months=[...new Set(REC.map(r=>r.bln).filter(Boolean))].sort().reverse();
   if(!S.init){S.bulan=months[0]||'';S.init=1}
   S.bulan=sel('mbM',months.map(m=>[m,ML[+m.slice(5)-1]+' '+m.slice(0,4)]),S.bulan,'Semua bulan');
-  const areas=BTC.areas.filter(a=>P.some(r=>r.up3.includes(a))).map(a=>[a,a.charAt(0)+a.slice(1).toLowerCase()]);
-  S.area=sel('mbA',areas,S.area,'Semua area (Papua & Papua Barat)');
-  const ulps=[...new Set(P.filter(r=>!S.area||r.up3==S.area).map(r=>r.ulp))].sort().map(u=>[u,u]);
+  const areas=[...new Set(REC.map(r=>r.up3))].sort().map(a=>[a,a]);
+  S.area=sel('mbA',areas,S.area,'Semua area');
+  const ulps=[...new Set(REC.filter(r=>!S.area||r.up3==S.area).map(r=>r.ulp))].sort().map(u=>[u,u]);
   S.ulp=sel('mbU',ulps,S.ulp,'Semua posko');
-  const kats=[...new Set(P.filter(r=>r.batal).map(r=>r.kat||'(Tanpa kategori)'))].sort().map(k=>[k,k]);
+  const kats=[...new Set(REC.filter(r=>r.batal).map(r=>r.kat||'(Tanpa kategori)'))].sort().map(k=>[k,k]);
   S.kat=sel('mbK',kats,S.kat,'Semua kategori');
 }
 
@@ -3731,7 +3755,7 @@ async function ambilJson(url,ms){
 }
 
 async function sync(){
-  if(busy)return;                       /* jangan menumpuk permintaan */
+  if(busy)return;
   if(!BTC.webapp){$('mbErr').textContent='URL Web App belum diisi (BTC.webapp).';$('mbSt').textContent='Belum terhubung';return}
   busy=true;
   const t0=Date.now();
@@ -3740,30 +3764,54 @@ async function sync(){
   $('mbErr').textContent='';
   const sep=BTC.webapp.includes('?')?'&':'?';
   try{
-    /* 1) daftar file (ringan) */
+    /* 1) daftar file, lalu pilih hanya file menu batal */
     const lst=await ambilJson(BTC.webapp+sep+'_='+Date.now());
-    /* 2) pilih hanya file menu batal, lalu baca satu per satu */
     const files=[];
-    lst.files.forEach(f=>{const p=BTC.pilih.find(x=>f.name.startsWith(x.prefix));if(p)files.push({id:f.id,name:f.name,folder:p.label})});
-    let all=[],info=[],gagal=0;
-    for(let i=0;i<files.length;i++){
-      const f=files[i];
-      prog='Membaca file '+(i+1)+'/'+files.length+'...';
-      try{
-        const d=await ambilJson(BTC.webapp+sep+'id='+encodeURIComponent(f.id));
-        const objs=rowsToObjs(d.rows||[]);
-        all=all.concat(objs);
-        info.push(`${f.folder}: ${f.name} (${objs.length} baris)`);
-      }catch(e){
-        gagal++;
-        info.push(`${f.folder}: ${f.name} (gagal: ${e.message})`);
+    lst.files.forEach(f=>{const p=BTC.pilih.find(x=>f.name.startsWith(x.prefix));if(p)files.push({id:f.id,name:f.name,folder:p.label,updated:f.updated||''})});
+    if(!files.length){throw new Error('Tidak ada file yang cocok dengan filter (awalan path: '+BTC.pilih.map(x=>x.prefix).join(', ')+')')}
+
+    /* 2) baca file: pakai cache bila file tidak berubah, sisanya 3 file sekaligus */
+    const cache=(await idbGet('files'))||{};
+    const hasil=new Array(files.length);
+    let next=0,done=0;
+    const worker=async()=>{
+      while(next<files.length){
+        const i=next++,f=files[i],c=cache[f.id];
+        if(c&&c.updated===f.updated&&c.updated){hasil[i]={ok:true,objs:c.objs,kurang:c.kurang,cached:true}}
+        else{
+          try{
+            const d=await ambilJson(BTC.webapp+sep+'id='+encodeURIComponent(f.id));
+            const {objs,kurang}=parseFile(d.rows||[]);
+            const per=blnDariNama(f.name);
+            objs.forEach(o=>{o._per=per});
+            hasil[i]={ok:true,objs,kurang};
+            cache[f.id]={updated:f.updated,objs,kurang};
+          }catch(e){hasil[i]={ok:false,err:e.message}}
+        }
+        done++;prog='Membaca file '+done+'/'+files.length+'...';
       }
-    }
+    };
+    await Promise.all([worker(),worker(),worker()]);
+
+    /* 3) gabungkan + laporan per file */
+    let all=[],info=[],gagal=0,dariCache=0;
+    files.forEach((f,i)=>{
+      const h=hasil[i];
+      if(h.ok){
+        all=all.concat(h.objs);
+        if(h.cached)dariCache++;
+        info.push(`${f.folder}: ${f.name} (${h.objs.length} baris${h.cached?', cache':''}${h.kurang.length?'; kolom tidak dikenali: '+h.kurang.join(', '):''})`);
+      }else{gagal++;info.push(`${f.folder}: ${f.name} (gagal: ${h.err})`)}
+    });
+    /* buang cache file yang sudah tidak ada */
+    const ids=new Set(files.map(f=>f.id));Object.keys(cache).forEach(k=>{if(!ids.has(k))delete cache[k]});
+    idbSet('files',cache);
+
     const data={t:Date.now(),generated:lst.generated,info:info,rows:all};
     applyData(data);
     LASTT=data.t;
     idbSet('data',data);
-    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · '+(files.length-gagal)+'/'+files.length+' file terbaca';
+    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · '+(files.length-gagal)+'/'+files.length+' file · '+dariCache+' dari cache';
     if(gagal)$('mbErr').textContent=gagal+' file gagal dibaca (lihat daftar file di bawah).';
   }catch(e){
     $('mbErr').textContent=e.name==='AbortError'?'Waktu habis saat mengambil data. Coba lagi.':'Gagal membaca sumber data: '+e.message;
