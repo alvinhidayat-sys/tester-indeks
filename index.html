@@ -3585,6 +3585,8 @@ addEventListener('hashchange',route);route();setInterval(sync,D.iv*60000);
 const $=id=>document.getElementById(id);
 const BTC={
   /* URL Web App Google Apps Script (lihat Code.gs). Script inilah yang membaca semua file di folder. */
+  /* hanya file dengan awalan path berikut yang dibaca (filter di HTML, Code.gs tidak diubah) */
+  pilih:[{label:'Kode G',prefix:'PPB/YANTEK/Kode G/'},{label:'COMCEN',prefix:'PPB/COMCEN/'}],
   webapp:'https://script.google.com/macros/s/AKfycbxvxFYfncRSB36Nzrb13pxKAoM2RxksjjWzNS-2oIydSYDpgsk1VQvIeN0uQrhw707q/exec',
   areas:['BIAK','JAYAPURA','MANOKWARI','MERAUKE','NABIRE','SORONG','TIMIKA','WAMENA']
 };
@@ -3740,11 +3742,13 @@ async function sync(){
   try{
     /* 1) daftar file (ringan) */
     const lst=await ambilJson(BTC.webapp+sep+'_='+Date.now());
-    /* 2) isi tiap file, satu per satu agar memori server dan browser tetap kecil */
+    /* 2) pilih hanya file menu batal, lalu baca satu per satu */
+    const files=[];
+    lst.files.forEach(f=>{const p=BTC.pilih.find(x=>f.name.startsWith(x.prefix));if(p)files.push({id:f.id,name:f.name,folder:p.label})});
     let all=[],info=[],gagal=0;
-    for(let i=0;i<lst.files.length;i++){
-      const f=lst.files[i];
-      prog='Membaca file '+(i+1)+'/'+lst.files.length+'...';
+    for(let i=0;i<files.length;i++){
+      const f=files[i];
+      prog='Membaca file '+(i+1)+'/'+files.length+'...';
       try{
         const d=await ambilJson(BTC.webapp+sep+'id='+encodeURIComponent(f.id));
         const objs=rowsToObjs(d.rows||[]);
@@ -3759,7 +3763,7 @@ async function sync(){
     applyData(data);
     LASTT=data.t;
     idbSet('data',data);
-    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · '+(lst.files.length-gagal)+'/'+lst.files.length+' file terbaca';
+    $('mbSt').textContent='Sinkron '+new Date().toLocaleTimeString('id-ID')+' · '+(files.length-gagal)+'/'+files.length+' file terbaca';
     if(gagal)$('mbErr').textContent=gagal+' file gagal dibaca (lihat daftar file di bawah).';
   }catch(e){
     $('mbErr').textContent=e.name==='AbortError'?'Waktu habis saat mengambil data. Coba lagi.':'Gagal membaca sumber data: '+e.message;
