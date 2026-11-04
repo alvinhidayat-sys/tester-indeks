@@ -3485,11 +3485,30 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
  .md{width:100%;max-height:calc(100dvh - var(--abs-top,0px) - 8px);border-radius:24px 24px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px))}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.spin{animation:none}}
+/* filter menempel di bawah header saat halaman di-skrol, lalu sedikit mengecil */
+.fbar{position:sticky;top:calc(var(--abs-top,0px) + 8px);z-index:5;transition:padding .28s ease,margin-bottom .28s ease,box-shadow .28s ease}
+.fbar .row,.fbar .fg{transition:gap .28s ease,margin-top .28s ease}
+.fbar .fg label{max-height:20px;transition:font-size .28s ease,max-height .28s ease,opacity .28s ease}
+.fbar select,.fbar .b{transition:min-height .28s ease,padding .28s ease,font-size .28s ease,transform .12s,box-shadow .15s,filter .15s}
+.fbar.shrunk{padding:8px 12px;margin-bottom:calc(18px + var(--comp,0px));box-shadow:0 12px 26px -12px var(--sh-d),var(--raise-s)}
+.fbar.shrunk .row{gap:8px}
+.fbar.shrunk .row.bar{margin-top:8px}
+.fbar.shrunk .fg{gap:2px}
+.fbar.shrunk .fg label{font-size:9.5px}
+.fbar.shrunk select{min-height:32px;padding:4px 30px 4px 10px;font-size:13px}
+.fbar.shrunk .b{min-height:32px;padding:4px 12px;font-size:13px}
+.fbar.shrunk .stat{font-size:12px}
+.fbar.nt,.fbar.nt *{transition:none!important}
+@media(max-width:640px){
+ .fbar.shrunk .fg label{max-height:0;opacity:0;overflow:hidden}
+ .fbar.shrunk .row.bar .stat{display:none}
+ .fbar.shrunk select,.fbar.shrunk .b{font-size:16px;min-height:38px}
+}
 </style>
 </head>
 <body>
 <div class=&quot;wrap&quot;>
-  <section class=&quot;card&quot;>
+  <section class=&quot;card fbar&quot; id=&quot;fbar&quot;>
     <div class=&quot;row&quot;>
       <div class=&quot;fg&quot;><label for=&quot;fb&quot;>Bulan</label><select id=&quot;fb&quot;></select></div>
       <div class=&quot;fg&quot;><label for=&quot;fd&quot;>Distribusi</label><select id=&quot;fd&quot;></select></div>
@@ -4075,6 +4094,17 @@ $('#th').onclick=()=>{if(EMB){try{parent.document.getElementById('thm').click();
 if(EMB)$('#th').hidden=true;
 else try{document.documentElement.dataset.theme=localStorage.getItem('wo-batal-tema')||'dark'}catch(e){}
 
+/* filter menempel di atas saat di-skrol dan sedikit mengecil (tinggi layout dijaga agar isi tidak melompat) */
+(function(){const el=document.getElementById('fbar');if(!el)return;let on=false;
+ function shrink(v){
+  if(v){el.classList.add('nt');el.classList.remove('shrunk');const h0=el.offsetHeight;el.classList.add('shrunk');const h1=el.offsetHeight;
+   el.classList.remove('shrunk');void el.offsetHeight;el.classList.remove('nt');
+   el.style.setProperty('--comp',Math.max(0,h0-h1)+'px');el.classList.add('shrunk');on=true}
+  else{el.classList.remove('shrunk');on=false}}
+ const y=()=>window.pageYOffset||document.documentElement.scrollTop||0;
+ addEventListener('scroll',()=>{const v=y();if(!on&amp;&amp;v>60)shrink(true);else if(on&amp;&amp;v<20)shrink(false)},{passive:true});
+ addEventListener('resize',()=>{if(on)shrink(true)});
+})();
 fillAll();
 boot();
 setInterval(()=>{if(!document.hidden)sync()},AUTO_MS);
