@@ -3414,6 +3414,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:36px;background-rep
 @keyframes sp{to{transform:rotate(360deg)}}
 .dg{background:var(--sf);border-radius:var(--r);box-shadow:var(--raise);padding:12px 16px;margin-bottom:18px}
 .dg summary{cursor:pointer;color:var(--mut);font-weight:600;font-size:13.5px}
+#dga{box-shadow:var(--inset);margin-bottom:0}
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
 .kc{position:relative;overflow:hidden;background:var(--sf);border-radius:20px;box-shadow:var(--raise);padding:14px 16px 14px 21px;transition:transform .15s}
@@ -3526,7 +3527,7 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 
   <section class=&quot;card&quot;>
     <div class=&quot;ch&quot;>
-      <div><h2 id=&quot;j2&quot;>🗂️ Kategori Batal Command Center</h2><small style=&quot;color:var(--faint);font-size:12px&quot;>Hanya tipe batal by Comcen. Alasan batal dikelompokkan otomatis.</small></div>
+      <div><h2 id=&quot;j2&quot;>🗂️ Kategori Batal Command Center</h2><small style=&quot;color:var(--faint);font-size:12px&quot;>Hanya tipe batal by Comcen. Alasan batal dikelompokkan otomatis; keterangan yang tidak sesuai format dianalisa maksudnya (teks asli tetap ditampilkan di rincian &amp;amp; Excel).</small></div>
       <div class=&quot;tools&quot;>
         <input class=&quot;s&quot; id=&quot;q2&quot; placeholder=&quot;🔍 Cari…&quot;>
         <button class=&quot;b&quot; data-x=&quot;t2&quot; data-m=&quot;rekap&quot;>⬇ Rekap</button>
@@ -3534,6 +3535,7 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
       </div>
     </div>
     <div class=&quot;tw&quot; id=&quot;t2&quot;></div>
+    <details class=&quot;dg&quot; id=&quot;dga&quot; style=&quot;margin-top:14px&quot;><summary id=&quot;dgas&quot;>🔎 Hasil analisa keterangan di luar format paten</summary><div id=&quot;dgab&quot; style=&quot;margin-top:10px&quot;></div></details>
   </section>
 </div>
 
@@ -3716,12 +3718,88 @@ const emptyN=n=>!n||/^(null|nan|na|n a|undefined|none|nil|nihil|kosong)$/.test(n
 function lev(a,b){if(a==b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);
   for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]==b[j-1]?0:1));p=c}return p[n]}
 const BCN=BCAT.map(c=>nz(c[0])),bkC=new Map();
-function bkat(raw){const n=nz(raw);if(emptyN(n))return BTK;if(bkC.has(n))return bkC.get(n);
-  let r=BCN.indexOf(n);
+/* ===== ANALISA MAKSUD KETERANGAN (hanya untuk teks yang TIDAK sesuai format paten) =====
+   Urutan: 1) format paten (nama kategori / kata kunci / salah ketik)  2) analisa maksud (kamus di bawah)  3) kosong / belum terbaca.
+   Entri: [indeks kategori di BCAT, [pola...]]. Urutan entri = prioritas. Teks asli tidak pernah diubah. */
+const BSEM=[
+ /* 8 Padam Meluas Tidak Masuk Marking: padam luas, padam terencana, gangguan TM (jam laporan &amp; jam kode tidak sinkron sehingga tidak bisa di-marking) */
+ [8,[/(?=.*(pemadaman|padam|pdm|mati lampu|mati listrik|blackout|black out))(?=.*(luas|massal|bersama|total|serentak|banyak|penyulang|feeder|seluruh|sebagian wilayah|satu wilayah|satu desa|satu kelurahan))/,
+     /(pemadaman|padam|pdm)\s*(yang\s*)?(terencana|terjadwal|rencana|terprogram)/,
+     /(gangguan|ggn|gng|padam|pemadaman)\s*(tm|sutm|jtm|20\s*kv)\b/,/\btm\b.*(gangguan|padam|ggn)/,
+     /dampak\s*(pemadaman|padam|gangguan|ggn)/,
+     /\bmarking\b/]],
+ /* 9 Pelanggan P2TL / Non Distribusi: urusan meter/administrasi pelanggan, bukan gangguan jaringan */
+ [9,[/(ganti|pergantian|penggantian|mengganti|diganti|tukar|penukaran|pasang|pemasangan|perubahan|upgrade)\s*(kwh\s*)?(meter|kwh|stand|apm|app|alat\s*pembatas|pembatas)/,
+     /(kwh\s*)?meter\s*(rusak|diganti|baru|error|eror|blank|mati|layar|display|lcd|hilang|dicuri)/,
+     /tunggakan|menunggak|disegel|segel|tagihan/]],
+ /* 2 Bukan Gangguan PLN */
+ [2,[/(token|pulsa)\s*(listrik\s*)?(habis|abis|kosong|belum\s*(di\s*)?isi|belum\s*beli)/,
+     /(belum|lupa|tidak|tdk|blm)\s*(isi|mengisi|beli|membeli)\s*(token|pulsa)/,
+     /prabayar\s*(habis|abis|kosong)/,/bukan\s*(wilayah|area|aset|asset)\s*pln/]],
+ /* 12 Sudah Dikerjakan Pihak Lain */
+ [12,[/(sudah|sdh|telah|udah|udh)\s*(di\s*)?(diperbaiki|perbaiki|dinormalkan|normalkan|teratasi|beres|tertangani|ditangani|diselesaikan|dikerjakan|dikerjain|dibenahi|diatasi)/,
+      /(petugas|tim|team|regu)\s*(lain|unit\s*lain|ulp\s*lain|up3\s*lain)/]],
+ /* 7 Laporan Ganda: laporan sama / wilayah sama / padam sudah menyala sendiri (penyebab tidak bisa dipastikan petugas) */
+ [7,[/sudah\s*ada\s*(laporan|lapor|tiket|ticket|ctt|wo|order)/,
+     /(sama|serupa|sejenis)\s*(dengan\s*)?(laporan|lapor|tiket|ticket|ctt|wo|no)/,
+     /laporan\s*(lain|sebelumnya|sebelum|yang\s*sama|serupa|sama)/,
+     /(sdh|sudah|telah|udh)\s*(di\s*)?lapor/,
+     /(wilayah|lokasi|area|daerah|titik)\s*(yang\s*)?sama/,
+     /(nyala|menyala|hidup|pulih|normal)\s*(dengan\s*)?(sendiri|sendirinya)/,
+     /(sudah|sdh|telah|udah)\s*(kembali\s*)?(menyala|nyala|hidup|normal|pulih)/]],
+ /* 5 Instalasi Pelanggan Bermasalah */
+ [5,[/(?=.*\b(mcb|sekring|sikring|elcb|rccb)\b)(?=.*(pelanggan|rumah|persil|bangunan|milik|internal|sendiri))/,
+     /korsleting|korslet|konslet|konsleting/,/(sisi|internal)\s*pelanggan/,
+     /(mcb|sekring|sikring)\s*(turun|trip|jatuh|putus|rusak|anjlok)/]],
+ /* 1 Belum Ada Petugas Yantek / Unit Blankspot */
+ [1,[/(belum|blm|tidak|tdk|tak|kurang|terbatas|habis|kosong)\s*(ada|tersedia|siap|cukup|standby|stand by)?\s*(petugas|regu|personil|personel|tim|team|yantek|crew)/,
+     /(petugas|regu|personil|personel|tim|team|yantek|crew)\s*(belum|blm|tidak|tdk|tak|kurang|terbatas|habis|kosong)\s*(ada|tersedia|siap|cukup|standby|stand by)?/,
+     /(petugas|regu|yantek|crew)\s*(sedang|masih)\s*(menangani|bertugas|di\s*lokasi\s*lain|antri|antre|penuh)/,
+     /antri|antre/]],
+ /* 4 Gangguan Intranet / Sistem APKT */
+ [4,[/(aplikasi|apk|apkt|server|koneksi|internet|vpn|website|web|sistem|system|intranet|apps)\s*(sedang\s*)?(error|eror|down|trouble|gangguan|bermasalah|lemot|lambat|offline|mati|gagal|crash|hang|macet)/,
+     /(error|eror|gagal|trouble)\s*(aplikasi|apk|apkt|server|sistem|system)/,
+     /(tidak|tdk|gak|ga)\s*(bisa|dapat)\s*(login|masuk\s*aplikasi|membuka\s*aplikasi|buka\s*aplikasi)/]],
+ /* 3 Ditindaklanjuti Team Pemeliharaan: petugas sudah memastikan ke lokasi, butuh tim &amp; peralatan yang sesuai */
+ [3,[/(butuh|perlu|membutuhkan|memerlukan|dibutuhkan|diperlukan|minta|meminta|menunggu)\s*(bantuan\s*)?(tim|team|regu|peralatan|alat|material|kendaraan|crane|tangga|har|pemeliharaan|petugas\s*har)/,
+     /(perbaikan|penormalan|pengerjaan|pekerjaan|perbaiki|normalkan)\s*(jaringan|jtr|jtm|sutr|sutm|trafo|gardu|kabel|tiang|penyulang|sr)\b/,
+     /eskalasi|dieskalasi|diteruskan\s*(ke)?\s*(tim|team|har|pemeliharaan|ulp|up3)/,
+     /peralatan\s*(khusus|tidak\s*(memadai|lengkap|ada))/]],
+ /* 6 Kondisi Keamanan / Bencana Alam */
+ [6,[/(pohon|tiang|ranting|dahan)\s*(tumbang|roboh|patah|rubuh|menimpa|jatuh)/,
+     /hujan|angin\s*(kencang|ribut)|badai|petir|cuaca|ombak|gelombang|kebakaran|terbakar|unjuk\s*rasa|\bdemo\b|huru\s*hara|konflik|tawuran|gempa|tsunami|erupsi|abu\s*vulkanik|puting\s*beliung|rawan|(tidak|tdk)\s*(aman|kondusif)/]],
+ /* 10 Pelanggan Tidak Dapat Dihubungi &amp; Alamat Tidak Ditemukan */
+ [10,[/(no|nomor|telp|telepon|tlp|hp|wa|kontak)\s*(pelanggan\s*)?(tidak|tdk|salah|mati|nonaktif|non\s*aktif|belum|di\s*luar|diluar|sibuk)/,
+      /tidak\s*(diangkat|dijawab|merespon|respon|menjawab)/,/(tidak|tdk)\s*(ada)?\s*(jawaban|respon|balasan)/,
+      /(alamat|lokasi)\s*(tidak|tdk|salah|kurang|belum)\s*(jelas|lengkap|sesuai|diketahui)/]],
+ /* 11 Pelanggan Tidak Dilokasi / Menunda Perbaikan */
+ [11,[/rumah\s*(kosong|terkunci|dikunci|ditinggal)/,
+      /(pelanggan|pemilik|penghuni)\s*(sedang\s*)?(keluar|pergi|ke\s*luar|tidak\s*ada|tdk\s*ada|dinas|bepergian|luar\s*kota)/,
+      /(pelanggan|pemilik)\s*(minta|meminta|request)\s*(di\s*)?(tunda|jadwal|besok|nanti|ditunda|dijadwalkan)/,
+      /(tidak|tdk)\s*(bisa|dapat)\s*(masuk|diakses)\s*(rumah|lokasi|area)?/]]
+];
+const BDASAR={paten:'Format Paten',analisa:'Hasil Analisa',kosong:'Tanpa Keterangan',belum:'Belum Bisa Dianalisa'};
+function bcls(raw){const n=nz(raw);if(emptyN(n))return[BTR,'kosong'];if(bkC.has(n))return bkC.get(n);
+  let r=BCN.indexOf(n),d='paten';
   if(r<0){const nc=n.replace(/ /g,'');r=BCN.findIndex(x=>x.replace(/ /g,'')==nc)}
   if(r<0)r=BCAT.findIndex(c=>c[1].some(x=>x.test(n)));
   if(r<0){let best=0;BCN.forEach((x,i)=>{if(i==BTK||i==BTR)return;const sc=1-lev(n,x)/Math.max(n.length,x.length);if(sc>best){best=sc;r=i}});if(best<.75)r=-1}
-  if(r<0)r=BTR;bkC.set(n,r);return r}
+  if(r<0){const s=BSEM.find(x=>x[1].some(re=>re.test(n)));if(s){r=s[0];d='analisa'}}
+  if(r<0){r=BTR;d='belum'}
+  const o=[r,d];bkC.set(n,o);return o}
+const bkat=raw=>bcls(raw)[0];
+/* panel: daftar keterangan di luar format paten beserta hasil analisanya (untuk dicek/dikoreksi) */
+function paintAnalisa(list){
+  const m=new Map();
+  list.forEach(r=>{const a=gA(r),n=nz(a);if(emptyN(n))return;const c=bcls(a);if(c[1]!='analisa'&amp;&amp;c[1]!='belum')return;
+    let e=m.get(n);if(!e){e={t:String(a).trim(),n:0,c};m.set(n,e)}e.n++});
+  const arr=[...m.values()].sort((x,y)=>(x.c[1]=='analisa'?0:1)-(y.c[1]=='analisa'?0:1)||y.n-x.n);
+  const na=arr.filter(x=>x.c[1]=='analisa').length,nb=arr.length-na;
+  const sm=$('#dgas'),bd=$('#dgab');if(!sm||!bd)return;
+  sm.textContent='🔎 Hasil analisa keterangan di luar format paten — '+na+' teks dikelompokkan, '+nb+' belum terbaca';
+  const body=arr.length?arr.slice(0,300).map(x=>`<tr><td class=&quot;k&quot; style=&quot;white-space:normal;min-width:240px&quot;>${esc(x.t)}</td><td style=&quot;text-align:left&quot;>${esc(BCAT[x.c[0]][0])}</td><td style=&quot;text-align:center&quot;>${BDASAR[x.c[1]]}</td><td>${i0(x.n)}</td></tr>`).join('')
+    :'<tr><td class=&quot;em&quot; colspan=&quot;4&quot;>Tidak ada keterangan di luar format paten.</td></tr>';
+  bd.innerHTML='<div class=&quot;tw&quot;><table style=&quot;min-width:680px&quot;><thead><tr><th>Keterangan Asli</th><th>Dikelompokkan ke</th><th>Dasar</th><th>Jumlah</th></tr></thead><tbody>'+body+'</tbody></table></div>'+(arr.length>300?'<p class=&quot;stat&quot;>Menampilkan 300 teks pertama.</p>':'')}
 const btipe=raw=>{const n=nz(raw);if(/com\s*cen|command/.test(n))return'cm';if(/call|\bcc\b|contact/.test(n))return'cc';if(/mobile|\bpm\b/.test(n))return'pm';return'ot'};
 const hasKet=v=>!emptyN(nz(v));
 
@@ -3741,9 +3819,9 @@ function bcalc(rows){
   m.forEach(r=>{const t=btipe(gT(r));c[t]++;if(t!='ot'&amp;&amp;hasKet(gA(r)))c[t+'k']++});
   return c;
 }
-const bdet=rows=>rows.map(r=>{const t=btipe(gT(r));return{...r,TIPE_BATAL:BTL[t],ALASAN_BATAL:gA(r),KATEGORI_BATAL:t=='cm'?BCAT[bkat(gA(r))][0]:'-'}});
-const ticketInfo=r=>{const b=isBt(r),t=btipe(gT(r));return{st:gS(r),tipe:b?BTL[t]:'-',alasan:b?gA(r):'-',kat:b&amp;&amp;t=='cm'?BCAT[bkat(gA(r))][0]:'-'}};
-const ticketRows=list=>list.map(r=>{const x=ticketInfo(r);return{Distribusi:r.NAMA_DISTRIBUSI,Area:r.NAMA_AREA,Posko:r.NAMA_POSKO,'No. Laporan':r.NO_LAPORAN,'Tgl Lapor':r.TGL_LAPOR,'Status APKT':x.st,'Tipe Batal':x.tipe,'Alasan Batal (asli)':x.alasan,'Kategori Batal':x.kat,'File Sumber':r._FILE}});
+const bdet=rows=>rows.map(r=>{const t=btipe(gT(r)),c=t=='cm'?bcls(gA(r)):null;return{...r,TIPE_BATAL:BTL[t],ALASAN_BATAL:gA(r),KATEGORI_BATAL:c?BCAT[c[0]][0]:'-',DASAR_PENGELOMPOKAN:c?BDASAR[c[1]]:'-'}});
+const ticketInfo=r=>{const b=isBt(r),t=btipe(gT(r)),c=b&amp;&amp;t=='cm'?bcls(gA(r)):null;return{st:gS(r),tipe:b?BTL[t]:'-',alasan:b?gA(r):'-',kat:c?BCAT[c[0]][0]:'-',dasar:c?BDASAR[c[1]]:'-'}};
+const ticketRows=list=>list.map(r=>{const x=ticketInfo(r);return{Distribusi:r.NAMA_DISTRIBUSI,Area:r.NAMA_AREA,Posko:r.NAMA_POSKO,'No. Laporan':r.NO_LAPORAN,'Tgl Lapor':r.TGL_LAPOR,'Status APKT':x.st,'Tipe Batal':x.tipe,'Alasan Batal (asli)':x.alasan,'Kategori Batal':x.kat,'Dasar Pengelompokan':x.dasar,'File Sumber':r._FILE}});
 function grp(rows,nk){const m=new Map();rows.forEach(r=>{const k=KEYS.slice(0,nk).map(x=>r[x]),s=k.join('|');if(!m.has(s))m.set(s,{k,rows:[]});m.get(s).rows.push(r)});
   return[...m.values()].sort((a,b)=>a.k.join().localeCompare(b.k.join()))}
 
@@ -3845,6 +3923,7 @@ function render(){
     tot:{l:`TOTAL (${G.length} ${unit})`,cells:[cmR.length,...cnt(cmR)]},allRows:rows,G:true,sc:null,sd:1};
 
   drawT(TB.t1);drawT(TB.t2);
+  paintAnalisa(cmR);
   charts(rows,G);
 }
 
