@@ -3456,6 +3456,11 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 .rb{border:0;background:var(--tint-cy);color:var(--cyt);border-radius:10px;padding:5px 11px;cursor:pointer;font:700 12px Montserrat,&quot;Segoe UI&quot;,system-ui,sans-serif;white-space:nowrap}
 .rb:hover{background:var(--tint-ye)}
 .em{text-align:center;color:var(--mut);padding:24px;font-family:inherit}
+/* tabel Kategori Batal Command Center: header ringkas (teks turun ke baris berikutnya), header &amp; isi rata tengah */
+#t2 table{min-width:0}
+#t2 thead th{white-space:normal;vertical-align:middle;text-align:center;line-height:1.3;padding:10px 8px;min-width:88px}
+#t2 thead th:first-child{min-width:110px}
+#t2 td,#t2 td.k,#t2 tfoot td{text-align:center}
 /* pop up rincian */
 .ov{position:fixed;inset:0;background:var(--scrim);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:calc(var(--abs-top,0px) + 12px) 14px 14px;z-index:50}
 .ov.on{display:flex}
