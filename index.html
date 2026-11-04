@@ -293,7 +293,10 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;po
 @media(max-width:640px){.mc-wide svg{aspect-ratio:2/1}}
 /* halaman WO Batal ditanam layar penuh (iframe srcdoc), header transparan seperti menu Cuti/Absensi */
 main#wob{max-width:none;margin:0;padding:0}
-#wob iframe{position:fixed;left:0;top:0;width:100%;height:100vh;height:100dvh;border:0;z-index:1;background:transparent}
+:root{--wz:.9}@media(max-width:640px){:root{--wz:1}}
+/* halaman WO Batal tampil setara zoom browser 90% (di HP tetap 100%) */
+#wob iframe{position:fixed;left:0;top:0;width:calc(100% / var(--wz));height:calc(100vh / var(--wz));height:calc(100dvh / var(--wz));transform:scale(var(--wz));transform-origin:0 0;border:0;z-index:1;background:transparent}
+.wobld{position:fixed;left:0;right:0;top:50%;text-align:center;font-weight:700;color:var(--mut);z-index:0}
 html.wobmode{overflow:hidden;overscroll-behavior:none}html.wobmode body{min-height:calc(100vh + 600px)}
 html.wobmode header{background:rgba(234,236,248,.5);background:color-mix(in srgb,var(--bg) 50%,transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 html.wobmode[data-theme="dark"] header{background:rgba(26,30,45,.5);background:color-mix(in srgb,var(--bg) 50%,transparent)}
@@ -3681,16 +3684,20 @@ function finish(files,diag){
   sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos} · hanya di Kode G ${x.onlyKG}`+(x.turun?` · tipe diturunkan dari alasan/BATAL_BY ${x.turun}`:'')+(x.area?'':' · area &amp; posko tidak tersedia')}));
   DIAG=diag;fillAll();renderDiag();
 }
+/* tanda perubahan data: render ulang &amp; simpan snapshot hanya bila ada file berubah (hindari freeze tiap sinkron) */
+let SIG='';
+const sigOf=(files,diag)=>files.map(f=>f.id+'|'+f.mt).sort().join(';')+'#'+diag.map(d=>d.f+d.note).join(';');
 async function boot(){   // tampilkan data tersimpan lebih dulu, lalu sinkron di latar
+  const pre=fetchList();pre.catch(()=>{});   // daftar file diminta lebih awal, paralel dengan baca data tersimpan
   try{const sn=await idb.get('snap');
-    if(sn&amp;&amp;sn.length){sn.forEach(x=>{CACHE[x.id]={mt:x.mt,rows:x.rows}});finish(sn.map(x=>({g:x.g,name:x.name,rows:x.rows})),[]);
+    if(sn&amp;&amp;sn.length){sn.forEach(x=>{CACHE[x.id]={mt:x.mt,rows:x.rows}});finish(sn.map(x=>({g:x.g,name:x.name,rows:x.rows})),[]);SIG=sigOf(sn,[]);
       $('#st').className='stat';$('#st').textContent='Data tersimpan · memperbarui…'}}catch(e){}
-  sync();
+  sync(pre);
 }
-async function sync(){
+async function sync(pre){
   if(busy)return;busy=true;const b=$('#sy');b.disabled=true;$('#syi').classList.add('spin');
   try{
-    const L=await fetchList(),diag=[],jobs=[];
+    const L=(pre&amp;&amp;typeof pre.then=='function')?await pre:await fetchList(),diag=[],jobs=[];
     for(const g of ['p2b','cc'])for(const fl of (L[g]||[])){
       if(fl.mime&amp;&amp;fl.mime!==GS){diag.push({f:fl.name,g,per:0,n:0,note:'bukan Google Sheets: tunggu konversi otomatis atau jalankan ulang Apps Script'});continue}
       jobs.push((async()=>{
@@ -3703,8 +3710,8 @@ async function sync(){
       })());
     }
     const files=(await Promise.all(jobs)).filter(Boolean);   // semua file diunduh bersamaan
-    finish(files,diag);
-    idb.set('snap',files);
+    const sg=sigOf(files,diag);
+    if(sg!==SIG){SIG=sg;finish(files,diag);setTimeout(()=>idb.set('snap',files),800)}   // data tidak berubah: tidak dirender ulang
     $('#st').className='stat';$('#st').textContent='Diperbarui '+new Date().toLocaleTimeString('id-ID');
     const perlu=diag.filter(d=>d.g!='sum'&amp;&amp;!/^dibaca/.test(d.note)).length;
     if(perlu)toast(perlu+' file perlu perhatian, lihat Status data',true);
@@ -4819,22 +4826,25 @@ if(location.hash.slice(1)=='cuti')window.cutEnter();
    Tabel, filter, fitur, fungsi dan sumber data WO Batal tidak diubah; tampilan memakai tema Dashboard
    dan tema terang/gelap mengikuti tombol tema Dashboard. */
 (function(){
-const $=id=>document.getElementById(id),wob=$('wob'),root=document.documentElement;let fr=null,tm=[];
+const $=id=>document.getElementById(id),wob=$('wob'),root=document.documentElement;let fr=null,tm=[],bld=false;
 const FIT='html,body{overscroll-behavior:none}';
 function theme(){if(!fr)return;try{const t=root.getAttribute('data-theme')==='dark'?'dark':'light',w=fr.contentWindow;
  if(w&&typeof w.__setTheme==='function')w.__setTheme(t);else if(fr.contentDocument&&fr.contentDocument.documentElement)fr.contentDocument.documentElement.setAttribute('data-theme',t)}catch(e){}}
 function place(){if(!fr||wob.hidden)return;let d;try{d=fr.contentDocument}catch(x){return}if(!d||!d.documentElement)return;
  if(!d.getElementById('wobFit')&&d.head){const st=d.createElement('style');st.id='wobFit';st.textContent=FIT;d.head.appendChild(st)}
- const hb=document.querySelector('header').getBoundingClientRect().bottom;
- d.documentElement.style.setProperty('--hb',Math.max(0,Math.round(hb))+'px');d.documentElement.style.setProperty('--abs-top',Math.max(0,Math.round(hb))+'px');theme()}
+ const hb=document.querySelector('header').getBoundingClientRect().bottom,z=matchMedia('(min-width:641px)').matches?.9:1,hz=Math.max(0,Math.round(hb/z))+'px';
+ d.documentElement.style.setProperty('--hb',hz);d.documentElement.style.setProperty('--abs-top',hz);theme()}
 function settle(){tm.forEach(clearTimeout);tm=[0,60,200,500,1000].map(t=>setTimeout(()=>{if(!wob.hidden){window.scrollTo(0,1e5);place()}},t))}
 function sync(){const on=location.hash.slice(1)=='wobatal';
  if(!on&&(!wob.hidden||root.classList.contains('wobmode'))){wob.hidden=true;root.classList.remove('wobmode');window.scrollTo(0,0)}}
 window.wobEnter=function(){
  cur=null;$('home').hidden=true;$('app').hidden=true;$('cb').hidden=true;$('md').hidden=true;$('abs').hidden=true;$('cut').hidden=true;wob.hidden=false;root.classList.add('wobmode');
  $('ht').textContent='WO Batal';$('hp').textContent='';document.title='WO Batal';
- if(!fr){fr=document.createElement('iframe');fr.title='WO Batal';fr.setAttribute('allow','clipboard-write; fullscreen');
-  fr.addEventListener('load',place);fr.srcdoc=$('wobSrc').dataset.html.replace('<head>','<head>'+(window.CCGUARD||''));$('wobBox').appendChild(fr)}
+ /* halaman dimuat setelah animasi transisi selesai agar animasi tidak tersendat / freeze */
+ if(!fr&&!bld){bld=true;const box=$('wobBox'),ld=document.createElement('div');ld.className='wobld';ld.textContent='Memuat WO Batal…';box.appendChild(ld);let n=0;
+  const mk=()=>{const f=document.createElement('iframe');f.title='WO Batal';f.setAttribute('allow','clipboard-write; fullscreen');
+   f.addEventListener('load',()=>{ld.remove();place()});f.srcdoc=$('wobSrc').dataset.html.replace('<head>','<head>'+(window.CCGUARD||''));fr=f;box.appendChild(f);bld=false};
+  const w=()=>{if(document.querySelector('.mph')&&n++<40)setTimeout(w,60);else setTimeout(mk,60)};w()}
  sync();settle()};
 new MutationObserver(theme).observe(root,{attributes:true,attributeFilter:['data-theme']});
 addEventListener('hashchange',sync);addEventListener('resize',()=>{if(!wob.hidden)settle()});
