@@ -3596,7 +3596,7 @@ function csv(t){const r=[];let w=[],c='',q=0;for(let i=0;i<t.length;i++){const x
   if(c||w.length){w.push(c);r.push(w)}return r}
 const NEED=new Set(['NOLAPORAN','NAMADISTRIBUSI','NAMAAREA','NAMAPOSKO','TGLLAPOR','BLTH','APKTSTATUS','STATUSAPKT','TIPEBATAL','JENISBATAL','TIPEPEMBATALAN','ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL','BATALBY']);
 const normH=x=>String(x).trim().toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
-const isNeed=h=>{const n=h.replace(/[^A-Z0-9]/g,'');return NEED.has(n)||(n.includes('BATAL')&amp;&amp;(n.includes('TIPE')||n.includes('JENIS'))&amp;&amp;!n.includes('ALASAN')&amp;&amp;!n.includes('KET'))};
+const isNeed=h=>{const n=h.replace(/[^A-Z0-9]/g,'');return NEED.has(n)||n.includes('BATAL')||n.includes('ALASAN')||n.includes('PEMBATALAN')||n.includes('KETERANGAN')||/^KET\d*$/.test(n)||n.includes('STATUS')};
 const colL=i=>{let s='';for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
 async function gv(id,q){
   const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${q?'&amp;tq='+encodeURIComponent(q):''}&amp;_=${Date.now()}`,{cache:'no-store'});
@@ -3632,14 +3632,20 @@ let DIAG=[];
    4. Kolom status/tipe/alasan batal dicari per baris (bukan per file) setelah penggabungan,
       jadi tidak tergantung baris pertama di file. */
 const noKey=r=>{const v=String(r.NO_LAPORAN==null?'':r.NO_LAPORAN).trim().replace(/^'+/,'').replace(/\.0+$/,'').replace(/\s+/g,'').toUpperCase();return v};
-function pickCol(r,al,fz){
+/* nama kolom persis dicari dulu; bila tidak ada baru dicocokkan dengan pola (fz) agar nama kolom yang beda tetap terbaca */
+function pickKey(r,al,fz){
   for(const k in r){if(k[0]=='_')continue;const n=k.replace(/[^A-Z0-9]/g,'');
-    if(al.includes(n)||(fz&amp;&amp;fz(n))){const v=r[k];if(v!==''&amp;&amp;v!=null)return v}}
+    if(al.includes(n)){const v=r[k];if(v!==''&amp;&amp;v!=null)return k}}
+  if(fz)for(const k in r){if(k[0]=='_')continue;const n=k.replace(/[^A-Z0-9]/g,'');
+    if(fz(n)){const v=r[k];if(v!==''&amp;&amp;v!=null)return k}}
   return '';
 }
-const A_S=['APKTSTATUS','STATUSAPKT'],A_T=['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN'],A_A=['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL'];
+function pickCol(r,al,fz){const k=pickKey(r,al,fz);return k?r[k]:''}
+const A_S=['APKTSTATUS','STATUSAPKT','STATUSLAPORAN','STATUSWO','STATUS'],A_T=['TIPEBATAL','JENISBATAL','TIPEPEMBATALAN'],A_A=['ALASANBATAL','ALASANPEMBATALAN','KETERANGANBATAL','KETBATAL','ALASAN','KETERANGANPEMBATALAN','KETPEMBATALAN','ALASANDIBATALKAN','KETERANGANDIBATALKAN'];
+const fzS=n=>n.includes('STATUS')&amp;&amp;(n.includes('APKT')||n.includes('LAPOR')||n.includes('WO'));
+const fzA=n=>(n.includes('ALASAN')||(n.includes('KET')&amp;&amp;(n.includes('BATAL')||n.includes('PEMBATALAN'))))&amp;&amp;!n.includes('TIPE')&amp;&amp;!n.includes('JENIS')&amp;&amp;!n.includes('TGL')&amp;&amp;!n.includes('TANGGAL')&amp;&amp;!n.includes('JAM');
 const fzT=n=>n.includes('BATAL')&amp;&amp;(n.includes('TIPE')||n.includes('JENIS'))&amp;&amp;!n.includes('ALASAN')&amp;&amp;!n.includes('KET');
-function canon(r){r._S=pickCol(r,A_S);r._T=pickCol(r,A_T,fzT);r._A=pickCol(r,A_A);
+function canon(r){r._S=pickCol(r,A_S,fzS);r._T=pickCol(r,A_T,fzT);r._A=pickCol(r,A_A,fzA)||(/batal/i.test(r._S)?pickCol(r,['KETERANGAN','KET']):'');
   // skema tanpa kolom TIPE_BATAL (mis. Kode G Oktober): batal dengan alasan / BATAL_BY terisi = dibatalkan Command Center
   if(!r._T&amp;&amp;/batal/i.test(r._S)&amp;&amp;(r._A||pickCol(r,['BATALBY']))){r._T='Batal by Comcen';r._TD=1}}
 function dateNum(v){const s=String(v||'');let m=s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
@@ -3666,7 +3672,10 @@ function assemble(files){
   for(const k in KM)delete KM[k];
   const by=new Map();all.forEach(m=>{if(!by.has(m._PER))by.set(m._PER,[]);by.get(m._PER).push(m)});
   const sum=[...by.keys()].sort((a,b)=>(a||1e9)-(b||1e9)).map(p=>{const rows=by.get(p),bl=rows.filter(isBt),c=cnt[p]||{cc:0,p2b:0};
-    return{p,cc:c.cc,kg:c.p2b,uniq:rows.length,rows,bl:bl.length,kos:bl.filter(r=>!gT(r)).length,turun:bl.filter(r=>r._TD).length,area:rows.filter(r=>r.NAMA_AREA).length,onlyKG:rows.filter(r=>r._G.p2b&amp;&amp;!r._G.cc).length}});
+    const cmr=bl.filter(r=>btipe(gT(r))=='cm'),akr=cmr.filter(r=>hasKet(gA(r))),cn=new Set(),hs=new Set();
+    akr.slice(0,300).forEach(r=>{const k=pickKey(r,A_A,fzA)||(pickKey(r,['KETERANGAN','KET'])||'');if(k)cn.add(k)});
+    bl.slice(0,60).forEach(r=>Object.keys(r).forEach(k=>{if(k[0]!='_'&amp;&amp;/BATAL|ALASAN|KET|STATUS/i.test(k))hs.add(k)}));
+    return{p,cm:cmr.length,ak:akr.length,ac:[...cn].join(', '),hint:[...hs].slice(0,12).join(', '),cc:c.cc,kg:c.p2b,uniq:rows.length,rows,bl:bl.length,kos:bl.filter(r=>!gT(r)).length,turun:bl.filter(r=>r._TD).length,area:rows.filter(r=>r.NAMA_AREA).length,onlyKG:rows.filter(r=>r._G.p2b&amp;&amp;!r._G.cc).length}});
   return{all,files,sum};
 }
 function renderDiag(){
@@ -3681,7 +3690,7 @@ function finish(files,diag){
   const{all,files:fs,sum}=assemble(files);
   D.p2b=all;D.cc=[];
   fs.forEach(f=>{const ms=[...(f.months||[])].filter(Boolean).sort().map(plbl).join(', ');diag.push({f:f.name,g:f.g,per:f.per,n:f.rows.length,note:!f.rows.length?'kosong':(ms?'dibaca · bulan: '+ms:'dibaca · bulan tidak terdeteksi (cek nama file berawalan MM, kolom BLTH atau TGL_LAPOR)')})});
-  sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos} · hanya di Kode G ${x.onlyKG}`+(x.turun?` · tipe diturunkan dari alasan/BATAL_BY ${x.turun}`:'')+(x.area?'':' · area &amp; posko tidak tersedia')}));
+  sum.forEach(x=>diag.push({f:'Bulan '+plbl(x.p),g:'sum',per:x.p,n:x.uniq,note:`baris COMCEN ${x.cc} · Kode G ${x.kg} · laporan unik ${x.uniq} · batal ${x.bl} · tipe kosong ${x.kos} · hanya di Kode G ${x.onlyKG}`+(x.turun?` · tipe diturunkan dari alasan/BATAL_BY ${x.turun}`:'')+(x.area?'':' · area &amp; posko tidak tersedia')+` · Batal ComCen ${x.cm}, alasan terbaca ${x.ak}`+(x.ac?` (kolom: ${x.ac})`:'')+(x.cm&amp;&amp;!x.ak?` · KOLOM ALASAN TIDAK DITEMUKAN, kolom terkait: ${x.hint||'-'}`:'')}));
   DIAG=diag;fillAll();renderDiag();
 }
 /* tanda perubahan data: render ulang &amp; simpan snapshot hanya bila ada file berubah (hindari freeze tiap sinkron) */
@@ -3689,7 +3698,7 @@ let SIG='';
 const sigOf=(files,diag)=>files.map(f=>f.id+'|'+f.mt).sort().join(';')+'#'+diag.map(d=>d.f+d.note).join(';');
 async function boot(){   // tampilkan data tersimpan lebih dulu, lalu sinkron di latar
   const pre=fetchList();pre.catch(()=>{});   // daftar file diminta lebih awal, paralel dengan baca data tersimpan
-  try{const sn=await idb.get('snap');
+  try{const sn=await idb.get('snap2');
     if(sn&amp;&amp;sn.length){sn.forEach(x=>{CACHE[x.id]={mt:x.mt,rows:x.rows}});finish(sn.map(x=>({g:x.g,name:x.name,rows:x.rows})),[]);SIG=sigOf(sn,[]);
       $('#st').className='stat';$('#st').textContent='Data tersimpan · memperbarui…'}}catch(e){}
   sync(pre);
@@ -3711,7 +3720,7 @@ async function sync(pre){
     }
     const files=(await Promise.all(jobs)).filter(Boolean);   // semua file diunduh bersamaan
     const sg=sigOf(files,diag);
-    if(sg!==SIG){SIG=sg;finish(files,diag);setTimeout(()=>idb.set('snap',files),800)}   // data tidak berubah: tidak dirender ulang
+    if(sg!==SIG){SIG=sg;finish(files,diag);setTimeout(()=>idb.set('snap2',files),800)}   // data tidak berubah: tidak dirender ulang
     $('#st').className='stat';$('#st').textContent='Diperbarui '+new Date().toLocaleTimeString('id-ID');
     const perlu=diag.filter(d=>d.g!='sum'&amp;&amp;!/^dibaca/.test(d.note)).length;
     if(perlu)toast(perlu+' file perlu perhatian, lihat Status data',true);
