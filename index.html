@@ -445,6 +445,7 @@ html{scrollbar-gutter:stable}
 </main>
 <main id="app" hidden>
 <div class="card"><div class="row">
+<label>Tahun<select id="fY"></select></label>
 <label>Bulan<select id="fM"></select></label>
 <label>Area (UP3)<select id="fA"></select></label>
 <label>Unit<select id="fU"></select></label>
@@ -464,6 +465,7 @@ html{scrollbar-gutter:stable}
 </main>
 <main id="cb" hidden>
 <div class="card"><div class="row">
+<label>Tahun<select id="cbY"></select></label>
 <label>Bulan<select id="cbM"></select></label>
 <label>Area (UP3)<select id="cbA"></select></label>
 <label>Posko (ULP)<select id="cbU"></select></label>
@@ -3668,6 +3670,7 @@ th.rd,td.rd{color:var(--rd)!important;font-weight:800}
 <div class=&quot;wrap&quot;>
   <section class=&quot;card fbar&quot; id=&quot;fbar&quot;>
     <div class=&quot;row&quot;>
+      <div class=&quot;fg&quot;><label for=&quot;fy&quot;>Tahun</label><select id=&quot;fy&quot;></select></div>
       <div class=&quot;fg&quot;><label for=&quot;fb&quot;>Bulan</label><select id=&quot;fb&quot;></select></div>
       <div class=&quot;fg&quot;><label for=&quot;fd&quot;>Distribusi</label><select id=&quot;fd&quot;></select></div>
       <div class=&quot;fg&quot;><label for=&quot;fa&quot;>Area</label><select id=&quot;fa&quot;></select></div>
@@ -4114,10 +4117,10 @@ function periodOf(rows,name){
 const plbl=p=>p?BLN[p%100-1]+' '+Math.floor(p/100):'Tidak diketahui';
 
 /* ===== FILTER BERTINGKAT: Bulan → Distribusi → Area → Posko ===== */
-const mrows=()=>{const b=$('#fb').value;return D.p2b.filter(r=>!b||String(r._PER)==b)};
+const mrows=()=>{const b=$('#fb').value,y=$('#fy').value;return D.p2b.filter(r=>(!b||String(r._PER)==b)&amp;&amp;(!y||Math.floor(r._PER/100)==y))};
 function opts(id,vals,ph){const e=$(id),v=e.value;e.innerHTML=`<option value=&quot;&quot;>${ph}</option>`+[...new Set(vals.filter(Boolean))].sort().map(x=>`<option>${esc(x)}</option>`).join('');if(vals.includes(v))e.value=v}
-function fillMonth(){const ps=[...new Set(D.p2b.map(r=>r._PER))].sort((a,b)=>(a||1e9)-(b||1e9)),v=$('#fb').value;
-  $('#fb').innerHTML='<option value=&quot;&quot;>Semua Bulan</option>'+ps.map(p=>`<option value=&quot;${p}&quot;>${plbl(p)}</option>`).join('');if(ps.map(String).includes(v))$('#fb').value=v}
+function fillMonth(){const yv=[...new Set(D.p2b.map(r=>r._PER).filter(Boolean).map(p=>Math.floor(p/100)))].sort(),y0=$('#fy').value;$('#fy').innerHTML='<option value=&quot;&quot;>Semua Tahun</option>'+yv.map(y=>`<option>${y}</option>`).join('');if(yv.map(String).includes(y0))$('#fy').value=y0;const yy=$('#fy').value,ps=[...new Set(D.p2b.map(r=>r._PER))].filter(p=>!yy||Math.floor(p/100)==yy).sort((a,b)=>!a-!b||(a%100)-(b%100)||a-b),v=$('#fb').value;
+  $('#fb').innerHTML='<option value=&quot;&quot;>Semua Bulan</option>'+ps.map(p=>`<option value=&quot;${p}&quot;>${p?BLN[p%100-1]+(ps.filter(q=>q%100==p%100).length>1?' '+Math.floor(p/100):''):'Tidak diketahui'}</option>`).join('');if(ps.map(String).includes(v))$('#fb').value=v}
 function fillDist(){opts('#fd',mrows().map(r=>r.NAMA_DISTRIBUSI),'Semua Distribusi')}
 function fillArea(){const d=$('#fd').value;opts('#fa',mrows().filter(r=>!d||r.NAMA_DISTRIBUSI==d).map(r=>r.NAMA_AREA),'Semua Area')}
 function fillPos(){const d=$('#fd').value,a=$('#fa').value;opts('#fp',mrows().filter(r=>(!d||r.NAMA_DISTRIBUSI==d)&amp;&amp;(!a||r.NAMA_AREA==a)).map(r=>r.NAMA_POSKO),'Semua Posko')}
@@ -4285,7 +4288,7 @@ function exportT(id,mode){
 }
 
 /* ===== EVENT ===== */
-$('#fb').onchange=fillAll;
+$('#fb').onchange=fillAll;$('#fy').onchange=fillAll;
 $('#fd').onchange=()=>{fillArea();fillPos();readF();render()};
 $('#fa').onchange=()=>{const a=$('#fa').value,d=$('#fd').value;
   if(a){const r=mrows().find(x=>x.NAMA_AREA==a&amp;&amp;(!d||x.NAMA_DISTRIBUSI==d));if(r)$('#fd').value=r.NAMA_DISTRIBUSI}
@@ -4440,9 +4443,9 @@ async function p2fetch(id){
  const A=await p2gv(id,'');return{A,bs:(A[0]||[]).length>70?70:-1,bsn:(A[0]||[])[70]||''}}
 async function p2run(){
  const w=[];let L=null;
- try{L=await p2list();P2L=L;p2put('list',L)}catch(x){L=P2L||await p2get('list');if(!L)throw Error('Daftar file Drive tidak terbaca: '+x.message);w.push('Daftar file Drive gagal dibaca ('+x.message+'), memakai daftar terakhir')}
+ try{L=await p2list();P2L=L;p2put('list',L)}catch(x){L=P2L||await p2get('list');if(!L)throw Error('Daftar file Drive tidak terbaca: '+x.message);w.push({m:0,t:'Daftar file Drive gagal dibaca ('+x.message+'), memakai daftar terakhir'})}
  const skip=L.filter(f=>!fmm(f.name)).map(f=>f.name);L=L.filter(f=>fmm(f.name)).sort((x,y)=>fmm(x.name)-fmm(y.name)||x.name.localeCompare(y.name));
- if(skip.length)w.push('File dilewati karena nama tidak diawali bulan 01-12: '+skip.slice(0,3).join(', ')+(skip.length>3?' dst.':''));
+ if(skip.length)w.push({m:-1,t:'File dilewati karena nama tidak diawali bulan 01-12: '+skip.slice(0,3).join(', ')+(skip.length>3?' dst.':'')});
  if(!L.length)throw Error('Tidak ada file Google Sheet berawalan bulan (01-12) di folder Drive');
  const nowM=new Date(Date.now()+288e5).getUTCMonth()+1;
  const T=await Promise.all(L.map(async f=>{const mm=fmm(f.name);
@@ -4458,23 +4461,23 @@ async function p2cached(){const L=P2L||await p2get('list');if(!L)return null;con
 async function loadP2(ex,fl,calc,byName){
  const fast=P2FAST;P2FAST=false;
  const S=fast?await p2cached():await p2b();if(!S)return null;
- const seen=new Set(),rows=[],bad=[],w=S.w.slice();let nf=0,bsw=0;const noBy=[];
+ const seen=new Set(),rows=[],w=S.w.slice();let nf=0;
  S.T.forEach(t=>{
-  if(!t.A){w.push(t.f.name+': '+t.err);return}
+  if(!t.A){w.push({m:t.mm,t:t.f.name+': '+t.err});return}
   let ha;try{ha=hdr(t.A,h=>Object.assign({no:col(h,['nolaporan'],'NO_LAPORAN'),ar:col(h,['namaarea'],'NAMA_AREA'),un:col(h,['namaposko'],'NAMA_POSKO'),tl:col(h,['tgllapor'],'TGL_LAPOR'),ip:col(h,['idpelanggan','idpel'],'ID_PELANGGAN')},ex(h)))}
-  catch(x){w.push(t.f.name+': '+String(x.message).slice(0,200));return}
-  nf++;const c=ha.c;if(c.by===-1&&byName=='MARKING_BY'&&t.bs!=null&&t.bs>=0){c.by=t.bs;if(!bsw){bsw=1;w.push('Kolom MARKING_BY dibaca dari kolom BS (teks header: "'+(t.bsn||'kosong')+'")')}}
-  if(c.by===-1)noBy.push(t.f.name);
+  catch(x){w.push({m:t.mm,t:t.f.name+': '+String(x.message).slice(0,200)});return}
+  nf++;const c=ha.c,bad=[];
+  if(c.by===-1)w.push({m:t.mm,t:'Kolom '+byName+' tidak ditemukan di file '+t.f.name+', rekap per petugas bulan ini kosong'});
   let nd=0,nm=0;t.A.slice(ha.i+1).forEach(x=>{const m=String(x[c.tl]||'').trim().match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.]\d{2,4}/);if(m){if(+m[1]>12)nd++;else if(+m[2]>12)nm++}});
   PDMODE=nm>nd?'mdy':'dmy';
   t.A.slice(ha.i+1).forEach(x=>{if(!fl(x,c))return;const no=String(x[c.no]||'').trim();if(!no)return;
    const tt=pd(x[c.tl]);if(isNaN(tt)){bad.push(no+' ("'+String(x[c.tl]||'').trim()+'")');return}
    if(seen.has(no))return;seen.add(no);
-   const r={no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t:tt};calc(x,c,r);rows.push(r)})});
- if(!nf)throw Error('Tidak ada file yang bisa dibaca. '+w.join(' | '));
+   const r={no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t:tt};calc(x,c,r);rows.push(r)});
+  if(bad.length)w.push({m:t.mm,t:bad.length+' baris dilewati karena TGL_LAPOR tidak terbaca di file '+t.f.name+', contoh: '+bad.slice(0,3).join(', ')})});
+ PDMODE='dmy';
+ if(!nf)throw Error('Tidak ada file yang bisa dibaca. '+w.map(x=>x.t).join(' | '));
  rows.sort((a,b)=>a.t-b.t);
- PDMODE='dmy';if(noBy.length)w.push('Kolom '+byName+' tidak ditemukan di file: '+noBy.slice(0,4).join(', ')+(noBy.length>4?' dst.':'')+' (rekap per petugas untuk file itu kosong)');
- if(bad.length)w.push(bad.length+' baris dilewati karena TGL_LAPOR tidak terbaca, contoh: '+bad.slice(0,3).join(', '));
  return{rows,msg:rows.length+' laporan manual, '+rows.filter(r=>r.m).length+' terhitung, '+nf+' file bulanan'+(fast?' (tersimpan)':''),w}}
 const colo=(h,al)=>{const H=h.map(nz);for(const a of al){const i=H.indexOf(a);if(i>=0)return i}for(const a of al){const i=H.findIndex(x=>x.includes(a));if(i>=0)return i}return -1};
 const byv=v=>{const t=String(v==null?'':v).replace(/\s+/g,' ').trim();return t&&t!='-'?lb(t):''};
@@ -4490,18 +4493,24 @@ function calcP(x,c,r){r.by=byv(x[c.by]);r.pg=pdn(x[c.pg]);r.ro=pdn(x[c.ro]);
  if(r.pg==null)return fin(r,null,0,'');
  if(r.ro==null)return fin(r,1,r.pg-r.t,'Penugasan Regu − Lapor');
  fin(r,1,Math.abs(r.ro-r.pg),'Return Order − Penugasan Regu')}
-async function sync(){if(busy||!cur)return;const k=cur;busy=true;$('err').textContent='';$('st').textContent='Menyinkronkan...';
+let WARN=null;
+/* peringatan per bulan: m>0 hanya tampil di filter bulan itu / Semua bulan; m=-1 hanya Semua bulan; m=0 selalu */
+function showWarn(){if(!WARN)return;const v=$('fM').value,sel=v?+v.slice(5):0,L=WARN.filter(x=>x.m==0||!sel||x.m==sel);
+ $('err').textContent=L.length?'Perhatian:\n'+L.map(x=>(x.m>0?MN[x.m-1]+': ':'')+x.t).join('\n'):''}
+async function sync(){if(busy||!cur)return;const k=cur;busy=true;$('err').textContent='';WARN=null;$('st').textContent='Menyinkronkan...';
  try{if(!DATA[k]&&MENUS[k].fast){try{const q=await MENUS[k].fast();if(q&&cur==k&&!DATA[k]){R=q.rows;fill();render();$('st').textContent='Menampilkan data tersimpan, menyinkronkan...'}}catch(x){}}
   const o=await MENUS[k].load();DATA[k]=o.rows;if(cur!=k)return;R=o.rows;fill();render();
   $('st').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+o.msg+')';
-  if(o.w.length)$('err').textContent='Perhatian:\n'+o.w.join('\n')
+  WARN=o.w.map(x=>typeof x=='string'?{m:0,t:x}:x);showWarn()
  }catch(x){if(cur==k){$('err').textContent=x.message;$('st').textContent='Sinkron gagal'}}finally{busy=false;if(cur&&cur!=k)sync()}}
 const mk=r=>new Date(r.t*1000).toISOString().slice(0,7);
 function opts(s,vals,all,lab){const cur=s.value,h='<option value="">'+all+'</option>'+vals.map(v=>`<option value="${e(v)}">${e(lab?lab(v):v)}</option>`).join('');if(s.dataset.h!==h){s.innerHTML=h;s.dataset.h=h}s.value=vals.includes(cur)?cur:''}
-function fill(){opts($('fM'),[...new Set(R.map(mk))].sort().reverse(),'Semua bulan',v=>MN[+v.slice(5)-1]+' '+v.slice(0,4));
+const msort=a=>a.sort((x,y)=>(+x.slice(5))-(+y.slice(5))||x.localeCompare(y));
+const mlab=a=>{const c={};a.forEach(v=>{c[v.slice(5)]=(c[v.slice(5)]||0)+1});return v=>MN[+v.slice(5)-1]+(c[v.slice(5)]>1?' '+v.slice(0,4):'')};
+function fill(){opts($('fY'),[...new Set(R.map(r=>mk(r).slice(0,4)))].sort(),'Semua tahun');const yy=$('fY').value,mv=msort([...new Set(R.filter(r=>!yy||mk(r).slice(0,4)==yy).map(mk))]);opts($('fM'),mv,'Semua bulan',mlab(mv));
  opts($('fA'),[...new Set(R.map(r=>r.area))].sort(),'Semua area');fillU()}
 function fillU(){const a=$('fA').value;opts($('fU'),[...new Set(R.filter(r=>!a||r.area==a).map(r=>r.unit))].sort(),'Semua unit')}
-const filt=()=>{const m=$('fM').value,a=$('fA').value,u=$('fU').value;return R.filter(r=>(!m||mk(r)==m)&&(!a||r.area==a)&&(!u||r.unit==u))};
+const filt=()=>{const y=$('fY').value,m=$('fM').value,a=$('fA').value,u=$('fU').value;return R.filter(r=>(!y||mk(r).slice(0,4)==y)&&(!m||mk(r)==m)&&(!a||r.area==a)&&(!u||r.unit==u))};
 const agg=()=>({n:0,s:0,mn:1e12,mx:-1}),mg=(t,o)=>{t.n+=o.n;t.s+=o.s;t.mn=Math.min(t.mn,o.mn);t.mx=Math.max(t.mx,o.mx)};
 function tree(rows){const A={};rows.filter(r=>r.m).forEach(r=>{const a=A[r.area]=A[r.area]||{name:r.area,t:agg(),U:{}},u=a.U[r.unit]=a.U[r.unit]||agg();
  [a.t,u].forEach(o=>mg(o,{n:1,s:r.pt,mn:r.sec,mx:r.sec}))});
@@ -4527,7 +4536,7 @@ function recHtml(rows){const L=flat(rows),fa=$('fA').value;
  return ctl+'<table><thead><tr>'+RH.map((x,i)=>`<th class="${i>1?'n':''}">${x}</th>`).join('')+'</tr></thead><tbody>'+
   L.map(c=>{const h=c.i!==undefined,nm=h?(open.has(TR[c.i])?'▾ ':'▸ ')+e(c[0]):e(c[0]);
    return `<tr class="${c.tot?'tot':c.u?'u':'sub'}"${h?` data-i="${c.i}"`:''}><td>${nm}</td><td>${e(c[1])}</td><td class="n">${c[2]}</td><td class="n">${n2(c[3])}</td><td class="n">${c[4]}</td><td class="n">${c[5]}</td></tr>`}).join('')+'</tbody></table>'}
-function render(){const rows=filt(),ok=rows.filter(r=>r.m),by=f=>[...ok].sort((a,b)=>f*(a.sec-b.sec)),av=ok.length?ok.reduce((s,r)=>s+r.pt,0)/ok.length:0;
+function render(){showWarn();const rows=filt(),ok=rows.filter(r=>r.m),by=f=>[...ok].sort((a,b)=>f*(a.sec-b.sec)),av=ok.length?ok.reduce((s,r)=>s+r.pt,0)/ok.length:0;
  KP=[{l:'Total No Laporan',v:rows.length,d:()=>det(rows)},{l:CG.ok,v:ok.length,d:()=>det(ok)},{l:CG.bad,v:rows.length-ok.length,d:()=>det(rows.filter(r=>!r.m))},
   {l:'Rata-rata (menit)',v:ok.length?n2(av):'-',d:()=>det(ok,ok.length?'Dasar perhitungan rata-rata: '+ok.length+' laporan terhitung, rata-rata '+n2(av)+' menit.':'')},{l:'Tercepat',v:ok.length?SDv(by(1)[0].sec):'-',d:()=>det(one(rows,1),'Laporan dengan durasi tercepat.')},{l:'Terlama',v:ok.length?SDv(by(-1)[0].sec):'-',d:()=>det(one(rows,-1),'Laporan dengan durasi terlama.')}];
  petRender(rows);$('kpi').innerHTML=KP.map((k,i)=>`<button data-k="${i}" title="Klik untuk melihat detail data"><b>${k.v}</b>${k.l}</button>`).join('');$('more').innerHTML='';chart(rows);
@@ -4539,7 +4548,7 @@ function render(){const rows=filt(),ok=rows.filter(r=>r.m),by=f=>[...ok].sort((a
 const NOBY='(Tanpa petugas)';let PG=[],PV=null;
 const PH=()=>['User Comcen','Area','Total No Lap','Total '+CG.by,'Rata-rata (Menit)','Tercepat (jj:mm:ss)','Terlama (jj:mm:ss)'];
 function petStat(G){const ok=G.filter(r=>r.m);if(!ok.length)return{n:G.length,k:0,av:'',lo:'',hi:''};
- const sc=ok.map(r=>r.sec);return{n:G.length,k:ok.length,av:+(ok.reduce((a,r)=>a+r.pt,0)/ok.length).toFixed(2),lo:hms(Math.min(...sc)),hi:hms(Math.max(...sc))}}
+ const sc=ok.map(r=>r.sec);return{n:G.length,k:ok.length,av:+(ok.reduce((a,r)=>a+r.pt,0)/ok.length).toFixed(2),lo:hms(sc.reduce((a,b)=>b<a?b:a,Infinity)),hi:hms(sc.reduce((a,b)=>b>a?b:a,-Infinity))}}
 function petRender(rows){const C=$('pC');if(!CG||!CG.by){C.hidden=true;return}C.hidden=false;
  $('pT').textContent='Rekap Manual '+CG.by+' per Petugas';
  const M={};rows.forEach(r=>{const u=r.by||NOBY;(M[u]=M[u]||{u,G:[]}).G.push(r)});
@@ -4592,7 +4601,7 @@ $('chC').onclick=ev=>{const f=ev.target.closest('#chF');if(f){const g=CI.find(x=
  const b=ev.target.closest('[data-c]');if(!b)return;const g=CI[+b.dataset.c];CH.sel=CH.sel==g.k?null:g.k;chart(CF||filt())};
 function dl(h,a,n,sn,x){const ws=XLSX.utils.aoa_to_sheet([h,...a]);ws['!cols']=h.map((x,i)=>({wch:Math.min(34,Math.max(12,x.length,...a.slice(0,60).map(r=>String(r[i]).length)))}));
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,sn||'Rekap');(x||[]).forEach(z=>{const w=XLSX.utils.aoa_to_sheet([z.h,...z.a]);w['!cols']=z.h.map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,w,z.n)});XLSX.writeFile(wb,n+'.xlsx')}
-const sfx=()=>{const f=[$('fM').value,$('fA').value,$('fU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
+const sfx=()=>{const f=[$('fY').value,$('fM').value,$('fA').value,$('fU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
 function xl(k){const rows=filt();if(!rows.length)return alert('Tidak ada data untuk diunduh.');
  k=='R'?dl(RH,flat(rows),CG.pre+'_Rekap'+sfx()):dl(DH,rows.map(detRow),CG.pre+'_Detail'+sfx())}
 function popD(l,d){PP={h:d.h,a:d.a,f:d.f,n:CG.pre+'_'+l.replace(/[^\w]+/g,'-').slice(0,90)+sfx(),sn:'Tampilan'};
@@ -4605,7 +4614,7 @@ function popD(l,d){PP={h:d.h,a:d.a,f:d.f,n:CG.pre+'_'+l.replace(/[^\w]+/g,'-').s
 function pop(k){const x=KP[k];popD(x.l,x.d())}
 function one1(f){popD(f>0?'Durasi terkecil':'Durasi terbesar',det(one(filt(),f)))}
 function setTab(t){tab=t;lim=200;$('tR').classList.toggle('on',t=='R');$('tD').classList.toggle('on',t=='D');render()}
-$('fM').onchange=$('fU').onchange=()=>{lim=200;render()};$('fA').onchange=()=>{fillU();lim=200;render()};
+$('fM').onchange=$('fU').onchange=()=>{lim=200;render()};$('fY').onchange=()=>{fill();lim=200;render()};$('fA').onchange=()=>{fillU();lim=200;render()};
 $('tR').onclick=()=>setTab('R');$('tD').onclick=()=>setTab('D');$('xR').onclick=()=>xl('R');$('xD').onclick=()=>xl('D');$('bS').onclick=sync;$('bMin').onclick=()=>one1(1);$('bMax').onclick=()=>one1(-1);
 $('out').onclick=ev=>{const b=ev.target.closest('button');
  if(b&&b.id=='bEa'){TR.forEach(n=>open.add(n));return render()}if(b&&b.id=='bEc'){open.clear();return render()}
@@ -4641,7 +4650,7 @@ function home(){cur=null;$('home').hidden=false;$('app').hidden=true;$('cb').hid
 function enter(k){if(cur==k&&!$('app').hidden)return;const g=MENUS[k];cur=k;CG=g;DH=g.DH;SL=g.SL;detRow=g.det;DX=g.DX;detX=g.dtx;RH=g.RH;MM=g.min;RN=g.min?[3,4,5]:[3];
  $('ht').textContent=g.t;$('hp').textContent=g.p;document.title=g.t;$('home').hidden=true;$('app').hidden=false;$('cb').hidden=true;
  tab='R';lim=200;open.clear();CH.sel=null;$('tR').classList.add('on');$('tD').classList.remove('on');
- $('fM').value='';$('fA').value='';$('fU').value='';R=DATA[k]||[];fill();render();
+ $('fY').value='';$('fM').value='';$('fA').value='';$('fU').value='';R=DATA[k]||[];fill();render();
  $('err').textContent='';$('st').textContent=DATA[k]?'Menyegarkan...':'Belum sinkron';window.scrollTo(0,0);sync()}
 function route(){const h=location.hash.slice(1);if(h=='absensi'){if(window.absEnter)absEnter();return}if(h=='cuti'){if(window.cutEnter)cutEnter();return}if(h=='wobatal'){if(window.wobEnter)wobEnter();return}if(h=='callback'){if(window.cbEnter)cbEnter();return}MENUS[h]?enter(h):home()}
 addEventListener('hashchange',route);route();setInterval(sync,D.iv*60000);
@@ -4779,7 +4788,7 @@ function bld(R,o){
 /* ===== agregasi sesuai filter ===== */
 const mkt=t=>new Date(t*1000).toISOString().slice(0,7);
 function agg(M,f){
- const inT=t=>!f.m||(!isNaN(t)&&mkt(t)==f.m);
+ const inT=t=>{if(!f.m&&!f.y)return true;if(isNaN(t))return false;const k=mkt(t);return(!f.m||k==f.m)&&(!f.y||k.slice(0,4)==f.y)};
  const ok=x=>(!f.a||x.area==f.a)&&(!f.u||x.ulp==f.u);
  const rep=M.eis.filter(r=>inT(r.t)&&ok(r)),cl=M.calls.filter(c=>inT(c.mt)&&ok(c)),called=new Map();
  cl.forEach(c=>{if(c.rec){const v=called.get(c.rec)||{n:0,t:NaN};v.n++;if(!isNaN(c.t)&&(isNaN(v.t)||c.t<v.t))v.t=c.t;called.set(c.rec,v)}});
@@ -4797,10 +4806,11 @@ const fT=t=>isNaN(t)?'':fd(t),pcn=(c,r)=>r?c/r*100:null,pcs=v=>v==null?'-':v.toF
 const mkP=s=>{s=String(s==null?'':s);let n=5;return s.split('').reverse().map(ch=>(n>0&&/\d/.test(ch))?(n--,'X'):ch).reverse().join('')};
 const mkN=s=>String(s==null?'':s).replace(/\+?\d[\d\s\-().]{6,}\d/g,m=>(m.replace(/\D/g,'').length>=10&&!/^\d{1,4}[-.\/]\d{1,2}[-.\/]\d{1,4}/.test(m))?mkP(m):m);
 const tel=k=>k?mkP('62'+k):'',qa=s=>e(s).replace(/"/g,'&quot;');
-function filters(){return{m:$('cbM').value,a:$('cbA').value,u:$('cbU').value}}
+function filters(){return{y:$('cbY').value,m:$('cbM').value,a:$('cbA').value,u:$('cbU').value}}
+function fillMY(){const m=CB.M;if(!m)return;const T=m.eis.filter(r=>!isNaN(r.t));opts($('cbY'),[...new Set(T.map(r=>mkt(r.t).slice(0,4)))].sort(),'Semua tahun');const yy=$('cbY').value,mv=msort([...new Set(T.filter(r=>!yy||mkt(r.t).slice(0,4)==yy).map(r=>mkt(r.t)))]);opts($('cbM'),mv,'Semua bulan',mlab(mv))}
 const opt=()=>({ds:$('cbDf').value,gap:$('cbGp').value});
 function fillA(){if(!CB.M)return;const m=CB.M;
- opts($('cbM'),[...new Set(m.eis.filter(r=>!isNaN(r.t)).map(r=>mkt(r.t)))].sort().reverse(),'Semua bulan',v=>MN[+v.slice(5)-1]+' '+v.slice(0,4));
+ fillMY();
  const ar=[...new Set(m.eis.map(r=>r.area).concat(m.calls.filter(c=>c.rec).map(c=>c.area)))].sort();opts($('cbA'),ar,'Semua area');fillU()}
 function fillU(){if(!CB.M)return;const a=$('cbA').value,m=CB.M,u=[...new Set(m.eis.concat(m.calls.filter(c=>c.rec)).filter(r=>!a||r.area==a).map(r=>r.ulp))].sort();opts($('cbU'),u,'Semua ULP')}
 /* spesifikasi tabel pop up: v = tampilan, d = detail lengkap */
@@ -4935,14 +4945,14 @@ function enter(){cur=null;$('home').hidden=true;$('app').hidden=true;$('md').hid
  document.title='Rekap Callback Pelanggan';window.scrollTo(0,0);if(CB.M){fillA();render()}sync()}
 window.cbEnter=enter;
 $('cbS').onclick=sync;
-$('cbA').onchange=()=>{fillU();render()};$('cbU').onchange=$('cbM').onchange=render;
+$('cbA').onchange=()=>{fillU();render()};$('cbU').onchange=$('cbM').onchange=render;$('cbY').onchange=()=>{fillMY();render()};
 $('cbGp').onchange=$('cbDf').onchange=rebuild;
 $('cbKpi').onclick=ev=>{const b=ev.target.closest('button[data-k]');if(!b)return;const k=CB.KP[+b.dataset.k].d();popC(k.t,k.s)};
 $('cbOut').onclick=ev=>{const b=ev.target.closest('button');
  if(b&&b.id=='cbEa'){CB.Z.A.forEach(a=>CB.open.add(a.name));return render()}if(b&&b.id=='cbEc'){CB.open.clear();return render()}
  const c=ev.target.closest('td[data-m]');if(c){const g=CB.G[+c.dataset.g],k=metricSpec(g,c.dataset.m);return popC(k.t,k.s)}
  const t=ev.target.closest('tr[data-a]');if(t){const n=t.dataset.a;CB.open.has(n)?CB.open.delete(n):CB.open.add(n);render()}};
-const sfx2=()=>{const f=[$('cbM').value,$('cbA').value,$('cbU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
+const sfx2=()=>{const f=[$('cbY').value,$('cbM').value,$('cbA').value,$('cbU').value].filter(Boolean).join('_').replace(/[^\w-]+/g,'-');return f?'_'+f:''};
 $('cbXR').onclick=()=>{if(!CB.view||!CB.view.a.length)return alert('Tidak ada data untuk diunduh.');dl(CB.view.h,CB.view.a,'Callback_Rekap'+sfx2(),'Rekap Callback',CB.sv?[{n:'SUMBER LAPOR',h:CB.sv.h,a:CB.sv.a}]:[])};
 $('cbXD').onclick=()=>{if(!CB.Z||!CB.Z.cl.length)return alert('Tidak ada panggilan untuk diunduh.');const s=callSpec(CB.Z.cl,CB.Z.cl);dl(s.d.h,s.d.a,'Callback_DetailPanggilan'+sfx2(),'Detail Panggilan',CB.sv?[{n:'SUMBER LAPOR',h:CB.sv.h,a:CB.sv.a}]:[])};
 $('mx2').onclick=()=>{if(PP2)dl(PP2.h,PP2.a,PP2.n,'Detail',PP2.x)};
