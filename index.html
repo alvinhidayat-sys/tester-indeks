@@ -2974,6 +2974,7 @@ $('#ccF').onsubmit=async e=>{e.preventDefault();const u=$('#ccU').value.trim(),p
  b.disabled=false;b.textContent='Masuk'};
 setTimeout(paintCC,0);let _ccL=isCC();setInterval(()=>{const v=isCC();if(v!==_ccL){_ccL=v;paintCC()}},1500);
 const BL2={jan:0,feb:1,mar:2,apr:3,mei:4,may:4,jun:5,jul:6,agu:7,ags:7,aug:7,sep:8,okt:9,oct:9,nov:10,des:11,dec:11};
+let PDMODE='dmy';
 function pd(s){s=String(s||'');let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];
   m=s.match(/Date\((\d{4}),(\d+),(\d+)/);if(m)return m[1]+'-'+p2(+m[2]+1)+'-'+p2(m[3]);
   m=s.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return m[3]+'-'+p2(m[2])+'-'+p2(m[1]);
@@ -4362,7 +4363,7 @@ function pd(s){s=String(s==null?'':s).trim();if(!s)return NaN;
  if(/^\d{5}(\.\d+)?$/.test(s)){const n=parseFloat(s);return Math.round((n-25569)*86400)}
  let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(.*)$/),y,mo,d,rest;
  if(m){y=+m[1];mo=+m[2];d=+m[3];rest=m[4]}
- else if(m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})(.*)$/)){d=+m[1];mo=+m[2];y=+m[3];if(y<100)y+=2000;rest=m[4]}
+ else if(m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})(.*)$/)){const a=+m[1],b=+m[2];if(a>12||(b<=12&&PDMODE!='mdy')){d=a;mo=b}else{mo=a;d=b}y=+m[3];if(y<100)y+=2000;rest=m[4]}
  else if(m=s.match(/^(\d{1,2})[\s-]+([A-Za-z]+)\.?[\s-]+(\d{2,4})(.*)$/)){d=+m[1];mo=BLN[m[2].toLowerCase()];y=+m[3];if(y<100)y+=2000;rest=m[4]}
  else return NaN;
  if(!mo||mo>12||d<1||d>31)return NaN;
@@ -4420,7 +4421,7 @@ const P2K=['nolaporan','namaarea','namaposko','tgllapor','idpelanggan','idpel','
 const P2M=new Map();let P2=null,P2L=null,P2FAST=false,P2TAB='cc_p2b',P2DB=null;
 const fmm=n=>{const m=String(n==null?'':n).match(/^\s*(\d{2})/),v=m?+m[1]:0;return v>=1&&v<=12?v:0};
 const p2cl=i=>{let s='';for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
-function p2db(){return P2DB||(P2DB=new Promise(r=>{try{const q=indexedDB.open('cc-p2-cache',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(x){r(null)}}))}
+function p2db(){return P2DB||(P2DB=new Promise(r=>{try{const q=indexedDB.open('cc-p2-cache3',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(x){r(null)}}))}
 async function p2get(k){const d=await p2db();return d?new Promise(r=>{try{const q=d.transaction('f').objectStore('f').get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)}catch(x){r(null)}}):null}
 async function p2put(k,v){const d=await p2db();if(d)try{d.transaction('f','readwrite').objectStore('f').put(v,k)}catch(x){}}
 async function p2list(){
@@ -4435,8 +4436,8 @@ async function p2gv(id,q){
 async function p2fetch(id){
  let hd=[];try{hd=(await p2gv(id,'select * limit 1'))[0]||[]}catch(x){}
  const H=hd.map(nz),idx=[];H.forEach((x,i)=>{if(x&&P2K.some(a=>x.includes(a)))idx.push(i)});
- if(H.includes('nolaporan')&&idx.length){const r=await p2gv(id,'select '+idx.map(p2cl).join(','));if(r.length&&r[0].length==idx.length)return r}
- return p2gv(id,'')}
+ if(H.includes('nolaporan')&&idx.length){const q=hd.length>70&&!idx.includes(70)?idx.concat([70]):idx;const r=await p2gv(id,'select '+q.map(p2cl).join(','));if(r.length&&r[0].length==q.length)return{A:r,bs:hd.length>70?q.indexOf(70):-1,bsn:hd[70]||''}}
+ const A=await p2gv(id,'');return{A,bs:(A[0]||[]).length>70?70:-1,bsn:(A[0]||[])[70]||''}}
 async function p2run(){
  const w=[];let L=null;
  try{L=await p2list();P2L=L;p2put('list',L)}catch(x){L=P2L||await p2get('list');if(!L)throw Error('Daftar file Drive tidak terbaca: '+x.message);w.push('Daftar file Drive gagal dibaca ('+x.message+'), memakai daftar terakhir')}
@@ -4446,30 +4447,33 @@ async function p2run(){
  const nowM=new Date(Date.now()+288e5).getUTCMonth()+1;
  const T=await Promise.all(L.map(async f=>{const mm=fmm(f.name);
   let c=P2M.get(f.id);if(!c){c=await p2get('f:'+f.id);if(c)P2M.set(f.id,c)}
-  if(c&&c.mt==f.modifiedTime&&mm!=nowM)return{f,mm,A:c.A};
-  try{const A=await p2fetch(f.id),o={mt:f.modifiedTime,A};P2M.set(f.id,o);p2put('f:'+f.id,o);return{f,mm,A}}
-  catch(x){return c?{f,mm,A:c.A}:{f,mm,err:x.message}}}));
+  if(c&&c.mt==f.modifiedTime&&mm!=nowM)return{f,mm,A:c.A,bs:c.bs,bsn:c.bsn};
+  try{const r=await p2fetch(f.id),o={mt:f.modifiedTime,A:r.A,bs:r.bs,bsn:r.bsn};P2M.set(f.id,o);p2put('f:'+f.id,o);return{f,mm,A:r.A,bs:r.bs,bsn:r.bsn}}
+  catch(x){return c?{f,mm,A:c.A,bs:c.bs,bsn:c.bsn}:{f,mm,err:x.message}}}));
  return{T,w}}
 function p2b(){if(P2&&Date.now()-P2.t<15000)return P2.p;const p=p2run();P2={t:Date.now(),p};p.catch(()=>{if(P2&&P2.p===p)P2=null});return p}
 async function p2cached(){const L=P2L||await p2get('list');if(!L)return null;const T=[];
- for(const f of L.filter(f=>fmm(f.name))){let c=P2M.get(f.id);if(!c){c=await p2get('f:'+f.id);if(c)P2M.set(f.id,c)}if(c)T.push({f,mm:fmm(f.name),A:c.A})}
+ for(const f of L.filter(f=>fmm(f.name))){let c=P2M.get(f.id);if(!c){c=await p2get('f:'+f.id);if(c)P2M.set(f.id,c)}if(c)T.push({f,mm:fmm(f.name),A:c.A,bs:c.bs,bsn:c.bsn})}
  return T.length?{T,w:[]}:null}
 async function loadP2(ex,fl,calc,byName){
  const fast=P2FAST;P2FAST=false;
  const S=fast?await p2cached():await p2b();if(!S)return null;
- const seen=new Set(),rows=[],bad=[],w=S.w.slice();let nf=0,noBy=false;
+ const seen=new Set(),rows=[],bad=[],w=S.w.slice();let nf=0,bsw=0;const noBy=[];
  S.T.forEach(t=>{
   if(!t.A){w.push(t.f.name+': '+t.err);return}
   let ha;try{ha=hdr(t.A,h=>Object.assign({no:col(h,['nolaporan'],'NO_LAPORAN'),ar:col(h,['namaarea'],'NAMA_AREA'),un:col(h,['namaposko'],'NAMA_POSKO'),tl:col(h,['tgllapor'],'TGL_LAPOR'),ip:col(h,['idpelanggan','idpel'],'ID_PELANGGAN')},ex(h)))}
   catch(x){w.push(t.f.name+': '+String(x.message).slice(0,200));return}
-  nf++;const c=ha.c;if(c.by===-1)noBy=true;
+  nf++;const c=ha.c;if(c.by===-1&&byName=='MARKING_BY'&&t.bs!=null&&t.bs>=0){c.by=t.bs;if(!bsw){bsw=1;w.push('Kolom MARKING_BY dibaca dari kolom BS (teks header: "'+(t.bsn||'kosong')+'")')}}
+  if(c.by===-1)noBy.push(t.f.name);
+  let nd=0,nm=0;t.A.slice(ha.i+1).forEach(x=>{const m=String(x[c.tl]||'').trim().match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.]\d{2,4}/);if(m){if(+m[1]>12)nd++;else if(+m[2]>12)nm++}});
+  PDMODE=nm>nd?'mdy':'dmy';
   t.A.slice(ha.i+1).forEach(x=>{if(!fl(x,c))return;const no=String(x[c.no]||'').trim();if(!no)return;
    const tt=pd(x[c.tl]);if(isNaN(tt)){bad.push(no+' ("'+String(x[c.tl]||'').trim()+'")');return}
    if(seen.has(no))return;seen.add(no);
    const r={no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t:tt};calc(x,c,r);rows.push(r)})});
  if(!nf)throw Error('Tidak ada file yang bisa dibaca. '+w.join(' | '));
  rows.sort((a,b)=>a.t-b.t);
- if(noBy)w.push('Kolom '+byName+' tidak ditemukan, rekap per petugas tidak bisa dibuat');
+ PDMODE='dmy';if(noBy.length)w.push('Kolom '+byName+' tidak ditemukan di file: '+noBy.slice(0,4).join(', ')+(noBy.length>4?' dst.':'')+' (rekap per petugas untuk file itu kosong)');
  if(bad.length)w.push(bad.length+' baris dilewati karena TGL_LAPOR tidak terbaca, contoh: '+bad.slice(0,3).join(', '));
  return{rows,msg:rows.length+' laporan manual, '+rows.filter(r=>r.m).length+' terhitung, '+nf+' file bulanan'+(fast?' (tersimpan)':''),w}}
 const colo=(h,al)=>{const H=h.map(nz);for(const a of al){const i=H.indexOf(a);if(i>=0)return i}for(const a of al){const i=H.findIndex(x=>x.includes(a));if(i>=0)return i}return -1};
