@@ -4392,27 +4392,6 @@ function match(rep,trx){
  rep.forEach(r=>{if(!r.m){r.d=r.pt=r.sec=null;r.st='belum';return}
   r.d=r.m.t-r.t;r.st=r.d<0?'auto':'ok';r.pt=r.d<0?+D.neg:Math.round(r.d/60*100)/100;r.sec=r.d<0?D.neg*60:r.d})}
 let busy=false,cur=null;const DATA={};
-/* ===== SUMBER DATA: folder Google Drive (file per bulan, nama diawali MM = 01..12) =====
-   Setiap file harus berupa Google Sheet dengan tab: Data APKT, Data AP2T, cc_p2b (header sama).
-   Daftar file diambil lewat Apps Script folder (DRIVE_URL), isi file dibaca per tab via gviz. */
-const DRIVE_URL=https://script.google.com/macros/s/AKfycbweyXEHM8LL5lzW12AtHxB3jx_mFzBM_tc3OetA_URVytT-3bsc4zKhlEpoPPzXUakn/exec;
-const FOLDER_ID='16bhfFATJ3NcEGeEYJjDo4Qjl9h3XsUvH';
-let FL=null;
-async function monthFiles(){
-  if(FL&&Date.now()-FL.t<120000)return FL.f;
-  if(!DRIVE_URL||DRIVE_URL.startsWith('ISI_'))throw new Error('DRIVE_URL belum diisi (URL web app Apps Script folder Drive).');
-  const r=await fetch(DRIVE_URL+'?act=files&folder='+FOLDER_ID+'&t='+Date.now(),{cache:'no-store'});
-  const j=await r.json();if(j.error)throw new Error(j.error);
-  const f=(j.files||[]).filter(x=>/^\d{2}/.test(x.name)).sort((a,b)=>a.name.localeCompare(b.name));
-  FL={t:Date.now(),f};return f;
-}
-async function readFolder(tab){
-  const fs=await monthFiles();
-  const parts=await Promise.all(fs.map(f=>load(tab,null,f.id).catch(()=>null)));
-  const ok=parts.filter(Boolean);
-  if(!ok.length)throw new Error('Tab "'+tab+'" tidak bisa dibaca dari folder Drive. Pastikan file berbagi "Siapa saja yang memiliki link: Pelihat".');
-  return ok.flatMap((p,i)=>i?p.slice(1):p);
-}
 async function loadCTT(){
  const[A,B]=await Promise.all([load(D.a,D.ga),load(D.b,D.gb)]);
   const ha=hdr(A,h=>({no:col(h,['nolaporan','nolapor','nomorlaporan'],'NO_LAPORAN (APKT)'),ar:col(h,['namaarea','area'],'NAMA_AREA (APKT)'),un:col(h,['namaunit','unit'],'NAMA_UNIT (APKT)'),tl:col(h,['tanggallapor','tgllapor','waktulapor'],'TANGGAL_LAPOR (APKT)'),ip:col(h,['idpel','idpelanggan'],'IDPEL (APKT)')}));
@@ -4430,19 +4409,69 @@ async function loadCTT(){
   return{rows:rep,msg,w}
  }
 const nrm=x=>String(x==null?'':x).replace(/\s+/g,' ').trim().toUpperCase();
-let P2=null;
-async function p2b(){if(P2&&Date.now()-P2.t<15000)return P2.a;const a=await readFolder('cc_p2b');P2={t:Date.now(),a};return a}
+/* ===== SUMBER DATA Manual Marking & Manual Dispatch =====
+   File Google Sheet per bulan di folder Drive (daftar file dari Apps Script, isi dibaca via gviz).
+   Bulan = 2 angka pertama nama file (01 = Januari ... 12 = Desember).
+   Cepat: semua file diunduh paralel, hanya kolom yang dipakai, hasilnya disimpan (memori + IndexedDB)
+   per file + modifiedTime; sinkron berikutnya hanya mengunduh ulang file bulan berjalan / yang berubah. */
+const DRIVE_URL='https://script.google.com/macros/s/AKfycbweyXEHM8LL5lzW12AtHxB3jx_mFzBM_tc3OetA_URVytT-3bsc4zKhlEpoPPzXUakn/exec';
+const DRIVE_FOLDER='16bhfFATJ3NcEGeEYJjDo4Qjl9h3XsUvH';
+const P2K=['nolaporan','namaarea','namaposko','tgllapor','idpelanggan','idpel','keteranganmarking','tglmarking','tgllaporreferensi','markingby','ketkirim','tglpenugasanregu','tglreturnorder','dispatchby'];
+const P2M=new Map();let P2=null,P2L=null,P2FAST=false,P2TAB='cc_p2b',P2DB=null;
+const fmm=n=>{const m=String(n==null?'':n).match(/^\s*(\d{2})/),v=m?+m[1]:0;return v>=1&&v<=12?v:0};
+const p2cl=i=>{let s='';for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
+function p2db(){return P2DB||(P2DB=new Promise(r=>{try{const q=indexedDB.open('cc-p2-cache',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(x){r(null)}}))}
+async function p2get(k){const d=await p2db();return d?new Promise(r=>{try{const q=d.transaction('f').objectStore('f').get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)}catch(x){r(null)}}):null}
+async function p2put(k,v){const d=await p2db();if(d)try{d.transaction('f','readwrite').objectStore('f').put(v,k)}catch(x){}}
+async function p2list(){
+ const r=await fetch(DRIVE_URL+'?act=files&folder='+DRIVE_FOLDER+'&t='+Date.now(),{cache:'no-store'});
+ if(!r.ok)throw Error('Apps Script HTTP '+r.status);
+ const j=await r.json();if(j.error)throw Error(j.error);return j.files||[]}
+async function p2gv(id,q){
+ const go=async tab=>{const r=await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1${tab?'&sheet='+encodeURIComponent(tab):''}${q?'&tq='+encodeURIComponent(q):''}&_=${Date.now()}`,{cache:'no-store'}),t=r.ok?await r.text():'';
+  if(!r.ok||/^\s*<(!doctype|html)/i.test(t))throw Error('belum dibagikan sebagai Pelihat / tidak bisa dibaca');return csv(t)};
+ if(P2TAB){try{return await go(P2TAB)}catch(x){P2TAB=''}}
+ return go('')}
+async function p2fetch(id){
+ let hd=[];try{hd=(await p2gv(id,'select * limit 1'))[0]||[]}catch(x){}
+ const H=hd.map(nz),idx=[];H.forEach((x,i)=>{if(x&&P2K.some(a=>x.includes(a)))idx.push(i)});
+ if(H.includes('nolaporan')&&idx.length){const r=await p2gv(id,'select '+idx.map(p2cl).join(','));if(r.length&&r[0].length==idx.length)return r}
+ return p2gv(id,'')}
+async function p2run(){
+ const w=[];let L=null;
+ try{L=await p2list();P2L=L;p2put('list',L)}catch(x){L=P2L||await p2get('list');if(!L)throw Error('Daftar file Drive tidak terbaca: '+x.message);w.push('Daftar file Drive gagal dibaca ('+x.message+'), memakai daftar terakhir')}
+ const skip=L.filter(f=>!fmm(f.name)).map(f=>f.name);L=L.filter(f=>fmm(f.name)).sort((x,y)=>fmm(x.name)-fmm(y.name)||x.name.localeCompare(y.name));
+ if(skip.length)w.push('File dilewati karena nama tidak diawali bulan 01-12: '+skip.slice(0,3).join(', ')+(skip.length>3?' dst.':''));
+ if(!L.length)throw Error('Tidak ada file Google Sheet berawalan bulan (01-12) di folder Drive');
+ const nowM=new Date(Date.now()+288e5).getUTCMonth()+1;
+ const T=await Promise.all(L.map(async f=>{const mm=fmm(f.name);
+  let c=P2M.get(f.id);if(!c){c=await p2get('f:'+f.id);if(c)P2M.set(f.id,c)}
+  if(c&&c.mt==f.modifiedTime&&mm!=nowM)return{f,mm,A:c.A};
+  try{const A=await p2fetch(f.id),o={mt:f.modifiedTime,A};P2M.set(f.id,o);p2put('f:'+f.id,o);return{f,mm,A}}
+  catch(x){return c?{f,mm,A:c.A}:{f,mm,err:x.message}}}));
+ return{T,w}}
+function p2b(){if(P2&&Date.now()-P2.t<15000)return P2.p;const p=p2run();P2={t:Date.now(),p};p.catch(()=>{if(P2&&P2.p===p)P2=null});return p}
+async function p2cached(){const L=P2L||await p2get('list');if(!L)return null;const T=[];
+ for(const f of L.filter(f=>fmm(f.name))){let c=P2M.get(f.id);if(!c){c=await p2get('f:'+f.id);if(c)P2M.set(f.id,c)}if(c)T.push({f,mm:fmm(f.name),A:c.A})}
+ return T.length?{T,w:[]}:null}
 async function loadP2(ex,fl,calc,byName){
- const A=await p2b();
- const ha=hdr(A,h=>Object.assign({no:col(h,['nolaporan'],'NO_LAPORAN'),ar:col(h,['namaarea'],'NAMA_AREA'),un:col(h,['namaposko'],'NAMA_POSKO'),tl:col(h,['tgllapor'],'TGL_LAPOR'),ip:col(h,['idpelanggan','idpel'],'ID_PELANGGAN')},ex(h)));
- const c=ha.c,seen=new Set(),rows=[],bad=[];
- A.slice(ha.i+1).forEach(x=>{if(!fl(x,c))return;const no=String(x[c.no]||'').trim();if(!no)return;
-  const t=pd(x[c.tl]);if(isNaN(t)){bad.push(no+' ("'+String(x[c.tl]||'').trim()+'")');return}
-  if(seen.has(no))return;seen.add(no);
-  const r={no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t};calc(x,c,r);rows.push(r)});
+ const fast=P2FAST;P2FAST=false;
+ const S=fast?await p2cached():await p2b();if(!S)return null;
+ const seen=new Set(),rows=[],bad=[],w=S.w.slice();let nf=0,noBy=false;
+ S.T.forEach(t=>{
+  if(!t.A){w.push(t.f.name+': '+t.err);return}
+  let ha;try{ha=hdr(t.A,h=>Object.assign({no:col(h,['nolaporan'],'NO_LAPORAN'),ar:col(h,['namaarea'],'NAMA_AREA'),un:col(h,['namaposko'],'NAMA_POSKO'),tl:col(h,['tgllapor'],'TGL_LAPOR'),ip:col(h,['idpelanggan','idpel'],'ID_PELANGGAN')},ex(h)))}
+  catch(x){w.push(t.f.name+': '+String(x.message).slice(0,200));return}
+  nf++;const c=ha.c;if(c.by===-1)noBy=true;
+  t.A.slice(ha.i+1).forEach(x=>{if(!fl(x,c))return;const no=String(x[c.no]||'').trim();if(!no)return;
+   const tt=pd(x[c.tl]);if(isNaN(tt)){bad.push(no+' ("'+String(x[c.tl]||'').trim()+'")');return}
+   if(seen.has(no))return;seen.add(no);
+   const r={no,area:lb(x[c.ar]),unit:lb(x[c.un]),ip:ip(x[c.ip]),t:tt};calc(x,c,r);rows.push(r)})});
+ if(!nf)throw Error('Tidak ada file yang bisa dibaca. '+w.join(' | '));
  rows.sort((a,b)=>a.t-b.t);
- const w=[];if(c.by===-1)w.push('Sheet cc_p2b: kolom '+byName+' tidak ditemukan, rekap per petugas tidak bisa dibuat');if(bad.length)w.push('Sheet cc_p2b: '+bad.length+' baris dilewati karena TGL_LAPOR tidak terbaca, contoh: '+bad.slice(0,3).join(', '));
- return{rows,msg:rows.length+' laporan manual, '+rows.filter(r=>r.m).length+' terhitung',w}}
+ if(noBy)w.push('Kolom '+byName+' tidak ditemukan, rekap per petugas tidak bisa dibuat');
+ if(bad.length)w.push(bad.length+' baris dilewati karena TGL_LAPOR tidak terbaca, contoh: '+bad.slice(0,3).join(', '));
+ return{rows,msg:rows.length+' laporan manual, '+rows.filter(r=>r.m).length+' terhitung, '+nf+' file bulanan'+(fast?' (tersimpan)':''),w}}
 const colo=(h,al)=>{const H=h.map(nz);for(const a of al){const i=H.indexOf(a);if(i>=0)return i}for(const a of al){const i=H.findIndex(x=>x.includes(a));if(i>=0)return i}return -1};
 const byv=v=>{const t=String(v==null?'':v).replace(/\s+/g,' ').trim();return t&&t!='-'?lb(t):''};
 const pdn=v=>{const t=pd(v);return isNaN(t)?null:t};
@@ -4458,7 +4487,8 @@ function calcP(x,c,r){r.by=byv(x[c.by]);r.pg=pdn(x[c.pg]);r.ro=pdn(x[c.ro]);
  if(r.ro==null)return fin(r,1,r.pg-r.t,'Penugasan Regu − Lapor');
  fin(r,1,Math.abs(r.ro-r.pg),'Return Order − Penugasan Regu')}
 async function sync(){if(busy||!cur)return;const k=cur;busy=true;$('err').textContent='';$('st').textContent='Menyinkronkan...';
- try{const o=await MENUS[k].load();DATA[k]=o.rows;if(cur!=k)return;R=o.rows;fill();render();
+ try{if(!DATA[k]&&MENUS[k].fast){try{const q=await MENUS[k].fast();if(q&&cur==k&&!DATA[k]){R=q.rows;fill();render();$('st').textContent='Menampilkan data tersimpan, menyinkronkan...'}}catch(x){}}
+  const o=await MENUS[k].load();DATA[k]=o.rows;if(cur!=k)return;R=o.rows;fill();render();
   $('st').textContent='Tersinkron '+new Date().toLocaleTimeString('id-ID')+' ('+o.msg+')';
   if(o.w.length)$('err').textContent='Perhatian:\n'+o.w.join('\n')
  }catch(x){if(cur==k){$('err').textContent=x.message;$('st').textContent='Sinkron gagal'}}finally{busy=false;if(cur&&cur!=k)sync()}}
@@ -4602,6 +4632,7 @@ const MENUS={
  dispatch:{pre:'Dispatch',t:'Rekap Durasi Manual Dispatch',p:'Durasi laporan masuk ke APKT hingga diteruskan oleh Operator Command Center ke petugas di lapangan (MANUAL COMMAND CENTER), diperbarui otomatis setiap 2 menit',
   load:()=>loadP2(h=>({kk:col(h,['ketkirim'],'KET_KIRIM'),pg:col(h,['tglpenugasanregu'],'TGL_PENUGASAN_REGU'),ro:col(h,['tglreturnorder'],'TGL_RETURN_ORDER'),by:colo(h,['dispatchby'])}),(x,c)=>nrm(x[c.kk])=='MANUAL COMMAND CENTER',calcP,'DISPATCH_BY'),
   ok:'Sudah terhitung',bad:'Belum terhitung',okS:'terhitung',avgL:'Rata-rata durasi manual dispatch (menit)',by:'Dispatch',DH:DH_P,SL:SL_N,det:detP,DX:DX_P,dtx:detXP,RH:RH_N,min:true}};
+['marking','dispatch'].forEach(k=>{const g=MENUS[k];g.fast=()=>{P2FAST=true;return g.load()}});
 function home(){cur=null;$('home').hidden=false;$('app').hidden=true;$('cb').hidden=true;$('md').hidden=true;$('ht').textContent='DASHBOARD KINERJA DAN ADMINISTRASI';$('hp').textContent='';document.title='Dashboard Kinerja dan Administrasi Command Center';window.scrollTo(0,0)}
 function enter(k){if(cur==k&&!$('app').hidden)return;const g=MENUS[k];cur=k;CG=g;DH=g.DH;SL=g.SL;detRow=g.det;DX=g.DX;detX=g.dtx;RH=g.RH;MM=g.min;RN=g.min?[3,4,5]:[3];
  $('ht').textContent=g.t;$('hp').textContent=g.p;document.title=g.t;$('home').hidden=true;$('app').hidden=false;$('cb').hidden=true;
