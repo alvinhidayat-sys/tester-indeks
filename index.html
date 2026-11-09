@@ -525,6 +525,8 @@ header,header .brand,header .brand b,header .brand span,header h1,header #ht,hea
 #p0 .p0cv{position:relative;margin-top:12px}
 #p0 .p0hint{font-size:12.5px;color:var(--mut);margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 #p0 .kpi button{cursor:default}
+/* kartu Absensi dan Lembur: panel ilustrasi dibuat transparan agar bayangan dalam (inset) tampil seperti kartu lain */
+a.mc[href="#absensi"] svg>rect:first-child,a.mc[href="#absensi"] svg>g>rect:first-child{fill:transparent!important}
 /* header menyesuaikan saat jendela mengecil (tablet / jendela sempit): logo di baris atas, teks di bawahnya, tidak saling menimpa */
 @media(min-width:641px) and (max-width:1180px){
 header{padding:76px 16px 12px!important}
