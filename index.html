@@ -221,7 +221,8 @@ function TPL(){if(!_T){const b=atob(SPEC_B64),u=new Uint8Array(b.length);for(let
 const DEFST=['Arial',10,false,false,null,null,'center',false,0,'----',null];
 const CL=n=>{let s='';while(n>0){const k=(n-1)%26;s=String.fromCharCode(65+k)+s;n=Math.floor((n-1)/26)}return s};
 function idx(m){m.M={};m.S=new Set();m.mg.forEach(g=>{m.M[g[0]+','+g[1]]=g;for(let r=g[0];r<=g[2];r++)for(let c=g[1];c<=g[3];c++)if(r!=g[0]||c!=g[1])m.S.add(r+','+c)})}
-function addMerge(m,r1,c1,r2,c2){m.mg.push([r1,c1,r2,c2]);idx(m)}
+function mgHit(m,r1,c1,r2,c2){return m.mg.find(g=>!(g[2]<r1||r2<g[0]||g[3]<c1||c2<g[1]))}
+function addMerge(m,r1,c1,r2,c2){if(mgHit(m,r1,c1,r2,c2))return false;m.mg.push([r1,c1,r2,c2]);idx(m);return true}
 function mm(i){const T=TPL(),s=T.sh[i],m={name:s.n,o:s.o,cw:s.cw.slice(),rh:s.rh.slice(),mg:s.mg.map(g=>g.slice()),cells:{},imgs:[],fh:s.fh,mar:s.m,hc:s.hc,ck:s.ck};
 s.cells.forEach(c=>{m.cells[c[0]+','+c[1]]={v:c[3]===null?undefined:c[3],s:T.st[c[2]].slice()}});
 const L=s.lg,h=Math.min(L[3],L[2]/LASP);m.imgs.push({k:'logo',x:L[0],y:L[1],w:Math.round(h*LASP),h:Math.round(h)});idx(m);return m}
@@ -239,7 +240,7 @@ const cg=m.M[r+','+cc]||[r,cc,r,cc],cx=m.cells[r+','+cc],ct=String(cx.v).trim(),
 if(ct.length>1||(!nxt&&wch(m,cc,cg[3])>=4))put(m,r,cc,': '+V,{h:'left'});else put(m,r,cg[3]+1,V,{h:'left',base:cx.s})}
 function wrapLines(t,w){const o=[];String(t||'').split(/\r?\n/).forEach(p=>{let l='';p.split(/\s+/).forEach(x=>{if((l+' '+x).trim().length>w&&l){o.push(l);l=x}else l=(l+' '+x).trim()});o.push(l)});return o}
 function noteLines(m,cells,note,w){const t=String(note||'').trim();if(!t)return;let L=wrapLines(t,w);if(L.length>cells.length){const k=cells.length-1;L=L.slice(0,k).concat([L.slice(k).join(' ')])}cells.forEach((p,k)=>{if(L[k]!==undefined)put(m,p[0],p[1],L[k],{h:'left'})})}
-function noteBox(m,r1,c1,r2,c2,txt){if(!String(txt||'').trim())return;if(r2>r1||c2>c1){if(!m.M[r1+','+c1])addMerge(m,r1,c1,r2,c2)}put(m,r1,c1,txt,{h:'left',va:'top',wrap:true})}
+function noteBox(m,r1,c1,r2,c2,txt){if(!String(txt||'').trim())return;let r=r1,c=c1;if(r2>r1||c2>c1){const g=mgHit(m,r1,c1,r2,c2);if(g){r=g[0];c=g[1]}else addMerge(m,r1,c1,r2,c2)}put(m,r,c,txt,{h:'left',va:'top',wrap:true})}
 const PEL=D=>String(D.info.pel||'').split('\n').map(x=>x.trim()).filter(Boolean);
 const pr=n=>n?'( '+n+' )':null;
 function hvals(D,c){const i=D.info,h=D.comps[c].h,tg=dfmt(i.tgl),b={'no. dokumen':i.nodok,'nomor dokumen':i.nodok,'tanggal':tg,'tgl pengujian':tg,'lokasi':i.lokasi,'tanggal uji':tg,'nama kubikel':i.kubikel,'feeder':i.kubikel,'teg. nom':i.tegnom};
@@ -270,7 +271,7 @@ put(m,7,10,undefined);put(m,10,2,N(h.rp),{h:'left'});put(m,10,4,N(h.rs),{h:'left
 for(let k=0;k<6;k++){const c=6+k;S(23,c,N(R.ip[k]));S(24,c,N(R.isc[k]));S(26,c,N(R.ht[k],3));S(27,c,N(R.er.RS[k],2));S(25,c,N(R.hu.RS[k]));S(28,c,N(R.hu.ST[k]));S(29,c,N(R.ht[k],3));S(30,c,N(R.er.ST[k],2));S(31,c,N(R.hu.TR[k]));S(32,c,N(R.ht[k],3));S(33,c,N(R.er.TR[k],2))}
 for(let k=0;k<5;k++){const c=6+k;S(36,c,N(R.gp[k]));S(37,c,N(R.gs[k]));S(38,c,N(R.hg[k]));S(39,c,N(R.gh[k],3));S(40,c,N(R.ge[k],2))}
 R.f.forEach((x,k)=>{if(x[0])S(45+k,5,x[0]);if(x[1])S(45+k,7,x[1])});
-noteBox(m,50,1,55,11,D.comps.relay.note);
+noteBox(m,49,2,54,11,D.comps.relay.note);
 [[61,2,pel.join(', ')],[61,5,i.tl],[61,8,i.asman]].forEach(x=>sign(m,[x[0],x[1]],x[2],1))}
 function ujiM(D,c,I){const m=mm(I),d=D.comps[c],i=D.info,pel=PEL(D).join(', ');fillHdr(m,D,c);
 if(c=='relay'){rlFill(m,D);return m}
