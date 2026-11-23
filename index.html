@@ -226,7 +226,7 @@ function addMerge(m,r1,c1,r2,c2){if(mgHit(m,r1,c1,r2,c2))return false;m.mg.push(
 function mm(i){const T=TPL(),s=T.sh[i],m={name:s.n,o:s.o,cw:s.cw.slice(),rh:s.rh.slice(),mg:s.mg.map(g=>g.slice()),cells:{},imgs:[],fh:s.fh,mar:s.m,hc:s.hc,ck:s.ck};
 s.cells.forEach(c=>{m.cells[c[0]+','+c[1]]={v:c[3]===null?undefined:c[3],s:T.st[c[2]].slice()}});
 const L=s.lg,h=Math.min(L[3],L[2]/LASP);m.imgs.push({k:'logo',x:L[0],y:L[1],w:Math.round(h*LASP),h:Math.round(h)});idx(m);return m}
-function put(m,r,c,v,o={}){const k=r+','+c;let x=m.cells[k];if(!x)x=m.cells[k]={s:(o.base||DEFST).slice()};x.v=v;
+function put(m,r,c,v,o={}){const k=r+','+c;let x=m.cells[k];if(!x)x=m.cells[k]={s:(o.base||DEFST).slice()};x.v=v;if(v!==undefined&&v!=='')x.u=1;
 if(o.h)x.s[5]=o.h;if(o.va)x.s[6]=o.va;if(o.wrap!==undefined)x.s[7]=o.wrap;if(o.sz)x.s[1]=o.sz;if(o.b!==undefined)x.s[2]=o.b;if(o.font)x.s[0]=o.font;return x}
 const nv=v=>{const t=String(v??'').trim();return /^-?\d+([.,]\d+)?$/.test(t)?parseFloat(t.replace(',','.')):t};
 const nz=s=>String(s??'').toLowerCase().replace(/[*:]/g,'').replace(/\s+/g,' ').trim();
@@ -289,24 +289,42 @@ const imgDim=s=>new Promise(r=>{const i=new Image;i.onload=()=>r([i.width,i.heig
 async function docM(D,ph,name,title,tag){const i=D.info,px=[38,410,44,410,62],R=[18,18,6,18,14,8];for(let b=0;b<4;b++)R.push(150,30,10);R.push(6);
 const m={name,o:'p',cw:px.map(p=>(p-5)/7),rh:R,mg:[],cells:{},imgs:[],fh:1,mar:[.39,.39,.79,.79],hc:1,ck:[]},nr=R.length,GB='gggg';
 for(let r=1;r<=nr;r++)for(let c=1;c<=5;c++){const s=DEFST.slice();s[9]=(r==1?'m':'-')+(r==nr?'m':'-')+(c==1?'m':'-')+(c==5?'m':'-');m.cells[r+','+c]={s}}
-const T=(r,t,o)=>{m.mg.push([r,1,r,5]);const x=m.cells[r+',1'];x.v=t;Object.assign(x.s,o)};
+const T=(r,t,o)=>{m.mg.push([r,1,r,5]);const x=m.cells[r+',1'];x.v=t;x.u=1;Object.assign(x.s,o)};
 T(1,'            '+CO1,{0:'Tahoma',1:11,5:'left'});T(2,'            '+CO2,{0:'Tahoma',1:11,5:'left'});T(4,title,{2:true,5:'center'});T(5,'Lokasi : '+i.lokasi+'   |   Tanggal Uji : '+dfmt(i.tgl)+'   |   Nama Kubikel : '+i.kubikel,{1:9,5:'center'});idx(m);
 const cx=[0];px.forEach(p=>cx.push(cx[cx.length-1]+p));const ry=[0];R.forEach(h=>ry.push(ry[ry.length-1]+h*4/3));
 m.imgs.push({k:'logo',x:6,y:3,w:29,h:36});
 for(let k=0;k<8;k++){const b=k>>1,col=k%2?4:2,rp=7+b*3,rc=rp+1,p=ph[k],a=m.cells[rp+','+col],cp=m.cells[rc+','+col];a.s[9]=cp.s[9]=GB;cp.s[7]=true;cp.s[1]=9;
-if(p){cp.v=p.comp+' – '+(p.kind=='ck'?'Pengecekan':'Hasil Uji')+(p.cap?': '+p.cap:'');const [w,h]=await imgDim(p.data),bw=cx[col]-cx[col-1]-6,bh=(ry[rp]-ry[rp-1])-6,s=Math.min(bw/w,bh/h),iw=w*s,ih=h*s;
+if(p){cp.v=p.comp+' – '+(p.kind=='ck'?'Pengecekan':'Hasil Uji')+(p.cap?': '+p.cap:'');cp.u=1;const [w,h]=await imgDim(p.data),bw=cx[col]-cx[col-1]-6,bh=(ry[rp]-ry[rp-1])-6,s=Math.min(bw/w,bh/h),iw=w*s,ih=h*s;
 m.imgs.push({k:'photo',src:p.data,x:Math.round(cx[col-1]+3+(bw-iw)/2),y:Math.round(ry[rp-1]+3+(bh-ih)/2),w:Math.round(iw),h:Math.round(ih)})}
 else{a.v=tag;a.s[1]=16;a.s[2]=true;a.s[5]='center'}}
 return m}
+/* ---- rapikan: kecilkan font data pengguna yang tidak muat di tabel (Excel, pratinjau, dan PDF memakai ukuran yang sama) ---- */
+const _mc=document.createElement('canvas').getContext('2d');
+const tw=(t,s,px)=>{_mc.font=(s[3]?'italic ':'')+(s[2]?'bold ':'')+px+'px "'+s[0]+'",Arial,sans-serif';return _mc.measureText(t).width};
+function fitModel(m){const cp=cpx(m),rp=rpx(m),NC=cp.length,PAD=7,MIN=6.5,LH=1.15;
+const bd=(r,c)=>{const x=m.cells[r+','+c];return x?x.s[9]:'----'};
+for(const k in m.cells){const x=m.cells[k];if(!x.u||x.v===undefined||x.v===''||m.S.has(k))continue;
+const t=String(x.v);if(t==='✔')continue;const [r,c]=k.split(',').map(Number),g=m.M[k]||[r,c,r,c],s=x.s;
+let aw=-PAD,ah=0;for(let i=g[1];i<=g[3];i++)aw+=cp[i-1];for(let i=g[0];i<=g[2];i++)ah+=rp[i-1];
+if(s[7]){const need=z=>{let n=0;t.split(/\r?\n/).forEach(p=>{n+=Math.max(1,Math.ceil(tw(p,s,z*4/3)*1.08/aw))});return n*z*4/3*LH};
+let z=s[1];while(z>MIN&&need(z)>ah+2)z-=.5;s[1]=z;continue}
+let room=aw;
+if(typeof x.v!='number'&&!m.M[k]&&(!s[5]||s[5]=='left')){let cc=g[3];while(cc<NC){const nk=r+','+(cc+1);if(m.S.has(nk)||m.M[nk])break;const nx=m.cells[nk];if(nx&&nx.v!==undefined&&nx.v!=='')break;if(bd(r,cc)[3]!='-'||bd(r,cc+1)[2]!='-')break;room+=cp[cc];cc++}if(cc>g[3])room-=6}
+let z=s[1];while(z>MIN&&tw(t,s,z*4/3)>room)z-=.5;
+if(tw(t,s,z*4/3)>room&&ah+2>=2*z*4/3*LH&&typeof x.v!='number'){s[7]=true;if(!s[6])s[6]='center';const need=q=>{let n=0;t.split(/\r?\n/).forEach(p=>{n+=Math.max(1,Math.ceil(tw(p,s,q*4/3)*1.08/aw))});return n*q*4/3*LH};z=s[1];while(z>MIN&&need(z)>ah+2)z-=.5}
+s[1]=z}}
 async function models(D){const c=D.sel[0],I={pmt:[0,1],ct:[2,3],vt:[4,5],relay:[6,7]}[c],o=[cekM(D,c,I[0]),ujiM(D,c,I[1])];
-for(const [an,nm,tt,tag] of [[false,'I. Dokumentasi Pekerjaan','DOKUMENTASI PEKERJAAN','FOTO PEKERJAAN'],[true,'J. Dokumentasi Temuan','DOKUMENTASI TEMUAN/ANOMALI','FOTO TEMUAN']]){const ph=D.photos.filter(p=>p.anom==an);for(let k=0,g=1;k<ph.length;k+=8,g++)o.push(await docM(D,ph.slice(k,k+8),nm+(g>1?' ('+g+')':''),tt,tag))}return o}
+for(const [an,nm,tt,tag] of [[false,'I. Dokumentasi Pekerjaan','DOKUMENTASI PEKERJAAN','FOTO PEKERJAAN'],[true,'J. Dokumentasi Temuan','DOKUMENTASI TEMUAN/ANOMALI','FOTO TEMUAN']]){const ph=D.photos.filter(p=>p.anom==an);for(let k=0,g=1;k<ph.length;k+=8,g++)o.push(await docM(D,ph.slice(k,k+8),nm+(g>1?' ('+g+')':''),tt,tag))}o.forEach(fitModel);return o}
 let LOGOP=LOGOX;(()=>{const i=new Image;i.onload=()=>{const c=document.createElement('canvas');c.width=400;c.height=496;c.getContext('2d').drawImage(i,0,0,400,496);LOGOP=c.toDataURL('image/png')};i.src=LOGOX})();
 /* ---- render: Excel ---- */
 const BDS={t:'thin',m:'medium',k:'thick',h:'hair',d:'dotted',a:'dashed',D:'double',g:'thin'};
-function xs(t,s){t.font={name:s[0],size:s[1],bold:!!s[2],italic:!!s[3],...(s[4]?{color:{argb:'FF'+s[4]}}:{})};
-t.alignment={horizontal:s[5]||undefined,vertical:s[6]||undefined,wrapText:!!s[7],...(s[8]?{indent:s[8]}:{})};
-const b=s[9],bo={};['top','bottom','left','right'].forEach((k,j)=>{if(b[j]!='-')bo[k]={style:BDS[b[j]],color:{argb:b[j]=='g'?'FF7F7F7F':'FF000000'}}});if(Object.keys(bo).length)t.border=bo;
-if(s[10])t.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+s[10]}}}
+function xs(t,s){const f={name:s[0],size:s[1],bold:!!s[2],italic:!!s[3]};if(s[4])f.color={argb:'FF'+s[4]};
+const al={wrapText:!!s[7]};if(s[5])al.horizontal=s[5];if(s[6])al.vertical=s[6];if(s[8])al.indent=s[8];
+const b=s[9],bo={};['top','bottom','left','right'].forEach((k,j)=>{if(b[j]!='-')bo[k]={style:BDS[b[j]],color:{argb:b[j]=='g'?'FF7F7F7F':'FF000000'}}});
+const st={font:f,alignment:al};if(Object.keys(bo).length)st.border=bo;
+if(s[10])st.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+s[10]}};
+/* satu objek gaya BARU per sel: sel hasil merge di ExcelJS memakai objek gaya yang sama dengan sel induk, jadi mengubah font/alignment satu per satu akan saling menimpa */
+t.style=st}
 const cpx=m=>m.cw.map(w=>Math.round(w*7+5)),rpx=m=>m.rh.map(h=>(h||15)*4/3);
 function nat(m,x,y){const cp=cpx(m),rp=rpx(m);let c=0,ax=x;while(c<cp.length-1&&ax>=cp[c]){ax-=cp[c];c++}let r=0,ay=y;while(r<rp.length-1&&ay>=rp[r]){ay-=rp[r];r++}return{nativeCol:c,nativeColOff:Math.round(ax*9525),nativeRow:r,nativeRowOff:Math.round(ay*9525)}}
 async function xlsx(D){const wb=new ExcelJS.Workbook(),lg=wb.addImage({base64:LOGOP.split(',')[1],extension:'png'});
@@ -319,7 +337,7 @@ for(const i of m.imgs){const id=i.k=='logo'?lg:wb.addImage({base64:i.src.split('
 return wb.xlsx.writeBuffer()}
 /* ---- render: HTML (pratinjau & PDF) ---- */
 const BW={t:1,m:2,k:3,h:1,d:1,a:1,D:3,g:1},BST={t:'solid',m:'solid',k:'solid',h:'dotted',d:'dotted',a:'dashed',D:'double',g:'solid'};
-function css(s,b){b=b||s[9];let o='font-family:'+s[0]+',Arial,sans-serif;font-size:'+(s[1]*4/3)+'px;'+(s[2]?'font-weight:700;':'')+(s[3]?'font-style:italic;':'')+(s[4]?'color:#'+s[4]+';':'')+'text-align:'+(s[5]||'left')+';vertical-align:'+({center:'middle',top:'top'}[s[6]]||'bottom')+';white-space:'+(s[7]?'pre-wrap;word-break:break-word':'pre')+';'+(s[8]?'padding-left:'+s[8]*9+'px;':'')+(s[10]?'background:#'+s[10]+';':'');
+function css(s,b){b=b||s[9];let o='font-family:'+s[0]+',Arial,sans-serif;font-size:'+(s[1]*4/3)+'px;'+(s[2]?'font-weight:700;':'')+(s[3]?'font-style:italic;':'')+(s[4]?'color:#'+s[4]+';':'')+'text-align:'+(s[5]||'left')+';vertical-align:'+({center:'middle',top:'top'}[s[6]]||'bottom')+';white-space:'+(s[7]?'pre-wrap;word-break:break-word':'pre')+';'+(s[8]?'padding-left:'+s[8]*9+'px;':'')+(s[10]?'background:#'+s[10]+';':'')+(s[7]?'overflow:hidden;':'overflow:visible;');
 ['top','bottom','left','right'].forEach((k,j)=>{if(b[j]!='-')o+='border-'+k+':'+BW[b[j]]+'px '+BST[b[j]]+' '+(b[j]=='g'?'#7f7f7f':'#000')+';'});return o}
 function pageHTML(m){const cp=cpx(m),rp=rpx(m),W=cp.reduce((a,b)=>a+b,0);let h='<div class="pg" data-o="'+m.o+'" data-fh="'+m.fh+'" style="width:'+W+'px"><table style="width:'+W+'px"><colgroup>'+cp.map(x=>'<col style="width:'+x+'px">').join('')+'</colgroup>';
 for(let r=1;r<=rp.length;r++){h+='<tr style="height:'+rp[r-1]+'px">';for(let c=1;c<=cp.length;c++){const k=r+','+c;if(m.S.has(k))continue;const g=m.M[k],x=m.cells[k]||{s:DEFST};let b=x.s[9];
