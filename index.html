@@ -51,7 +51,7 @@ button:disabled{opacity:.4;cursor:not-allowed}.cw{position:relative;flex:1;min-w
 .bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px;background:var(--c);border-top:1px solid var(--l);z-index:25}
 #toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:8px;display:none;max-width:90vw;z-index:30}
 dialog{border:1px solid var(--l);border-radius:10px;max-width:520px;width:92vw}dialog div{display:flex;gap:8px;margin-top:12px}
-#pv{overflow-x:auto}.pg{background:#fff;color:#000;margin:0 auto 14px;position:relative}.pg table{border-collapse:collapse;table-layout:fixed}.pg td{padding:0 2px;overflow:hidden}#off{position:fixed;left:-99999px;top:0}
+#pv{overflow-x:auto}.pg{background:#fff;color:#000;margin:0 auto 14px;position:relative}.pg table{border-collapse:collapse;table-layout:fixed}.pg td{padding:0 2px;overflow:hidden}#off{position:fixed;left:-99999px;top:0;width:max-content}
 </style></head><body>
 <header><img id="lg" alt="PLN"><div><h1>HAR KUBIKEL 20 KV</h1><small>Checklist &amp; Hasil Uji Pemeliharaan Kubikel — UP2D Suluttenggo</small></div><button id="cfg" type="button">⚙ Koneksi Google</button></header>
 <div id="stick"><div class="wrap">
@@ -339,15 +339,18 @@ return wb.xlsx.writeBuffer()}
 const BW={t:1,m:2,k:3,h:1,d:1,a:1,D:3,g:1},BST={t:'solid',m:'solid',k:'solid',h:'dotted',d:'dotted',a:'dashed',D:'double',g:'solid'};
 function css(s,b){b=b||s[9];let o='font-family:'+s[0]+',Arial,sans-serif;font-size:'+(s[1]*4/3)+'px;'+(s[2]?'font-weight:700;':'')+(s[3]?'font-style:italic;':'')+(s[4]?'color:#'+s[4]+';':'')+'text-align:'+(s[5]||'left')+';vertical-align:'+({center:'middle',top:'top'}[s[6]]||'bottom')+';white-space:'+(s[7]?'pre-wrap;word-break:break-word':'pre')+';'+(s[8]?'padding-left:'+s[8]*9+'px;':'')+(s[10]?'background:#'+s[10]+';':'')+(s[7]?'overflow:hidden;':'overflow:visible;');
 ['top','bottom','left','right'].forEach((k,j)=>{if(b[j]!='-')o+='border-'+k+':'+BW[b[j]]+'px '+BST[b[j]]+' '+(b[j]=='g'?'#7f7f7f':'#000')+';'});return o}
+function fitPv(){const pv=$('#pv');if(!pv)return;const w=pv.clientWidth;$$('.pg',pv).forEach(el=>{el.style.zoom='';const W=el.offsetWidth;if(w>0&&W>w)el.style.zoom=(Math.floor((w-2)/W*1e4)/1e4)})}
+addEventListener('resize',()=>{clearTimeout(window.__fpv);window.__fpv=setTimeout(fitPv,120)});
 function pageHTML(m){const cp=cpx(m),rp=rpx(m),W=cp.reduce((a,b)=>a+b,0);let h='<div class="pg" data-o="'+m.o+'" data-fh="'+m.fh+'" style="width:'+W+'px"><table style="width:'+W+'px"><colgroup>'+cp.map(x=>'<col style="width:'+x+'px">').join('')+'</colgroup>';
 for(let r=1;r<=rp.length;r++){h+='<tr style="height:'+rp[r-1]+'px">';for(let c=1;c<=cp.length;c++){const k=r+','+c;if(m.S.has(k))continue;const g=m.M[k],x=m.cells[k]||{s:DEFST};let b=x.s[9];
 if(g){const bt=(m.cells[g[0]+','+g[1]]||{s:DEFST}).s[9],bb=(m.cells[g[2]+','+g[1]]||{s:DEFST}).s[9],br=(m.cells[g[0]+','+g[3]]||{s:DEFST}).s[9];b=bt[0]+bb[1]+bt[2]+br[3]}
 h+='<td'+(g&&g[3]>g[1]?' colspan="'+(g[3]-g[1]+1)+'"':'')+(g&&g[2]>g[0]?' rowspan="'+(g[2]-g[0]+1)+'"':'')+' style="'+css(x.s,b)+'">'+esc(x.v===undefined?'':x.v)+'</td>'}h+='</tr>'}
 return h+'</table>'+m.imgs.map(i=>'<img src="'+(i.k=='logo'?LOGOP:i.src)+'" style="position:absolute;left:'+i.x+'px;top:'+i.y+'px;width:'+i.w+'px;height:'+i.h+'px">').join('')+'</div>'}
 async function pdf(D){const host=$('#off');host.innerHTML=(await models(D)).map(pageHTML).join('');const {jsPDF}=window.jspdf;let doc=null;
-for(const el of $$('.pg',host)){const l=el.dataset.o=='l',cv=await html2canvas(el,{scale:2,backgroundColor:'#fff'}),m=8,W=(l?297:210)-2*m,H=(l?210:297)-2*m,fit=el.dataset.fh=='1',k=fit?Math.min(W/cv.width,H/cv.height):W/cv.width,ch=Math.floor(H/k);
-for(let y=0;y<cv.height;y+=ch){if(!doc)doc=new jsPDF({orientation:l?'l':'p',unit:'mm',format:'a4'});else doc.addPage('a4',l?'l':'p');
-const hh=Math.min(ch,cv.height-y),sl=document.createElement('canvas');sl.width=cv.width;sl.height=hh;sl.getContext('2d').drawImage(cv,0,y,cv.width,hh,0,0,cv.width,hh);doc.addImage(sl.toDataURL('image/jpeg',.92),'JPEG',m+(W-cv.width*k)/2,m,cv.width*k,hh*k)}}
+for(const el of $$('.pg',host)){const l=el.dataset.o=='l',cv=await html2canvas(el,{scale:2,backgroundColor:'#fff',scrollX:0,scrollY:0,windowWidth:Math.ceil(el.offsetWidth)+60,windowHeight:Math.ceil(el.offsetHeight)+60}),m=8,W=(l?297:210)-2*m,H=(l?210:297)-2*m,fit=el.dataset.fh=='1',k=fit?Math.min(W/cv.width,H/cv.height):W/cv.width,ch=fit?cv.height:Math.floor(H/k);
+const er=el.getBoundingClientRect(),sy=cv.height/er.height,sp=[...el.querySelectorAll('td[rowspan]')].map(t=>{const q=t.getBoundingClientRect();return[(q.top-er.top)*sy,(q.bottom-er.top)*sy]}),rb=[...el.querySelectorAll('tr')].map(t=>Math.round((t.getBoundingClientRect().bottom-er.top)*sy)).filter(v=>!sp.some(a=>v>a[0]+3&&v<a[1]-3));
+for(let y=0,nx;y<cv.height;y=nx){let e=Math.min(y+ch,cv.height);if(e<cv.height){const c2=rb.filter(v=>v>y+ch*.4&&v<=e);if(c2.length)e=Math.max(...c2)}nx=e;if(!doc)doc=new jsPDF({orientation:l?'l':'p',unit:'mm',format:'a4'});else doc.addPage('a4',l?'l':'p');
+const hh=e-y,sl=document.createElement('canvas');sl.width=cv.width;sl.height=hh;sl.getContext('2d').drawImage(cv,0,y,cv.width,hh,0,0,cv.width,hh);doc.addImage(sl.toDataURL('image/jpeg',.92),'JPEG',m+(W-cv.width*k)/2,m,cv.width*k,hh*k)}}
 host.innerHTML='';return doc.output('blob')}
 const dl=(data,name,type)=>{const x=document.createElement('a');x.href=URL.createObjectURL(new Blob([data],{type}));x.download=name;x.click();setTimeout(()=>URL.revokeObjectURL(x.href),4e3)};
 const fn=(D,x)=>'HAR_KUBIKEL_'+D.info.kubikel.replace(/[^\w-]+/g,'_')+'_'+D.info.tgl+'.'+x;
@@ -365,7 +368,7 @@ async function act(k){if(k!='s'&&!saved)return toast('Simpan data dulu sebelum E
 if(k=='x'){toast('Membuat Excel…',1);dl(await xlsx(D),fn(D,'xlsx'),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');toast('Excel diunduh.')}
 if(k=='p'){toast('Membuat PDF…',1);dl(await pdf(D),fn(D,'pdf'),'application/pdf');toast('PDF diunduh.')}
 if(k=='s')await save(D);
-if(k=='v'){$('#pv').innerHTML=(await models(D)).map(pageHTML).join('');$('#prevc').hidden=false;$('#prevc').scrollIntoView();toast('')}}catch(e){console.error(e);toast('Gagal: '+(e.message||e))}}
+if(k=='v'){$('#pv').innerHTML=(await models(D)).map(pageHTML).join('');$('#prevc').hidden=false;fitPv();$('#prevc').scrollIntoView();toast('')}}catch(e){console.error(e);toast('Gagal: '+(e.message||e))}}
 /* hasil sebelumnya otomatis dari Google Sheet (kubikel + lokasi + komponen yang sama) */
 let pvT;function prevLoad(){clearTimeout(pvT);pvT=setTimeout(async()=>{const c=sel(),u=LS('api'),s=$('#pvs');$$('input.auto').forEach(e=>{e.value='';e.classList.remove('auto')});
 if(!c||!UJ[c]){s.textContent='';return}if(!u){s.textContent='Hubungkan Google (⚙) agar Hasil Sebelumnya terisi otomatis.';return}
