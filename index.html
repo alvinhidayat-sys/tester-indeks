@@ -251,10 +251,10 @@ function fillHdr(m,D,c){const b=hvals(D,c);Object.keys(b).forEach(k=>fld(m,k,b[k
 function markCk(m,en){m.ck.forEach((row,ix)=>{const e=en[ix];if(!e)return;const r=row[0],L=row[1];[[e.a,L.slice(0,2)],[e.k,L.slice(2,4)]].forEach(([v,pair])=>{if(!v||pair.length<2)return;const p=pair.find(x=>nz(x[0])==nz(v));if(p&&p[2])put(m,r,p[2],'✔',{h:'center',font:'Segoe UI Symbol',sz:11,b:true})})})}
 function sign(m,cells,name,paren){const n=String(name||'').trim();if(!n)return;put(m,cells[0],cells[1],paren?'( '+n+' )':n,{h:'center'})}
 function cekM(D,c,I){const m=mm(I),d=D.comps[c],pel=PEL(D),i=D.info;fillHdr(m,D,c);markCk(m,d.ck);
-if(c=='pmt'){noteBox(m,45,4,48,28,d.note);pel.slice(0,5).forEach((n,k)=>put(m,50+k,3,n,{h:'left'}));sign(m,[54,7],i.tl,1);sign(m,[54,18],i.asman,1)}
+if(c=='pmt'){lblBox(m,45,1,48,1);lblBox(m,45,2,48,3);noteBox(m,45,4,48,28,d.note);pel.slice(0,5).forEach((n,k)=>put(m,50+k,3,n,{h:'left'}));sign(m,[54,7],i.tl,1);sign(m,[54,18],i.asman,1)}
 else if(c=='ct'){noteBox(m,40,2,43,25,d.note);pel.slice(0,6).forEach((n,k)=>put(m,47+k,3,n,{h:'left'}));sign(m,[52,5],i.tl,1);sign(m,[52,16],i.asman,1)}
 else if(c=='vt'){noteBox(m,37,2,40,25,d.note);pel.slice(0,6).forEach((n,k)=>put(m,43+k,3,n,{h:'left'}));sign(m,[48,5],i.tl,1);sign(m,[48,16],i.asman,1)}
-else{noteBox(m,31,2,32,13,': '+d.note);
+else{lblBox(m,31,1,32,1);noteBox(m,31,2,32,13,': '+d.note);
 const T=(r,c1,c2,t)=>{addMerge(m,r,c1,r,c2);put(m,r,c1,t,{h:'center',font:'Tahoma',sz:12,b:false})};
 T(33,1,2,'Asman Pemeliharaan');T(33,3,8,'TL Proteksi dan Meter');T(33,9,13,'Pelaksana');
 const L='(________________________)',N=(r,c1,c2,n)=>{addMerge(m,r,c1,r,c2);put(m,r,c1,n?'( '+n+' )':L,{h:'center',font:'Tahoma',sz:12,b:false})};
@@ -271,7 +271,7 @@ put(m,7,10,undefined);put(m,10,2,N(h.rp),{h:'left'});put(m,10,4,N(h.rs),{h:'left
 for(let k=0;k<6;k++){const c=6+k;S(23,c,N(R.ip[k]));S(24,c,N(R.isc[k]));S(26,c,N(R.ht[k],3));S(27,c,N(R.er.RS[k],2));S(25,c,N(R.hu.RS[k]));S(28,c,N(R.hu.ST[k]));S(29,c,N(R.ht[k],3));S(30,c,N(R.er.ST[k],2));S(31,c,N(R.hu.TR[k]));S(32,c,N(R.ht[k],3));S(33,c,N(R.er.TR[k],2))}
 for(let k=0;k<5;k++){const c=6+k;S(36,c,N(R.gp[k]));S(37,c,N(R.gs[k]));S(38,c,N(R.hg[k]));S(39,c,N(R.gh[k],3));S(40,c,N(R.ge[k],2))}
 R.f.forEach((x,k)=>{if(x[0])S(45+k,5,x[0]);if(x[1])S(45+k,7,x[1])});
-noteBox(m,49,2,54,11,D.comps.relay.note);
+lblBox(m,49,1,54,1);noteBox(m,49,2,54,11,D.comps.relay.note);
 [[61,2,pel.join(', ')],[61,5,i.tl],[61,8,i.asman]].forEach(x=>sign(m,[x[0],x[1]],x[2],1))}
 function ujiM(D,c,I){const m=mm(I),d=D.comps[c],i=D.info,pel=PEL(D).join(', ');fillHdr(m,D,c);
 if(c=='relay'){rlFill(m,D);return m}
@@ -314,12 +314,12 @@ let z=s[1];while(z>MIN&&tw(t,s,z*4/3)>room)z-=.5;
 if(tw(t,s,z*4/3)>room&&ah+2>=2*z*4/3*LH&&typeof x.v!='number'){s[7]=true;if(!s[6])s[6]='center';const need=q=>{let n=0;t.split(/\r?\n/).forEach(p=>{n+=Math.max(1,Math.ceil(tw(p,s,q*4/3)*1.08/aw))});return n*q*4/3*LH};z=s[1];while(z>MIN&&need(z)>ah+2)z-=.5}
 s[1]=z}}
 async function models(D){const c=D.sel[0],I={pmt:[0,1],ct:[2,3],vt:[4,5],relay:[6,7]}[c],o=[cekM(D,c,I[0]),ujiM(D,c,I[1])];
-for(const [an,nm,tt,tag] of [[false,'I. Dokumentasi Pekerjaan','DOKUMENTASI PEKERJAAN','FOTO PEKERJAAN'],[true,'J. Dokumentasi Temuan','DOKUMENTASI TEMUAN/ANOMALI','FOTO TEMUAN']]){const ph=D.photos.filter(p=>p.anom==an);for(let k=0,g=1;k<ph.length;k+=8,g++)o.push(await docM(D,ph.slice(k,k+8),nm+(g>1?' ('+g+')':''),tt,tag))}o.forEach(fitModel);return o}
+for(const [an,nm,tt,tag] of [[false,'I. Dokumentasi Pekerjaan','DOKUMENTASI PEKERJAAN','FOTO PEKERJAAN'],[true,'J. Dokumentasi Temuan','DOKUMENTASI TEMUAN/ANOMALI','FOTO TEMUAN']]){const ph=D.photos.filter(p=>p.anom==an);for(let k=0,g=1;k<ph.length;k+=8,g++)o.push(await docM(D,ph.slice(k,k+8),nm+(g>1?' ('+g+')':''),tt,tag))}o.forEach(m=>{for(const k in m.cells)m.cells[k].s[6]='center'});o.forEach(fitModel);return o}
 let LOGOP=LOGOX;(()=>{const i=new Image;i.onload=()=>{const c=document.createElement('canvas');c.width=400;c.height=496;c.getContext('2d').drawImage(i,0,0,400,496);LOGOP=c.toDataURL('image/png')};i.src=LOGOX})();
 /* ---- render: Excel ---- */
 const BDS={t:'thin',m:'medium',k:'thick',h:'hair',d:'dotted',a:'dashed',D:'double',g:'thin'};
 function xs(t,s){const f={name:s[0],size:s[1],bold:!!s[2],italic:!!s[3]};if(s[4])f.color={argb:'FF'+s[4]};
-const al={wrapText:!!s[7]};if(s[5])al.horizontal=s[5];if(s[6])al.vertical=s[6];if(s[8])al.indent=s[8];
+const al={wrapText:!!s[7]};if(s[5])al.horizontal=s[5];al.vertical=({top:'top',bottom:'bottom'}[s[6]]||'middle');if(s[8])al.indent=s[8];
 const b=s[9],bo={};['top','bottom','left','right'].forEach((k,j)=>{if(b[j]!='-')bo[k]={style:BDS[b[j]],color:{argb:b[j]=='g'?'FF7F7F7F':'FF000000'}}});
 const st={font:f,alignment:al};if(Object.keys(bo).length)st.border=bo;
 if(s[10])st.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+s[10]}};
@@ -337,8 +337,9 @@ for(const i of m.imgs){const id=i.k=='logo'?lg:wb.addImage({base64:i.src.split('
 return wb.xlsx.writeBuffer()}
 /* ---- render: HTML (pratinjau & PDF) ---- */
 const BW={t:1,m:2,k:3,h:1,d:1,a:1,D:3,g:1},BST={t:'solid',m:'solid',k:'solid',h:'dotted',d:'dotted',a:'dashed',D:'double',g:'solid'};
-function css(s,b){b=b||s[9];let o='font-family:'+s[0]+',Arial,sans-serif;font-size:'+(s[1]*4/3)+'px;'+(s[2]?'font-weight:700;':'')+(s[3]?'font-style:italic;':'')+(s[4]?'color:#'+s[4]+';':'')+'text-align:'+(s[5]||'left')+';vertical-align:'+({center:'middle',top:'top'}[s[6]]||'bottom')+';white-space:'+(s[7]?'pre-wrap;word-break:break-word':'pre')+';'+(s[8]?'padding-left:'+s[8]*9+'px;':'')+(s[10]?'background:#'+s[10]+';':'')+(s[7]?'overflow:hidden;':'overflow:visible;');
+function css(s,b){b=b||s[9];let o='font-family:'+s[0]+',Arial,sans-serif;font-size:'+(s[1]*4/3)+'px;'+(s[2]?'font-weight:700;':'')+(s[3]?'font-style:italic;':'')+(s[4]?'color:#'+s[4]+';':'')+'text-align:'+(s[5]||'left')+';vertical-align:'+({top:'top',bottom:'bottom'}[s[6]]||'middle')+';white-space:'+(s[7]?'pre-wrap;word-break:break-word':'pre')+';'+(s[8]?'padding-left:'+s[8]*9+'px;':'')+(s[10]?'background:#'+s[10]+';':'')+(s[7]?'overflow:hidden;':'overflow:visible;');
 ['top','bottom','left','right'].forEach((k,j)=>{if(b[j]!='-')o+='border-'+k+':'+BW[b[j]]+'px '+BST[b[j]]+' '+(b[j]=='g'?'#7f7f7f':'#000')+';'});return o}
+function lblBox(m,r1,c1,r2,c2){if(addMerge(m,r1,c1,r2,c2)){const x=m.cells[r1+','+c1];if(x)x.u=1}}
 function fitPv(){const pv=$('#pv');if(!pv)return;const w=pv.clientWidth;$$('.pg',pv).forEach(el=>{el.style.zoom='';const W=el.offsetWidth;if(w>0&&W>w)el.style.zoom=(Math.floor((w-2)/W*1e4)/1e4)})}
 addEventListener('resize',()=>{clearTimeout(window.__fpv);window.__fpv=setTimeout(fitPv,120)});
 function pageHTML(m){const cp=cpx(m),rp=rpx(m),W=cp.reduce((a,b)=>a+b,0);let h='<div class="pg" data-o="'+m.o+'" data-fh="'+m.fh+'" style="width:'+W+'px"><table style="width:'+W+'px"><colgroup>'+cp.map(x=>'<col style="width:'+x+'px">').join('')+'</colgroup>';
