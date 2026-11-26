@@ -1,197 +1,150 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-<base target="_top">
-<meta charset="utf-8">
-<title>Rekapitulasi Pekerjaan</title>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rekap Pekerjaan SCADA & Telekomunikasi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  *{box-sizing:border-box}
-  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f3f6fa;color:#1f2d3d}
-  header{background:#0b6b8a;color:#fff;padding:14px 20px}
-  header h1{margin:0;font-size:18px}
-  header small{opacity:.85}
-  main{padding:16px 20px;max-width:1200px;margin:auto}
-  .card{background:#fff;border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-  .filter{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-  label{font-size:12px;display:block;margin-bottom:3px;color:#556}
-  input,select{padding:7px 8px;border:1px solid #c5ccd6;border-radius:5px;font-size:14px}
-  button{padding:8px 14px;border:0;border-radius:5px;background:#0b6b8a;color:#fff;cursor:pointer;font-size:14px}
-  button.sec{background:#5b6b7b}
-  button.ok{background:#1f8a4c}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  .sum{display:flex;gap:10px;flex-wrap:wrap}
-  .sum div{background:#eaf3f7;padding:8px 14px;border-radius:6px;font-size:13px}
-  .sum b{font-size:18px;display:block}
-  .wrap{overflow-x:auto}
-  table{border-collapse:collapse;width:100%;font-size:13px}
-  th,td{border-bottom:1px solid #e3e8ee;padding:7px 8px;text-align:left;vertical-align:top}
-  th{background:#eef2f6;position:sticky;top:0}
-  .tag{padding:2px 7px;border-radius:10px;font-size:11px;color:#fff}
-  .SCADA{background:#0b6b8a}.Telekomunikasi{background:#8a4b0b}
-  .Preventif{background:#1f8a4c}.Korektif{background:#c0392b}
-  #status{font-size:13px;margin:6px 0;color:#444}
-  .bar{height:8px;background:#dde;border-radius:4px;overflow:hidden;display:none}
-  .bar i{display:block;height:100%;width:0;background:#1f8a4c}
-</style>
-</head>
-<body>
-<header>
-  <h1>Rekapitulasi Pekerjaan SCADA &amp; Telekomunikasi</h1>
-  <small id="info"></small>
-</header>
+:root{--bg:#f4f7fb;--c:#fff;--t:#1b2a3a;--p:#0b6fa4;--b:#d8e2ec}
+@media(prefers-color-scheme:dark){:root{--bg:#10171f;--c:#18222d;--t:#e6edf4;--p:#4aa8d8;--b:#2b3a49}}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--t)}
+header{background:var(--p);color:#fff;padding:14px 18px;font-size:18px;font-weight:600}
+main{max-width:1100px;margin:auto;padding:14px}
+.card{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+label{display:flex;flex-direction:column;font-size:12px;gap:3px}
+select,input,button{font:inherit;padding:7px 10px;border:1px solid var(--b);border-radius:6px;background:var(--c);color:var(--t)}
+button{background:var(--p);color:#fff;border:0;cursor:pointer}button.s{background:#5b6b7b}button:disabled{opacity:.5}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:7px 9px;border-bottom:1px solid var(--b);text-align:left;vertical-align:top}
+th{background:var(--p);color:#fff;white-space:nowrap}td button{padding:4px 8px}
+#modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:9}
+#mb{background:var(--c);border-radius:10px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:14px}
+#st{font-size:12px;opacity:.8;margin:6px 0}.x{display:none}
+</style></head><body>
+<header>Rekap Pekerjaan Pemeliharaan — SCADA & Telekomunikasi</header>
 <main>
-  <div class="card">
-    <div class="filter">
-      <div><label>Dari tanggal</label><input type="date" id="dari"></div>
-      <div><label>Sampai tanggal</label><input type="date" id="sampai"></div>
-      <div><label>Kategori</label>
-        <select id="kat"><option value="">Semua</option><option>SCADA</option><option>Telekomunikasi</option></select></div>
-      <div><label>Jenis</label>
-        <select id="jenis"><option value="">Semua</option><option>Preventif</option><option>Korektif</option></select></div>
-      <div><label>Cari asset / uraian</label><input id="kata" placeholder="mis. GH Tomohon"></div>
-      <button onclick="cari()">Tampilkan</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="sum" id="sum"></div>
-    <p id="status"></p>
-    <div class="bar" id="bar"><i id="barI"></i></div>
-    <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="ok" id="btnZip" onclick="zipSemua()" disabled>Download Semua Foto (ZIP)</button>
-      <button class="sec" id="btnCsv" onclick="exportCsv()" disabled>Export Rekap (CSV/Excel)</button>
-    </div>
-    <div class="wrap">
-      <table>
-        <thead><tr><th>No</th><th>Tanggal</th><th>Kategori</th><th>Jenis</th><th>Tipe</th><th>Asset / Remote Station</th><th>Uraian</th><th>Pelaksana</th><th>Foto</th></tr></thead>
-        <tbody id="tb"><tr><td colspan="9">Pilih tanggal lalu klik Tampilkan.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card"><div class="row">
+<label>Pekerjaan<select id="job"><option value="scada">SCADA</option><option value="tel">Telekomunikasi</option></select></label>
+<label>Tahun<select id="yr"></select></label>
+<label>Bulan<select id="mo"></select></label>
+<button id="go">Tampilkan</button>
+<button class="s" onclick="cfg.hidden=!cfg.hidden">Pengaturan</button>
+</div>
+<div id="cfg" hidden style="margin-top:10px">
+<div class="row">
+<label>Google API Key (Drive API aktif, untuk daftar & unduh foto)<input id="key" size="40"></label>
+<label>ID Folder Foto SCADA<input id="fs" size="38" value="1vdFBNUYJgRlspEfalwOmnnyA5wE_bM0-"></label>
+<label>ID Folder Foto Telekomunikasi<input id="ft" size="38" placeholder="menyusul"></label>
+<button class="s" onclick="saveCfg()">Simpan</button></div>
+<div style="font-size:12px;margin-top:6px">Spreadsheet & folder harus dibagikan "Siapa saja yang memiliki link".</div></div></div>
+<div id="st"></div>
+<div class="card">
+<div class="row" style="margin-bottom:8px">
+<button id="bx" disabled>Export Tabel Foto (Excel)</button>
+<button id="bd" disabled>Download Semua Foto (ZIP)</button></div>
+<div class="tw"><table><thead><tr><th>No</th><th>Tanggal</th><th>Remote Station</th><th>Jenis Pemeliharaan</th><th>Lihat Laporan</th></tr></thead><tbody id="tb"></tbody></table></div></div>
 </main>
-
+<div id="modal"><div id="mb"></div></div>
 <script>
-// ====== PENGATURAN ======
-const API_URL = 'https://script.google.com/macros/s/AKfycbwOTR_EA3KOa8PYo1JK4klHyAdGAEiHqdTOzTBsd883IpUAb5lPlKcaGCkJ80PsLAg/exec';
-const TOKEN = '';   // isi jika CFG.API_TOKEN di Code.gs diisi
-
-// Dipakai otomatis: di dalam Apps Script -> google.script.run, di luar (file lokal/hosting) -> fetch ke API_URL
-function api(action, p){
-  if (typeof google !== 'undefined' && google.script && google.script.run){
-    return new Promise((ok, err) => {
-      const r = google.script.run.withSuccessHandler(ok).withFailureHandler(e => err(new Error(e.message || e)));
-      if (action === 'pekerjaan') r.getPekerjaan(p.dari, p.sampai, p.kategori, p.jenis, p.kata);
-      else r.getFotoBase64(p.id);
-    });
-  }
-  const q = new URLSearchParams(Object.assign({action: action, token: TOKEN}, p));
-  return fetch(API_URL + '?' + q.toString())
-    .then(r => r.json())
-    .then(j => { if (j && j.error) throw new Error(j.error); return j; });
-}
-
-let DATA = [];
-const $ = id => document.getElementById(id);
-
-(function init(){
-  const t = new Date(), s = new Date(t.getFullYear(), t.getMonth(), 1);
-  $('dari').value = iso(s); $('sampai').value = iso(t);
-  cari();
-})();
-function iso(d){ const z=n=>('0'+n).slice(-2); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function aman(s){ return String(s).replace(/[\\\/:*?"<>|]+/g,'-').replace(/\s+/g,'_').replace(/_+/g,'_'); }
-
-function cari(){
-  $('status').textContent = 'Memuat data...';
-  $('btnZip').disabled = $('btnCsv').disabled = true;
-  api('pekerjaan', {dari: $('dari').value, sampai: $('sampai').value, kategori: $('kat').value, jenis: $('jenis').value, kata: $('kata').value})
-    .then(r => { DATA = r.rows || []; $('info').textContent = r.info || ''; render(); })
-    .catch(e => {
-      $('status').innerHTML = '<b style="color:#c0392b">Gagal memuat data: ' + esc(e.message) +
-        '</b><br>Pastikan Web App di-deploy dengan akses "Anyone" dan versi terbaru.';
-    });
-}
-
-function render(){
-  const tb = $('tb');
-  if (!DATA.length){ tb.innerHTML = '<tr><td colspan="9">Tidak ada pekerjaan pada filter ini.</td></tr>'; }
-  else tb.innerHTML = DATA.map((r,i)=>`<tr>
-    <td>${i+1}</td><td>${r.tanggal}</td>
-    <td><span class="tag ${esc(r.kategori)}">${esc(r.kategori)}</span></td>
-    <td><span class="tag ${esc(r.jenis)}">${esc(r.jenis)}</span></td>
-    <td>${esc(r.tipe)}</td><td><b>${esc(r.asset)}</b></td><td>${esc(r.uraian)}</td><td>${esc(r.pelaksana)}</td>
-    <td>${r.foto.length ? `<button onclick="unduhSatu(${i})">Download (${r.foto.length})</button>` : '<i>-</i>'}</td></tr>`).join('');
-  const n = k => DATA.filter(r=>r.kategori===k).length;
-  const nf = DATA.reduce((a,r)=>a+r.foto.length,0);
-  $('sum').innerHTML = `<div><b>${DATA.length}</b>Total pekerjaan</div><div><b>${n('SCADA')}</b>SCADA</div><div><b>${n('Telekomunikasi')}</b>Telekomunikasi</div>
-    <div><b>${DATA.filter(r=>r.jenis==='Preventif').length}</b>Preventif</div><div><b>${DATA.filter(r=>r.jenis==='Korektif').length}</b>Korektif</div><div><b>${nf}</b>Foto</div>`;
-  $('status').textContent = '';
-  $('btnCsv').disabled = !DATA.length; $('btnZip').disabled = !nf;
-}
-
-function ambilFoto(id){ return api('foto', {id: id}); }
-function namaFoto(r, n, ext){
-  return `${r.tanggal}_${aman(r.asset)}_${n}.${ext}`;
-}
-function simpan(blob, nama){
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nama;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-}
-function b64ke(b64, mime){
-  const bin = atob(b64), u = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
-  return new Blob([u], {type:mime});
-}
-function progres(p, teks){ $('bar').style.display = p>=1||p<0 ? 'none':'block'; $('barI').style.width = (p*100)+'%'; $('status').textContent = teks||''; }
-
-async function unduhSatu(i){
-  const r = DATA[i];
-  try{
-    if (r.foto.length === 1){
-      const f = await ambilFoto(r.foto[0].id);
-      simpan(b64ke(f.b64,f.mime), namaFoto(r,1,f.ext)); return;
-    }
-    const zip = new JSZip();
-    for (let k=0;k<r.foto.length;k++){
-      progres(k/r.foto.length, `Mengambil foto ${k+1}/${r.foto.length}...`);
-      const f = await ambilFoto(r.foto[k].id);
-      zip.file(namaFoto(r,k+1,f.ext), f.b64, {base64:true});
-    }
-    simpan(await zip.generateAsync({type:'blob'}), `${r.tanggal}_${aman(r.asset)}.zip`);
-    progres(1,'Selesai.');
-  }catch(e){ progres(1,'Gagal: '+e.message); }
-}
-
-async function zipSemua(){
-  const total = DATA.reduce((a,r)=>a+r.foto.length,0);
-  if (total > 150 && !confirm(total+' foto. Proses bisa lama. Lanjutkan?')) return;
-  $('btnZip').disabled = true;
-  const zip = new JSZip(); let done = 0;
-  try{
-    for (const r of DATA){
-      const folder = zip.folder(`${r.kategori}/${r.tanggal}_${aman(r.asset)}`);
-      for (let k=0;k<r.foto.length;k++){
-        progres(done/total, `Mengambil foto ${done+1}/${total}...`);
-        const f = await ambilFoto(r.foto[k].id);
-        folder.file(namaFoto(r,k+1,f.ext), f.b64, {base64:true});
-        done++;
-      }
-    }
-    progres(0.99,'Membuat ZIP...');
-    simpan(await zip.generateAsync({type:'blob'}), `Eviden_${$('dari').value}_sd_${$('sampai').value}.zip`);
-    progres(1,'Selesai: '+done+' foto.');
-  }catch(e){ progres(1,'Gagal: '+e.message); }
-  $('btnZip').disabled = false;
-}
-
-function exportCsv(){
-  const h = ['No','Tanggal','Kategori','Jenis','Tipe','Asset / Remote Station','Uraian','Pelaksana','Jumlah Foto'];
-  const q = s => '"'+String(s==null?'':s).replace(/"/g,'""')+'"';
-  const baris = [h.map(q).join(';')].concat(DATA.map((r,i)=>[i+1,r.tanggal,r.kategori,r.jenis,r.tipe,r.asset,r.uraian,r.pelaksana,r.foto.length].map(q).join(';')));
-  simpan(new Blob(['\ufeff'+baris.join('\r\n')],{type:'text/csv;charset=utf-8'}), `Rekap_${$('dari').value}_sd_${$('sampai').value}.csv`);
-}
-</script>
-</body>
-</html>
+const SID='1aw4pLkidxYOiwWpYZE47wBqjWBUnuZIRkvJIcQVEl-0';
+const SRC={scada:{gid:'1654147482',photo:/pembersihan|panel/i,col:9,name:'SCADA'},tel:{gid:'597556611',photo:/instalasi/i,col:29,name:'Telekomunikasi'}};
+const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const $=id=>document.getElementById(id);
+let cache={},rows=[],drive={};
+const st=m=>$('st').textContent=m;
+// pengaturan
+try{const c=JSON.parse(localStorage.getItem('cfg')||'{}');['key','fs','ft'].forEach(k=>{if(c[k]!=null)$(k).value=c[k]})}catch(e){}
+function saveCfg(){try{localStorage.setItem('cfg',JSON.stringify({key:$('key').value,fs:$('fs').value,ft:$('ft').value}))}catch(e){}drive={};st('Pengaturan disimpan')}
+const y0=new Date().getFullYear();
+$('yr').innerHTML=[y0-2,y0-1,y0,y0+1].map(y=>`<option ${y==y0?'selected':''}>${y}</option>`).join('');
+$('mo').innerHTML='<option value="0">Semua</option>'+BLN.map((b,i)=>`<option value="${i+1}" ${i==new Date().getMonth()?'selected':''}>${b}</option>`).join('');
+// CSV parser
+function csv(t){const r=[];let a=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];
+if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+else if(c=='"')q=true;else if(c==','){a.push(f);f=''}
+else if(c=='\n'){a.push(f);r.push(a);a=[];f=''}else if(c!='\r')f+=c}
+if(f||a.length){a.push(f);r.push(a)}return r}
+function pdate(s){s=(s||'').trim();let m;
+if(m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/))return new Date(+m[3],m[2]-1,+m[1]);
+if(m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))return new Date(+m[1],m[2]-1,+m[3]);
+if(m=s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/)){const i=BLN.findIndex(b=>b.toLowerCase().startsWith(m[2].toLowerCase().slice(0,3)));if(i>=0)return new Date(+m[3],i,+m[1])}
+return null}
+const fmt=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+const fn=d=>String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear();
+async function load(k){
+if(cache[k])return cache[k];
+const u=`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&gid=${SRC[k].gid}`;
+const r=await fetch(u);if(!r.ok)throw new Error('Gagal membaca spreadsheet (pastikan akses link publik)');
+const all=csv(await r.text());
+let h=all.findIndex(x=>x.some(c=>/tanggal/i.test(c)));if(h<0)h=0;
+const hd=all[h].map((c,i)=>(c||'').trim()||('Kolom '+(i+1)));
+const find=re=>hd.findIndex(c=>re.test(c));
+const ix={d:find(/tanggal/i),n:find(/remote station|repeater|nama aset|nama asset|lokasi|nama/i),j:find(/jenis/i)};
+let pc=hd.findIndex(c=>SRC[k].photo.test(c));if(pc<0)pc=SRC[k].col;
+const data=all.slice(h+1).map(r=>({r,date:pdate(r[ix.d])})).filter(o=>o.date).map(o=>({
+date:o.date,name:(o.r[ix.n]||'').trim(),jenis:(o.r[ix.j]||'').trim(),photo:(o.r[pc]||'').trim(),
+f:hd.map((c,i)=>[c,(o.r[i]||'').trim()]).filter(x=>x[1])}));
+return cache[k]={hd,data,pc}}
+// Drive
+async function listDrive(id,key){
+const out=[];const q=[id];
+while(q.length){const p=q.shift();let tok='';
+do{const u=`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${p}' in parents and trashed=false`)}&fields=nextPageToken,files(id,name,mimeType)&pageSize=1000&key=${key}`+(tok?`&pageToken=${tok}`:'');
+const r=await fetch(u);if(!r.ok)throw new Error('Gagal membaca folder Drive (cek API Key & akses folder)');
+const j=await r.json();tok=j.nextPageToken||'';
+j.files.forEach(f=>f.mimeType=='application/vnd.google-apps.folder'?q.push(f.id):out.push(f))}while(tok)}
+return out}
+async function getDrive(k){
+const id=$(k=='scada'?'fs':'ft').value.trim(),key=$('key').value.trim();
+if(!id)throw new Error('ID folder foto '+SRC[k].name+' belum diisi (Pengaturan)');
+if(!key)throw new Error('Isi Google API Key di Pengaturan untuk mengakses foto');
+return drive[k]||(drive[k]=await listDrive(id,key))}
+const base=s=>s.toLowerCase().replace(/\.[a-z0-9]{2,4}$/,'').trim();
+const issign=s=>/sign|ttd|tanda.?tangan/i.test(s);
+function names(o){return o.photo.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean)}
+function match(o,files,noSign=true){
+return names(o).filter(n=>!(noSign&&issign(n))).map(n=>({n,f:files.find(f=>f.name.toLowerCase()==n.toLowerCase())||files.find(f=>base(f.name)==base(n))}))}
+// tabel
+async function show(){
+try{st('Memuat data...');const k=$('job').value,{data}=await load(k);
+const y=+$('yr').value,m=+$('mo').value;
+rows=data.filter(o=>o.date.getFullYear()==y&&(!m||o.date.getMonth()+1==m)).sort((a,b)=>a.date-b.date);
+$('tb').innerHTML=rows.map((o,i)=>`<tr><td>${i+1}</td><td>${fmt(o.date)}</td><td>${esc(o.name)}</td><td>${esc(o.jenis)}</td><td><button onclick="detail(${i})" title="Lihat laporan">👁</button></td></tr>`).join('')||'<tr><td colspan=5>Tidak ada data</td></tr>';
+$('bx').disabled=$('bd').disabled=!rows.length;st(rows.length+' pekerjaan ditemukan')}
+catch(e){st('Error: '+e.message)}}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('go').onclick=show;
+// detail
+let cur=null;
+function detail(i){cur=rows[i];
+$('mb').innerHTML=`<h3 style="margin-top:0">Laporan ${esc(cur.name)} — ${fmt(cur.date)}</h3>
+<div class="tw"><table>${cur.f.map(x=>`<tr><th style="background:none;color:inherit;width:35%">${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join('')}</table></div>
+<div class="row" style="margin-top:10px"><button onclick="dx()">Export Excel</button><button onclick="dp()">Export PDF</button>
+<button onclick="dz()">Export Dokumentasi (non-sign)</button><button class="s" onclick="$('modal').style.display='none'">Tutup</button></div>`;
+$('modal').style.display='flex'}
+$('modal').onclick=e=>{if(e.target.id=='modal')e.target.style.display='none'};
+const safe=s=>s.replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,'_');
+function dx(){const ws=XLSX.utils.aoa_to_sheet([['Item','Isi'],...cur.f]);ws['!cols']=[{wch:40},{wch:60}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Laporan');XLSX.writeFile(wb,`Laporan_${fn(cur.date)}_${safe(cur.name)}.xlsx`)}
+function dp(){const d=new jspdf.jsPDF();d.setFontSize(13);d.text(`Laporan ${cur.name} - ${fmt(cur.date)}`,14,15);
+d.autoTable({startY:22,head:[['Item','Isi']],body:cur.f,styles:{fontSize:9},columnStyles:{0:{cellWidth:60}}});d.save(`Laporan_${fn(cur.date)}_${safe(cur.name)}.pdf`)}
+async function blob(f){const r=await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${$('key').value.trim()}`);if(!r.ok)throw new Error('Unduh gagal: '+f.name);return r.blob()}
+const ext=n=>(n.match(/\.[a-z0-9]{2,4}$/i)||['.jpg'])[0];
+async function zip(list,fname){
+const k=$('job').value;const files=await getDrive(k);const z=new JSZip();let c=0,miss=0;
+for(const o of list){const ms=match(o,files);let n=0;
+for(const m of ms){if(!m.f){miss++;continue}n++;st(`Mengunduh ${++c}...`);
+z.file(`${fn(o.date)}_${safe(o.name)}${ms.length>1?'_'+n:''}${ext(m.f.name)}`,await blob(m.f))}}
+if(!c){st('Tidak ada foto yang cocok di Drive');return}
+const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
+st(`${c} foto diunduh${miss?`, ${miss} tidak ditemukan di Drive`:''}`)}
+async function dz(){try{await zip([cur],`Dokumentasi_${fn(cur.date)}_${safe(cur.name)}.zip`)}catch(e){st('Error: '+e.message)}}
+$('bd').onclick=async()=>{try{await zip(rows,`Foto_${SRC[$('job').value].name}_${$('yr').value}_${$('mo').value}.zip`)}catch(e){st('Error: '+e.message)}};
+$('bx').onclick=async()=>{try{const k=$('job').value;const files=await getDrive(k);const out=[['No','Tanggal','Remote Station','Jenis Pemeliharaan','Nama File di Sheet','Nama File di Drive','Status']];let n=0;
+rows.forEach(o=>match(o,files,false).forEach(m=>out.push([++n,fmt(o.date),o.name,o.jenis,m.n,m.f?m.f.name:'-',m.f?'Ditemukan':'Tidak ditemukan'])));
+const ws=XLSX.utils.aoa_to_sheet(out);ws['!cols']=[5,12,28,26,34,34,16].map(w=>({wch:w}));const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,k=='scada'?'Foto Pembersihan Panel':'Foto Instalasi');
+XLSX.writeFile(wb,`Tabel_Foto_${SRC[k].name}_${$('yr').value}_${$('mo').value}.xlsx`);st('Excel dibuat')}catch(e){st('Error: '+e.message)}};
+show();
+</script></body></html>
