@@ -72,6 +72,25 @@
 </main>
 
 <script>
+// ====== PENGATURAN ======
+const API_URL = 'https://script.google.com/macros/s/AKfycbwOTR_EA3KOa8PYo1JK4klHyAdGAEiHqdTOzTBsd883IpUAb5lPlKcaGCkJ80PsLAg/exec';
+const TOKEN = '';   // isi jika CFG.API_TOKEN di Code.gs diisi
+
+// Dipakai otomatis: di dalam Apps Script -> google.script.run, di luar (file lokal/hosting) -> fetch ke API_URL
+function api(action, p){
+  if (typeof google !== 'undefined' && google.script && google.script.run){
+    return new Promise((ok, err) => {
+      const r = google.script.run.withSuccessHandler(ok).withFailureHandler(e => err(new Error(e.message || e)));
+      if (action === 'pekerjaan') r.getPekerjaan(p.dari, p.sampai, p.kategori, p.jenis, p.kata);
+      else r.getFotoBase64(p.id);
+    });
+  }
+  const q = new URLSearchParams(Object.assign({action: action, token: TOKEN}, p));
+  return fetch(API_URL + '?' + q.toString())
+    .then(r => r.json())
+    .then(j => { if (j && j.error) throw new Error(j.error); return j; });
+}
+
 let DATA = [];
 const $ = id => document.getElementById(id);
 
@@ -85,17 +104,14 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 function aman(s){ return String(s).replace(/[\\\/:*?"<>|]+/g,'-').replace(/\s+/g,'_').replace(/_+/g,'_'); }
 
 function cari(){
-  if (typeof google === 'undefined' || !google.script || !google.script.run){
-    $('status').innerHTML = '<b style="color:#c0392b">Halaman ini harus dibuka lewat link Web App (…/exec) hasil Deploy di Apps Script, bukan dibuka langsung sebagai file HTML atau lewat preview.</b>';
-    return;
-  }
   $('status').textContent = 'Memuat data...';
   $('btnZip').disabled = $('btnCsv').disabled = true;
-  google.script.run.withSuccessHandler(r => {
-    DATA = r.rows; $('info').textContent = r.info || '';
-    render();
-  }).withFailureHandler(e => { $('status').textContent = 'Gagal: ' + e.message; })
-    .getPekerjaan($('dari').value, $('sampai').value, $('kat').value, $('jenis').value, $('kata').value);
+  api('pekerjaan', {dari: $('dari').value, sampai: $('sampai').value, kategori: $('kat').value, jenis: $('jenis').value, kata: $('kata').value})
+    .then(r => { DATA = r.rows || []; $('info').textContent = r.info || ''; render(); })
+    .catch(e => {
+      $('status').innerHTML = '<b style="color:#c0392b">Gagal memuat data: ' + esc(e.message) +
+        '</b><br>Pastikan Web App di-deploy dengan akses "Anyone" dan versi terbaru.';
+    });
 }
 
 function render(){
@@ -115,9 +131,7 @@ function render(){
   $('btnCsv').disabled = !DATA.length; $('btnZip').disabled = !nf;
 }
 
-function ambilFoto(id){
-  return new Promise((ok,err)=> google.script.run.withSuccessHandler(ok).withFailureHandler(err).getFotoBase64(id));
-}
+function ambilFoto(id){ return api('foto', {id: id}); }
 function namaFoto(r, n, ext){
   return `${r.tanggal}_${aman(r.asset)}_${n}.${ext}`;
 }
