@@ -4,23 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Laporan Pekerjaan SCADA</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{--bg:#f4f6fa;--card:#fff;--tx:#1c2430;--mut:#667085;--pri:#0b6fb8;--bd:#dde3ec}
 @media(prefers-color-scheme:dark){:root{--bg:#10151c;--card:#1a212b;--tx:#e6ebf2;--mut:#93a0b3;--pri:#4aa3e8;--bd:#2d3846}}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--tx)}
-header{background:linear-gradient(90deg,#0b6fb8,#12a4c9);color:#fff;padding:16px 20px}
+header{background:linear-gradient(90deg,#073763,#12a4c9);color:#fff;padding:16px 20px}
 header h1{margin:0;font-size:20px}header p{margin:2px 0 0;font-size:13px;opacity:.9}
 main{padding:16px;max-width:1200px;margin:auto}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
-.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
 input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx)}
 button{cursor:pointer;border:0;border-radius:6px;padding:8px 12px;background:var(--pri);color:#fff;font-size:13px}
-button.sec{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+button:disabled{opacity:.5;cursor:wait}button.sec{background:transparent;color:var(--pri);border:1px solid var(--pri)}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
 .tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px 10px;border-bottom:1px solid var(--bd);text-align:left}th{background:var(--bg);white-space:nowrap}
@@ -39,166 +39,197 @@ td.c,th.c{text-align:center}.eye{background:none;color:var(--pri);font-size:18px
 <main>
 <div class="card">
   <div class="filters">
-    <div><label>Tanggal Dari</label><input type="date" id="fFrom"></div>
-    <div><label>Tanggal Sampai</label><input type="date" id="fTo"></div>
+    <div><label>Tahun</label><select id="fYear"><option value="">Semua</option></select></div>
+    <div><label>Bulan</label><select id="fMonth"><option value="">Semua</option></select></div>
     <div><label>Remote Station</label><select id="fRs"><option value="">Semua</option></select></div>
     <div><label>Jenis Pemeliharaan</label><select id="fJenis"><option value="">Semua</option></select></div>
     <div><label>Cari</label><input id="fQ" placeholder="Kata kunci..."></div>
   </div>
   <div class="bar">
     <button class="sec" onclick="resetF()">Reset</button>
-    <button onclick="exportTabel()">Export Tabel (Excel)</button>
-    <button onclick="exportFotoExcel()">Export Excel Foto Pembersihan Panel</button>
-    <button onclick="downloadFotoZip(filtered)">Download Foto (ZIP)</button>
+    <button id="bX" onclick="exportFormat(filtered)">Export Excel (Format Laporan + Foto)</button>
+    <button id="bZ" onclick="downloadFotoZip(filtered)">Download Foto (ZIP)</button>
     <span id="msg">Memuat data...</span>
   </div>
 </div>
 <div class="card tw">
   <table><thead><tr><th class="c">No</th><th>Tanggal</th><th>Remote Station</th><th>Jenis Pemeliharaan</th><th class="c">Lihat Laporan</th></tr></thead>
-  <tbody id="tb"></tbody></table>
+  <tbody id="tb"><tr><td colspan="5" class="c">Memuat...</td></tr></tbody></table>
 </div>
 </main>
-
 <div class="modal" id="md" onclick="if(event.target===this)closeM()"><div class="box" id="mb"></div></div>
 
 <script>
 /* ====== KONFIGURASI ====== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyShmVuHCsbo83mfewDQWPQvej7G7MqlLC1BY4FeaHHZZCX5x9f5Q9OmIWHgxjYC6f5/exec';
 const CFG = {
-  // Nama header kolom (regex). Ubah bila nama kolom di sheet berbeda.
-  tanggal: /tanggal|tgl/i,
-  remote: /remote station|repeater|nama aset|gardu|lokasi/i,
-  jenis: /jenis pemeliharaan|jenis/i,
-  fotoPanel: /pembersihan sekitar panel/i,
-  fotoPanelIdx: 9,           // fallback: kolom J (indeks 0)
-  excludeFoto: /sign|ttd|tanda tangan/i  // kolom foto yang tidak diexport
+  api: 'https://script.google.com/macros/s/AKfycbyShmVuHCsbo83mfewDQWPQvej7G7MqlLC1BY4FeaHHZZCX5x9f5Q9OmIWHgxjYC6f5/exec',
+  area: 'SULUTGO', keterangan: 'NORMAL',
+  // nama header di sheet "Daftar Pemeliharaan"
+  h: { tgl:/^waktu pemeliharaan$/i, rs:/^remote station$/i, jrs:/^jenis remote station$/i, jn:/^jenis pemeliharaan$/i,
+       foto:/^foto pembersihan sekitar panel$/i, ac:/^tegangan ac$/i, dc:/^tegangan dc$/i,
+       ket:/^keterangan tambahan$/i, tin:/^tindakan perbaikan$/i,
+       bers:/^kebersihan (dalam panel|lingkungan sekitar panel)$/i, p1:/^pelaksana ?1$/i, p2:/^pelaksana ?2$/i },
+  excludeFoto: /sign|ttd|tanda tangan/i,
+  // Wilayah ditentukan dari nama pelaksana (perkiraan awal, silakan koreksi)
+  wilayah: { 'denfry lempoy':'Manado','alan roy':'Manado','christy david':'Manado','syarifuddin':'Manado','aqmal anugrah':'Manado','anak agung':'Manado',
+             'ismail abdul gani':'Gorontalo','iqram andriyan':'Gorontalo' }
 };
-/* ========================= */
-let H = [], R = [], FILES = [], FMAP = {}, filtered = [], IDX = {}, CACHE = {};
-const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const msg = t => $('msg').textContent = t;
+const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+let H=[],R=[],filtered=[],IX={},curX=null,IMG={};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const msg=t=>$('msg').textContent=t;
+const safe=s=>String(s).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim();
+const fD=d=>d?d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'-';
+const fDf=d=>d?d.slice(8,10)+'-'+d.slice(5,7)+'-'+d.slice(0,4):'tanpa-tanggal';
+const base=p=>String(p).trim().split(/[\\\/]/).pop();
+const isImg=v=>/\.(jpe?g|png|webp)$/i.test(String(v).trim());
+function pDate(s){const m=String(s).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  const n=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);return n?n[0]:'';}
+const api=async(a,p={})=>{const j=await (await fetch(CFG.api+'?'+new URLSearchParams({action:a,...p}))).json();if(j.error)throw new Error(j.error);return j;};
+const col=re=>H.findIndex(h=>re.test(h));
+const cell=(x,re)=>{const i=col(re);return i<0?'':String(x.c[i]||'').trim();};
 
-function pDate(s){ s=String(s).trim(); let m;
-  if(m=s.match(/^(\d{4})-(\d{2})-(\d{2})/)) return m[1]+'-'+m[2]+'-'+m[3];
-  if(m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/)) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
-  return ''; }
-const fD = iso => iso ? iso.split('-').reverse().join('/') : '-';
-const fDf = iso => iso ? iso.split('-').reverse().join('-') : 'tanpa-tanggal';
-const safe = s => String(s).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim();
-
+/* ===== Pemuatan cepat: tampilkan cache dulu, lalu perbarui dari server ===== */
 async function load(){
+  let cached=null; try{cached=JSON.parse(localStorage.getItem('scada_cache_v2'));}catch(e){}
+  if(cached){init(cached);msg('Menampilkan data tersimpan, memperbarui...');}
   try{
-    if(API_URL.startsWith('PASTE')) throw new Error('API_URL belum diisi');
-    const j = await (await fetch(API_URL+'?action=data')).json();
-    if(j.error) throw new Error(j.error);
-    H=j.headers; FILES=j.files;
-    const find=re=>{const i=H.findIndex(h=>re.test(h));return i};
-    IDX={t:find(CFG.tanggal), r:find(CFG.remote), j:find(CFG.jenis)};
-    FILES.forEach(f=>{const k=f.name.toLowerCase(); FMAP[k]=f; FMAP[k.replace(/\.[a-z0-9]+$/,'')]=FMAP[k.replace(/\.[a-z0-9]+$/,'')]||f;});
-    R=j.rows.map((c,i)=>({i,c,d:pDate(c[IDX.t]||''),rs:String(c[IDX.r]||'').trim(),jn:String(c[IDX.j]||'').trim()}));
-    R.sort((a,b)=>(a.d||'9999').localeCompare(b.d||'9999')||a.i-b.i);
-    fill('fRs',R.map(x=>x.rs)); fill('fJenis',R.map(x=>x.jn));
-    ['fFrom','fTo','fRs','fJenis'].forEach(i=>$(i).onchange=apply); $('fQ').oninput=apply;
-    apply(); msg(R.length+' data dimuat, '+FILES.length+' foto di Drive');
-  }catch(e){ msg('Gagal memuat: '+e.message); }
+    const j=await api('data'); init(j);
+    try{localStorage.setItem('scada_cache_v2',JSON.stringify(j));}catch(e){}
+    msg(R.length+' data dimuat');
+  }catch(e){msg((cached?'Offline/gagal memperbarui: ':'Gagal memuat: ')+e.message);}
 }
-function fill(id,arr){ [...new Set(arr.filter(Boolean))].sort().forEach(v=>$(id).insertAdjacentHTML('beforeend','<option>'+esc(v)+'</option>')); }
-function resetF(){ ['fFrom','fTo','fRs','fJenis','fQ'].forEach(i=>$(i).value=''); apply(); }
+function init(j){
+  H=j.headers; IX={t:col(CFG.h.tgl),r:col(CFG.h.rs),j:col(CFG.h.jn)};
+  R=j.rows.map((c,i)=>({i,c,d:pDate(c[IX.t]||''),rs:String(c[IX.r]||'').trim(),jn:String(c[IX.j]||'').trim()}));
+  R.sort((a,b)=>(a.d||'9999').localeCompare(b.d||'9999')||a.i-b.i);
+  const keep={y:$('fYear').value,m:$('fMonth').value,r:$('fRs').value,j:$('fJenis').value};
+  fill('fYear',[...new Set(R.map(x=>x.d.slice(0,4)).filter(Boolean))].sort().reverse());
+  fillM(); fill('fRs',R.map(x=>x.rs).sort()); fill('fJenis',R.map(x=>x.jn).sort());
+  const firstRun=!window._started; window._started=1;
+  $('fYear').value=keep.y||(firstRun&&$('fYear').options[1]?$('fYear').options[1].value:'');
+  $('fMonth').value=keep.m; $('fRs').value=keep.r; $('fJenis').value=keep.j;
+  ['fYear','fMonth','fRs','fJenis'].forEach(i=>$(i).onchange=apply); $('fQ').oninput=apply;
+  apply();
+}
+function fill(id,arr){const s=$(id);s.length=1;[...new Set(arr.filter(Boolean))].forEach(v=>s.add(new Option(v,v)));}
+function fillM(){const s=$('fMonth');s.length=1;BLN.forEach((b,i)=>s.add(new Option(b,String(i+1).padStart(2,'0'))));}
+function resetF(){['fYear','fMonth','fRs','fJenis','fQ'].forEach(i=>$(i).value='');apply();}
 function apply(){
-  const a=$('fFrom').value,b=$('fTo').value,rs=$('fRs').value,jn=$('fJenis').value,q=$('fQ').value.toLowerCase();
-  filtered=R.filter(x=>(!a||x.d>=a)&&(!b||x.d&&x.d<=b)&&(!rs||x.rs===rs)&&(!jn||x.jn===jn)&&(!q||x.c.join(' ').toLowerCase().includes(q)));
+  const y=$('fYear').value,m=$('fMonth').value,rs=$('fRs').value,jn=$('fJenis').value,q=$('fQ').value.toLowerCase();
+  filtered=R.filter(x=>(!y||x.d.slice(0,4)===y)&&(!m||x.d.slice(5,7)===m)&&(!rs||x.rs===rs)&&(!jn||x.jn===jn)&&(!q||x.c.join(' ').toLowerCase().includes(q)));
   $('tb').innerHTML=filtered.map((x,n)=>`<tr><td class="c">${n+1}</td><td>${fD(x.d)}</td><td>${esc(x.rs)}</td><td>${esc(x.jn)}</td><td class="c"><button class="eye" title="Lihat laporan" onclick="openM(${x.i})">👁</button></td></tr>`).join('')||'<tr><td colspan="5" class="c">Tidak ada data</td></tr>';
   msg(filtered.length+' pekerjaan sesuai filter');
 }
 
-/* ===== Pencocokan foto: nama file di sel tabel <-> nama file di folder Drive ===== */
+/* ===== Foto: dicocokkan lewat NAMA FILE di sel tabel foto -> file di folder Drive ===== */
 function photosOf(x){
-  if(x.ph) return x.ph; const out=[], seen=new Set();
-  x.c.forEach((cell,ci)=>{
-    String(cell).split(/[,;\n|]+/).forEach(t=>{
-      const base=t.trim().split(/[\\\/]/).pop().toLowerCase(); if(base.length<4) return;
-      const f=FMAP[base]||FMAP[base.replace(/\.[a-z0-9]+$/,'')];
-      if(f&&!seen.has(f.id)){seen.add(f.id); out.push({f,col:H[ci],ci,sign:CFG.excludeFoto.test(H[ci])});}
-    });
-  }); return x.ph=out;
+  if(x.ph)return x.ph;
+  return x.ph=x.c.map((v,ci)=>isImg(v)?{name:base(v),col:H[ci],ci,sign:CFG.excludeFoto.test(H[ci])}:null).filter(Boolean);
 }
-const panelCol=()=>{const i=H.findIndex(h=>CFG.fotoPanel.test(h)); return i>=0?i:CFG.fotoPanelIdx;};
-const docPhotos = x => photosOf(x).filter(p=>!p.sign);
-const ext = f => (f.name.match(/\.[a-z0-9]+$/i)||['.jpg'])[0];
-
-async function getImg(id){
-  if(CACHE[id]) return CACHE[id];
-  const j=await (await fetch(API_URL+'?action=photo&id='+id)).json();
-  if(j.error) throw new Error(j.error);
-  return CACHE[id]={mime:j.mime,url:'data:'+j.mime+';base64,'+j.b64,b64:j.b64};
+const docPhotos=x=>photosOf(x).filter(p=>!p.sign);
+function getImg(name){
+  return IMG[name]||(IMG[name]=api('photo',{name}).then(j=>({mime:j.mime,b64:j.b64,url:'data:'+j.mime+';base64,'+j.b64})).catch(e=>{delete IMG[name];throw e;}));
 }
+async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<items.length){const k=i++;await fn(items[k],k);}}));}
 function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+function shrink(url,max=640){return new Promise(res=>{const im=new Image();im.onload=()=>{const s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+  c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  res({b64:c.toDataURL('image/jpeg',.8).split(',')[1],w:c.width,h:c.height});};im.onerror=()=>res(null);im.src=url;});}
 
 /* ===== Modal detail ===== */
-let curX=null;
-async function openM(i){
-  const x=R.find(r=>r.i===i); curX=x; const ph=photosOf(x);
-  const photoCols=new Set(ph.map(p=>p.ci));
-  const rows=H.map((h,ci)=>photoCols.has(ci)?null:`<tr><td>${esc(h)}</td><td>${esc(x.c[ci]||'-')}</td></tr>`).filter(Boolean).join('');
-  const groups={}; ph.forEach(p=>(groups[p.col]=groups[p.col]||[]).push(p));
-  const gh=Object.keys(groups).map(k=>`<b>${esc(k)}${CFG.excludeFoto.test(k)?' (sign – tidak ikut export)':''}</b><div class="ph">${groups[k].map(p=>`<figure><img data-id="${p.f.id}" alt=""><figcaption>${esc(p.f.name)}</figcaption></figure>`).join('')}</div>`).join('');
+function openM(i){
+  const x=R.find(r=>r.i===i);curX=x;const ph=photosOf(x),pc=new Set(ph.map(p=>p.ci));
+  const rows=H.map((h,ci)=>pc.has(ci)||!String(x.c[ci]).trim()?null:`<tr><td>${esc(h)}</td><td>${esc(x.c[ci])}</td></tr>`).filter(Boolean).join('');
+  const g={};ph.forEach(p=>(g[p.col]=g[p.col]||[]).push(p));
+  const gh=Object.keys(g).map(k=>`<b>${esc(k)}${CFG.excludeFoto.test(k)?' (sign – tidak ikut export)':''}</b><div class="ph">${g[k].map(p=>`<figure><img data-n="${esc(p.name)}" alt=""><figcaption>${esc(p.name)}</figcaption></figure>`).join('')}</div>`).join('');
   $('mb').innerHTML=`<h2>Detail Laporan – ${esc(x.rs)} (${fD(x.d)})</h2>
-  <div class="bar" style="margin:0 0 10px"><button onclick="exportDetailXls()">Export Excel</button><button onclick="exportDetailPdf()">Export PDF</button><button onclick="downloadFotoZip([curX])">Download Dokumentasi</button><button class="sec" onclick="closeM()">Tutup</button> <span id="msg2" class="miss"></span></div>
-  <table class="kv">${rows}</table><h3>Dokumentasi</h3>${gh||'<p class="miss">Foto tidak ditemukan di folder Drive.</p>'}`;
+  <div class="bar" style="margin:0 0 10px"><button onclick="exportFormat([curX])">Export Excel</button><button onclick="exportDetailPdf()">Export PDF</button><button onclick="downloadFotoZip([curX])">Download Dokumentasi</button><button class="sec" onclick="closeM()">Tutup</button> <span id="msg2" class="miss"></span></div>
+  <table class="kv">${rows}</table><h3>Dokumentasi</h3>${gh||'<p class="miss">Tidak ada foto pada laporan ini.</p>'}`;
   $('md').classList.add('on');
-  document.querySelectorAll('#mb img[data-id]').forEach(async im=>{try{im.src=(await getImg(im.dataset.id)).url;}catch(e){}});
+  pool([...document.querySelectorAll('#mb img[data-n]')],4,async im=>{try{im.src=(await getImg(im.dataset.n)).url;}catch(e){im.alt='tidak ditemukan';im.style.opacity=.4;}});
 }
 function closeM(){$('md').classList.remove('on');}
 
-/* ===== Export ===== */
-function exportTabel(){
-  const aoa=[['No','Tanggal','Remote Station','Jenis Pemeliharaan']].concat(filtered.map((x,n)=>[n+1,fD(x.d),x.rs,x.jn]));
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'Pekerjaan SCADA');
-  XLSX.writeFile(wb,'Pekerjaan_SCADA.xlsx');
+/* ===== EXPORT EXCEL sesuai format "REALISASI SCADATEL" + foto ===== */
+function uraian(x){
+  const L=[];
+  if(cell(x,CFG.h.ac)||cell(x,CFG.h.dc))L.push('Mengukur Tegangan AC dan DC');
+  if(cell(x,CFG.h.bers))L.push('Kondisi Luar/Dalam RTU sudah dibersihkan');
+  const k=cell(x,CFG.h.ket),t=cell(x,CFG.h.tin);
+  if(k)L.push(k.replace(/\s*\n\s*/g,'; '));
+  if(t&&t!==k)L.push(t.replace(/\s*\n\s*/g,'; '));
+  return L.map((s,i)=>(i+1)+'. '+s).join('\n');
 }
-function exportFotoExcel(){
-  const pc=panelCol(); const aoa=[['No','Tanggal','Remote Station','Jenis Pemeliharaan','Nama File Foto (Drive)','Link Drive','Status']];
-  filtered.forEach((x,n)=>{
-    const p=photosOf(x).filter(p=>p.ci===pc);
-    aoa.push([n+1,fD(x.d),x.rs,x.jn,p.map(q=>q.f.name).join('\n'),p.map(q=>'https://drive.google.com/file/d/'+q.f.id+'/view').join('\n'),p.length?'Ditemukan':'Tidak ditemukan']);
-  });
-  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:12},{wch:28},{wch:26},{wch:40},{wch:50},{wch:14}];
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Foto Pembersihan Panel');
-  XLSX.writeFile(wb,'Foto_Pembersihan_Sekitar_Panel_SCADA.xlsx');
+const title=s=>s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+async function exportFormat(list){
+  if(!list.length)return alert('Tidak ada data untuk diexport.');
+  if(typeof ExcelJS==='undefined')return alert('Library Excel belum termuat, coba lagi sebentar.');
+  const btns=['bX','bZ'].map(i=>$(i));btns.forEach(b=>b.disabled=true);
+  try{
+    // 1) ambil foto Pembersihan Sekitar Panel (diperkecil) sesuai nama file di tabel
+    const imgs={};const names=[...new Set(list.map(x=>{const n=cell(x,CFG.h.foto);return n&&isImg(n)?base(n):'';}).filter(Boolean))];
+    let done=0;
+    await pool(names,5,async n=>{try{const o=await getImg(n);imgs[n]=await shrink(o.url);}catch(e){} done++;msg('Mengambil foto '+done+'/'+names.length+'...');});
+    // 2) susun workbook
+    const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('REALISASI SCADATEL',{views:[{state:'frozen',ySplit:4}],
+      pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.118,right:.236,top:.63,bottom:.63,header:.51,footer:.51}}});
+    [1.55,5.44,13.89,13.89,37.22,13.89,19,11.56,28.66,30.78,49.78,14.22,26.78].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    const thin={style:'thin',color:{argb:'FF000000'}},bd={top:thin,left:thin,bottom:thin,right:thin};
+    ws.mergeCells('B1:M1');const t=ws.getCell('B1');t.value='LAPORAN REALISASI PEMELIHARAAN SCADA DAN TELEKOMUNIKASI';
+    t.font={name:'Calibri',size:16,bold:true};t.alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=21;ws.getRow(2).height=15.75;
+    const hd=['NO','TANGGAL','BULAN','LOKASI','JENIS ASET','AREA','WILAYAH','TIM','PEKERJAAN','URAIAN PEKERJAAN','KETERANGAN','EVIDEN'];
+    hd.forEach((v,i)=>{const c=ws.getCell(3,i+2);c.value=v;c.font={name:'Times New Roman',size:10,bold:true,color:{argb:'FFFFFFFF'}};
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF073763'}};c.alignment={horizontal:'center',vertical:'middle'};c.border=bd;
+      const s=ws.getCell(4,i+2);s.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFD966'}};s.border=bd;});
+    ws.getRow(3).height=13.8;ws.getRow(4).height=6.75;
+    list.forEach((x,n)=>{
+      const r=5+n,d=x.d?new Date(x.d+'T00:00:00'):null,jrs=cell(x,CFG.h.jrs).toUpperCase(),
+        pel=(cell(x,CFG.h.p1)||cell(x,CFG.h.p2)).toLowerCase(),wil=CFG.wilayah[pel]||'',ur=uraian(x),jn=cell(x,CFG.h.jn);
+      const v=[n+1,d,d?BLN[d.getMonth()]:'',x.rs,/^(GH|GI)/.test(jrs)?'GH':'KP',CFG.area,wil,wil?'Tim SCADATEL '+wil:'Tim SCADATEL','Pemeliharaan '+title(jn),ur,CFG.keterangan,''];
+      v.forEach((val,i)=>{const c=ws.getCell(r,i+2);c.value=val;c.font={name:'Times New Roman',size:10,color:{argb:'FF000000'}};c.border=bd;
+        c.alignment={horizontal:i===9?'left':'center',vertical:'middle',wrapText:i===9||i===3||i===7||i===8};if(i===1)c.numFmt='d/m/yyyy';});
+      const pt=Math.max(106.5,ur.split('\n').length*13.2+10);ws.getRow(r).height=pt;
+      const fn=cell(x,CFG.h.foto),im=fn&&isImg(fn)?imgs[base(fn)]:null;
+      if(im){const maxW=180,maxH=pt*96/72-8,s=Math.min(maxW/im.w,maxH/im.h),w=Math.round(im.w*s),h=Math.round(im.h*s),colPx=192;
+        const id=wb.addImage({base64:im.b64,extension:'jpeg'});
+        ws.addImage(id,{tl:{col:12+Math.max(0,(colPx-w)/2/colPx),row:r-1+(((pt*96/72)-h)/2)/(pt*96/72)},ext:{width:w,height:h},editAs:'oneCell'});}
+    });
+    ws.pageSetup.printArea='A1:M'+(4+list.length);
+    msg('Menyusun file Excel...');
+    const buf=await wb.xlsx.writeBuffer();
+    save(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
+      list.length===1?safe('Laporan_'+fDf(list[0].d)+'_'+list[0].rs)+'.xlsx':'REALISASI_SCADATEL.xlsx');
+    msg('Export selesai ('+list.length+' baris)');
+  }catch(e){msg('Export gagal: '+e.message);}
+  btns.forEach(b=>b.disabled=false);
 }
-function exportDetailXls(){
-  const x=curX; const aoa=[['Kolom','Isi']].concat(H.map((h,i)=>[h,x.c[i]]));
-  aoa.push([],['Dokumentasi (selain sign)','Nama File']); docPhotos(x).forEach(p=>aoa.push([p.col,p.f.name]));
-  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:38},{wch:60}];
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Detail');
-  XLSX.writeFile(wb,safe('Laporan_'+fDf(x.d)+'_'+x.rs)+'.xlsx');
-}
+
+/* ===== PDF detail ===== */
 async function exportDetailPdf(){
-  const x=curX, m2=$('msg2'); m2.textContent='Menyiapkan PDF...';
-  const doc=new jspdf.jsPDF({unit:'mm',format:'a4'}); doc.setFontSize(14);
-  doc.text('Laporan Pekerjaan SCADA',14,15); doc.setFontSize(10); doc.text(x.rs+' – '+fD(x.d),14,21);
-  const pcs=new Set(photosOf(x).map(p=>p.ci));
-  doc.autoTable({startY:26,head:[['Kolom','Isi']],body:H.map((h,i)=>pcs.has(i)?null:[h,x.c[i]||'-']).filter(Boolean),styles:{fontSize:8},columnStyles:{0:{cellWidth:55}}});
-  let y=doc.lastAutoTable.finalY+8, col=0; const ph=docPhotos(x);
-  if(ph.length){ doc.setFontSize(11); if(y>270){doc.addPage();y=15;} doc.text('Dokumentasi',14,y); y+=4; }
-  for(const p of ph){
-    try{ const im=await getImg(p.f.id); if(y+62>285){doc.addPage();y=15;col=0;}
-      doc.addImage(im.url,/png/.test(im.mime)?'PNG':'JPEG',14+col*92,y,86,52); doc.setFontSize(7); doc.text(p.col+' – '+p.f.name,14+col*92,y+56,{maxWidth:86});
-      if(col===1){col=0;y+=62;}else col=1; }catch(e){}
-  }
-  doc.save(safe('Laporan_'+fDf(x.d)+'_'+x.rs)+'.pdf'); m2.textContent='';
+  const x=curX,m2=$('msg2');m2.textContent='Menyiapkan PDF...';
+  const doc=new jspdf.jsPDF({unit:'mm',format:'a4'});doc.setFontSize(14);doc.text('Laporan Pekerjaan SCADA',14,15);doc.setFontSize(10);doc.text(x.rs+' – '+fD(x.d),14,21);
+  const pc=new Set(photosOf(x).map(p=>p.ci));
+  doc.autoTable({startY:26,head:[['Kolom','Isi']],body:H.map((h,i)=>pc.has(i)||!String(x.c[i]).trim()?null:[h,x.c[i]]).filter(Boolean),styles:{fontSize:8},columnStyles:{0:{cellWidth:55}}});
+  let y=doc.lastAutoTable.finalY+8,cl=0;const ph=docPhotos(x);
+  if(ph.length){doc.setFontSize(11);if(y>270){doc.addPage();y=15;}doc.text('Dokumentasi',14,y);y+=4;}
+  for(const p of ph){try{const im=await getImg(p.name);if(y+62>285){doc.addPage();y=15;cl=0;}
+    doc.addImage(im.url,/png/.test(im.mime)?'PNG':'JPEG',14+cl*92,y,86,52);doc.setFontSize(7);doc.text(p.col+' – '+p.name,14+cl*92,y+56,{maxWidth:86});
+    if(cl===1){cl=0;y+=62;}else cl=1;}catch(e){}}
+  doc.save(safe('Laporan_'+fDf(x.d)+'_'+x.rs)+'.pdf');m2.textContent='';
 }
-/* Download foto: nama = tanggal (dd-mm-yyyy) + Remote Station/Repeater/aset + nomor urut */
+
+/* ===== Download foto: nama = tanggal (dd-mm-yyyy) + Remote Station + nomor ===== */
 async function downloadFotoZip(list){
-  const items=[]; list.forEach(x=>docPhotos(x).forEach(p=>items.push({x,p})));
-  if(!items.length){alert('Tidak ada foto yang cocok dengan folder Drive.');return;}
-  const zip=new JSZip(), cnt={}; let done=0, q=0;
-  const upd=()=>{msg('Mengunduh foto '+done+'/'+items.length+'...'); const m=$('msg2'); if(m)m.textContent=done+'/'+items.length;};
-  const jobs=items.map(({x,p})=>{const base=safe(fDf(x.d)+'_'+x.rs); cnt[base]=(cnt[base]||0)+1; return {p,name:base+'_'+cnt[base]+ext(p.f)};});
-  async function worker(){ while(q<jobs.length){ const j=jobs[q++]; try{ zip.file(j.name,(await getImg(j.p.f.id)).b64,{base64:true}); }catch(e){} done++; upd(); } }
-  await Promise.all([worker(),worker(),worker(),worker()]);
-  msg('Menyusun ZIP...'); save(await zip.generateAsync({type:'blob'}),'Foto_Dokumentasi_SCADA.zip'); msg('Selesai: '+done+' foto');
+  const items=[];list.forEach(x=>docPhotos(x).forEach(p=>items.push({x,p})));
+  if(!items.length)return alert('Tidak ada foto pada data ini.');
+  const zip=new JSZip(),cnt={};let done=0,miss=0;
+  const jobs=items.map(({x,p})=>{const b=safe(fDf(x.d)+'_'+x.rs);cnt[b]=(cnt[b]||0)+1;return{p,name:b+'_'+cnt[b]+(p.name.match(/\.[a-z0-9]+$/i)||['.jpg'])[0]};});
+  await pool(jobs,5,async j=>{try{zip.file(j.name,(await getImg(j.p.name)).b64,{base64:true});}catch(e){miss++;}done++;
+    msg('Mengunduh foto '+done+'/'+jobs.length+'...');const m=$('msg2');if(m)m.textContent=done+'/'+jobs.length;});
+  msg('Menyusun ZIP...');save(await zip.generateAsync({type:'blob'}),'Foto_Dokumentasi_SCADA.zip');
+  msg('Selesai: '+(done-miss)+' foto'+(miss?' ('+miss+' tidak ditemukan di Drive)':''));
 }
 load();
 </script>
