@@ -71,27 +71,33 @@ if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
 else if(c=='"')q=true;else if(c==','){a.push(f);f=''}
 else if(c=='\n'){a.push(f);r.push(a);a=[];f=''}else if(c!='\r')f+=c}
 if(f||a.length){a.push(f);r.push(a)}return r}
-function pdate(s){s=(s||'').trim();let m;
-if(m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/))return new Date(+m[3],m[2]-1,+m[1]);
-if(m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))return new Date(+m[1],m[2]-1,+m[3]);
-if(m=s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/)){const i=BLN.findIndex(b=>b.toLowerCase().startsWith(m[2].toLowerCase().slice(0,3)));if(i>=0)return new Date(+m[3],i,+m[1])}
-return null}
+function pdate(v){v=String(v==null?'':v).trim();if(!v)return null;let m,d=null;
+if(m=v.match(/^Date\((\d+),(\d+),(\d+)/))d=new Date(+m[1],+m[2],+m[3]);
+else if(m=v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/)){let a=+m[1],b=+m[2];if(b>12&&a<=12){const t=a;a=b;b=t}d=new Date(+m[3],b-1,a)}
+else if(m=v.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/))d=new Date(+m[1],m[2]-1,+m[3]);
+else if(m=v.match(/^(\d{1,2})[\s\-]+([A-Za-z]+)[\s\-,]+(\d{4})/)){const k=m[2].toLowerCase().slice(0,3),i=['jan','feb','mar','apr','mei|may','jun','jul','agu|aug','sep','okt|oct','nov','des|dec'].findIndex(x=>x.split('|').includes(k));if(i>=0)d=new Date(+m[3],i,+m[1])}
+else if(/^\d{5}(\.\d+)?$/.test(v)){const n=+v;if(n>36500&&n<80000)d=new Date(Math.round((n-25569)*864e5)+(new Date().getTimezoneOffset()*6e4))}
+return d&&d.getFullYear()>2000&&d.getFullYear()<2100&&!isNaN(d)?d:null}
 const fmt=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
 const fn=d=>String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear();
 async function load(k){
 if(cache[k])return cache[k];
-const u=`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&gid=${SRC[k].gid}`;
+const u=`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&headers=1&gid=${SRC[k].gid}`;
 const r=await fetch(u);if(!r.ok)throw new Error('Gagal membaca spreadsheet (pastikan akses link publik)');
 const all=csv(await r.text());
-let h=all.findIndex(x=>x.some(c=>/tanggal|waktu pemeliharaan/i.test(c)));if(h<0)h=0;
+let h=all.findIndex(x=>x.some(c=>/tanggal|waktu pemeliharaan|remote station/i.test(c)));if(h<0)h=0;
 const hd=all[h].map((c,i)=>(c||'').trim()||('Kolom '+(i+1)));
 const find=re=>hd.findIndex(c=>re.test(c));
 const ix={d:find(/tanggal|waktu pemeliharaan/i),n:find(/remote station|repeater|radio|nama aset|nama asset|lokasi|nama/i),j:find(/jenis/i)};
+let dc=ix.d;if(dc<0)dc=4;
+const cnt=c=>all.slice(h+1,h+60).filter(r=>pdate(r[c])).length;
+if(!cnt(dc)){let b=-1,mx=0;hd.forEach((_,c)=>{const n=cnt(c);if(n>mx){mx=n;b=c}});if(b>=0)dc=b}
+ix.d=dc;
 let pc=hd.findIndex(c=>SRC[k].photo.test(c));if(pc<0)pc=SRC[k].col;
 const data=all.slice(h+1).map(r=>({r,date:pdate(r[ix.d])})).filter(o=>o.date).map(o=>({
 date:o.date,name:(o.r[ix.n]||'').trim(),jenis:(o.r[ix.j]||'').trim(),photo:(o.r[pc]||'').trim(),
 f:hd.map((c,i)=>[c,(o.r[i]||'').trim()]).filter(x=>x[1])}));
-return cache[k]={hd,data,pc}}
+return cache[k]={hd,data,pc,dh:hd[dc],sample:all.slice(h+1,h+4).map(r=>r[dc]).join(' | ')}}
 // Drive
 async function listDrive(id,key){
 if(DEF.proxy){const r=await fetch(`${DEF.proxy}?action=list&id=${id}`);if(!r.ok)throw new Error('Gagal menghubungi Apps Script');const j=await r.json();if(j.error)throw new Error(j.error);return j}
@@ -114,7 +120,8 @@ function match(o,files,noSign=true){
 return names(o).filter(n=>!(noSign&&issign(n))).map(n=>({n,f:files.find(f=>f.name.toLowerCase()==n.toLowerCase())||files.find(f=>base(f.name)==base(n))}))}
 // tabel
 async function show(){
-try{st('Memuat data...');const k=$('job').value,{data}=await load(k);
+try{st('Memuat data...');const k=$('job').value,L=await load(k),data=L.data;
+if(!data.length){$('tb').innerHTML='<tr><td colspan=5>Tidak ada</td></tr>';return st(`Tanggal tidak terbaca. Kolom dipakai: "${L.dh}", contoh isi: ${L.sample||'(kosong)'}`)}
 if(init!==k){init=k;const ys=[...new Set(data.map(o=>o.date.getFullYear()))].sort();
 if(ys.length){const ly=ys[ys.length-1];$('yr').innerHTML=ys.map(y=>`<option ${y==ly?'selected':''}>${y}</option>`).join('');
 const ms=data.filter(o=>o.date.getFullYear()==ly).map(o=>o.date.getMonth()+1);$('mo').value=String(Math.max(...ms))}}
