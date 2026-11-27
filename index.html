@@ -63,16 +63,15 @@ td.c,th.c{text-align:center}.eye{background:none;color:var(--pri);font-size:18px
 /* ====== KONFIGURASI ====== */
 const CFG = {
   api: 'https://script.google.com/macros/s/AKfycbyShmVuHCsbo83mfewDQWPQvej7G7MqlLC1BY4FeaHHZZCX5x9f5Q9OmIWHgxjYC6f5/exec',
-  area: 'SULUTGO', keterangan: 'NORMAL',
+  keterangan: 'NORMAL',
+  // Area ditentukan dari UP3 (kolom D sheet Aset Lengkap)
+  areaMap: { SULUTGO:['manado','gorontalo','kotamobagu'], SULTENG:['palu','luwuk','tolitoli'] },
   // nama header di sheet "Daftar Pemeliharaan"
   h: { tgl:/^waktu pemeliharaan$/i, rs:/^remote station$/i, jrs:/^jenis remote station$/i, jn:/^jenis pemeliharaan$/i,
        foto:/^foto pembersihan sekitar panel$/i, ac:/^tegangan ac$/i, dc:/^tegangan dc$/i,
        ket:/^keterangan tambahan$/i, tin:/^tindakan perbaikan$/i,
        bers:/^kebersihan (dalam panel|lingkungan sekitar panel)$/i, p1:/^pelaksana ?1$/i, p2:/^pelaksana ?2$/i },
-  excludeFoto: /sign|ttd|tanda tangan/i,
-  // Wilayah ditentukan dari nama pelaksana (perkiraan awal, silakan koreksi)
-  wilayah: { 'denfry lempoy':'Manado','alan roy':'Manado','christy david':'Manado','syarifuddin':'Manado','aqmal anugrah':'Manado','anak agung':'Manado',
-             'ismail abdul gani':'Gorontalo','iqram andriyan':'Gorontalo' }
+  excludeFoto: /sign|ttd|tanda tangan/i
 };
 const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 let H=[],R=[],filtered=[],IX={},curX=null,IMG={};
@@ -162,6 +161,18 @@ function uraian(x){
   if(t&&t!==k)L.push(t.replace(/\s*\n\s*/g,'; '));
   return L.map((s,i)=>(i+1)+'. '+s).join('\n');
 }
+const areaOf=u=>{u=String(u||'').toLowerCase();for(const k in CFG.areaMap)if(CFG.areaMap[k].some(w=>u.includes(w)))return k;return'';};
+const wilOf=u=>String(u||'').replace(/^up3\s*/i,'').trim().toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+let ASET={};try{ASET=JSON.parse(localStorage.getItem('scada_aset_v1'))||{};}catch(e){}
+async function loadAset(stations){
+  const need=[...new Set(stations)].filter(n=>n&&!ASET[n]);
+  for(let i=0;i<need.length;i+=20){
+    msg('Mencocokkan lokasi dengan sheet Aset Lengkap '+Math.min(i+20,need.length)+'/'+need.length+'...');
+    const j=await api('aset',{names:need.slice(i,i+20).join('|')});
+    Object.assign(ASET,j.res||{});
+  }
+  try{localStorage.setItem('scada_aset_v1',JSON.stringify(ASET));}catch(e){}
+}
 const title=s=>s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 async function exportFormat(list){
   if(!list.length)return alert('Tidak ada data untuk diexport.');
@@ -172,7 +183,10 @@ async function exportFormat(list){
     const imgs={};const names=[...new Set(list.map(x=>{const n=cell(x,CFG.h.foto);return n&&isImg(n)?base(n):'';}).filter(Boolean))];
     let done=0;
     await pool(names,5,async n=>{try{const o=await getImg(n);imgs[n]=await shrink(o.url);}catch(e){} done++;msg('Mengambil foto '+done+'/'+names.length+'...');});
-    // 2) susun workbook
+    // 2) lokasi, wilayah (UP3) dan area dari sheet Aset Lengkap
+    await loadAset(list.map(x=>x.rs));
+    const unmatched=[...new Set(list.filter(x=>!ASET[x.rs]).map(x=>x.rs))];
+    // 3) susun workbook
     const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('REALISASI SCADATEL',{views:[{state:'frozen',ySplit:4}],
       pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.118,right:.236,top:.63,bottom:.63,header:.51,footer:.51}}});
     [1.55,5.44,13.89,13.89,37.22,13.89,19,11.56,28.66,30.78,49.78,14.22,26.78].forEach((w,i)=>ws.getColumn(i+1).width=w);
@@ -186,8 +200,8 @@ async function exportFormat(list){
     ws.getRow(3).height=13.8;ws.getRow(4).height=6.75;
     list.forEach((x,n)=>{
       const r=5+n,d=x.d?new Date(x.d+'T00:00:00'):null,jrs=cell(x,CFG.h.jrs).toUpperCase(),
-        pel=(cell(x,CFG.h.p1)||cell(x,CFG.h.p2)).toLowerCase(),wil=CFG.wilayah[pel]||'',ur=uraian(x),jn=cell(x,CFG.h.jn);
-      const v=[n+1,d,d?BLN[d.getMonth()]:'',x.rs,/^(GH|GI)/.test(jrs)?'GH':'KP',CFG.area,wil,wil?'Tim SCADATEL '+wil:'Tim SCADATEL','Pemeliharaan '+title(jn),ur,CFG.keterangan,''];
+        as=ASET[x.rs]||null,wil=as?wilOf(as.up3):'',lok=(as&&as.nama)||x.rs,ur=uraian(x),jn=cell(x,CFG.h.jn);
+      const v=[n+1,d,d?BLN[d.getMonth()]:'',lok,/^(GH|GI)/.test(jrs)?'GH':'KP',as?areaOf(as.up3):'',wil,wil?'Tim SCADATEL '+wil:'Tim SCADATEL','Pemeliharaan '+title(jn),ur,CFG.keterangan,''];
       v.forEach((val,i)=>{const c=ws.getCell(r,i+2);c.value=val;c.font={name:'Times New Roman',size:10,color:{argb:'FF000000'}};c.border=bd;
         c.alignment={horizontal:i===9?'left':'center',vertical:'middle',wrapText:i===9||i===3||i===7||i===8};if(i===1)c.numFmt='d/m/yyyy';});
       const pt=Math.max(106.5,ur.split('\n').length*13.2+10);ws.getRow(r).height=pt;
@@ -201,7 +215,7 @@ async function exportFormat(list){
     const buf=await wb.xlsx.writeBuffer();
     save(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
       list.length===1?safe('Laporan_'+fDf(list[0].d)+'_'+list[0].rs)+'.xlsx':'REALISASI_SCADATEL.xlsx');
-    msg('Export selesai ('+list.length+' baris)');
+    msg('Export selesai ('+list.length+' baris)'+(unmatched.length?'. Tidak ditemukan di Aset Lengkap ('+unmatched.length+'): '+unmatched.join(', '):''));
   }catch(e){msg('Export gagal: '+e.message);}
   btns.forEach(b=>b.disabled=false);
 }
