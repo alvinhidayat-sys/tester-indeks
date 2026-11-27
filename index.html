@@ -1,170 +1,206 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rekap Pekerjaan SCADA & Telekomunikasi</title>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laporan Pekerjaan SCADA</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-:root{--bg:#f4f7fb;--c:#fff;--t:#1b2a3a;--p:#0b6fa4;--b:#d8e2ec}
-@media(prefers-color-scheme:dark){:root{--bg:#10171f;--c:#18222d;--t:#e6edf4;--p:#4aa8d8;--b:#2b3a49}}
-*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--t)}
-header{background:var(--p);color:#fff;padding:14px 18px;font-size:18px;font-weight:600}
-main{max-width:1100px;margin:auto;padding:14px}
-.card{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:12px;margin-bottom:12px}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
-label{display:flex;flex-direction:column;font-size:12px;gap:3px}
-select,input,button{font:inherit;padding:7px 10px;border:1px solid var(--b);border-radius:6px;background:var(--c);color:var(--t)}
-button{background:var(--p);color:#fff;border:0;cursor:pointer}button.s{background:#5b6b7b}button:disabled{opacity:.5}
-.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:7px 9px;border-bottom:1px solid var(--b);text-align:left;vertical-align:top}
-th{background:var(--p);color:#fff;white-space:nowrap}td button{padding:4px 8px}
-#modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:9}
-#mb{background:var(--c);border-radius:10px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:14px}
-#st{font-size:12px;opacity:.8;margin:6px 0}.x{display:none}
-</style></head><body>
-<header>Rekap Pekerjaan Pemeliharaan — SCADA & Telekomunikasi</header>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#1c2430;--mut:#667085;--pri:#0b6fb8;--bd:#dde3ec}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--card:#1a212b;--tx:#e6ebf2;--mut:#93a0b3;--pri:#4aa3e8;--bd:#2d3846}}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--tx)}
+header{background:linear-gradient(90deg,#0b6fb8,#12a4c9);color:#fff;padding:16px 20px}
+header h1{margin:0;font-size:20px}header p{margin:2px 0 0;font-size:13px;opacity:.9}
+main{padding:16px;max-width:1200px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
+input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx)}
+button{cursor:pointer;border:0;border-radius:6px;padding:8px 12px;background:var(--pri);color:#fff;font-size:13px}
+button.sec{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--bd);text-align:left}th{background:var(--bg);white-space:nowrap}
+td.c,th.c{text-align:center}.eye{background:none;color:var(--pri);font-size:18px;padding:2px 8px}
+#msg{font-size:13px;color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:20px;z-index:9}
+.modal.on{display:flex}.box{background:var(--card);border-radius:10px;max-width:900px;width:100%;padding:16px}
+.box h2{margin:0 0 8px;font-size:18px}.kv td:first-child{width:35%;color:var(--mut);font-weight:600}
+.ph{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:6px 0 12px}
+.ph figure{margin:0;font-size:11px;color:var(--mut)}.ph img{width:100%;height:110px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);background:var(--bg)}
+.miss{color:#d92d20;font-size:12px}
+</style>
+</head>
+<body>
+<header><h1>Laporan Pekerjaan SCADA</h1><p>Sumber: Sheet "Daftar Pemeliharaan" &amp; folder foto Google Drive</p></header>
 <main>
-<div class="card"><div class="row">
-<label>Pekerjaan<select id="job"><option value="scada">SCADA</option><option value="tel">Telekomunikasi</option></select></label>
-<label>Tahun<select id="yr"></select></label>
-<label>Bulan<select id="mo"></select></label>
-<button id="go">Tampilkan</button>
-<button class="s" onclick="cfg.hidden=!cfg.hidden">Pengaturan</button>
-</div>
-<div id="cfg" hidden style="margin-top:10px">
-<div class="row">
-<label>Google API Key (Drive API aktif, untuk daftar & unduh foto)<input id="key" size="40"></label>
-<label>ID Folder Foto SCADA<input id="fs" size="38" value="1vdFBNUYJgRlspEfalwOmnnyA5wE_bM0-"></label>
-<label>ID Folder Foto Telekomunikasi<input id="ft" size="38" placeholder="menyusul"></label>
-<button class="s" onclick="saveCfg()">Simpan</button></div>
-<div style="font-size:12px;margin-top:6px">Spreadsheet & folder harus dibagikan "Siapa saja yang memiliki link".</div></div></div>
-<div id="st"></div>
 <div class="card">
-<div class="row" style="margin-bottom:8px">
-<button id="bx" disabled>Export Tabel Foto (Excel)</button>
-<button id="bd" disabled>Download Semua Foto (ZIP)</button></div>
-<div class="tw"><table><thead><tr><th>No</th><th>Tanggal</th><th>Remote Station</th><th>Jenis Pemeliharaan</th><th>Lihat Laporan</th></tr></thead><tbody id="tb"></tbody></table></div></div>
+  <div class="filters">
+    <div><label>Tanggal Dari</label><input type="date" id="fFrom"></div>
+    <div><label>Tanggal Sampai</label><input type="date" id="fTo"></div>
+    <div><label>Remote Station</label><select id="fRs"><option value="">Semua</option></select></div>
+    <div><label>Jenis Pemeliharaan</label><select id="fJenis"><option value="">Semua</option></select></div>
+    <div><label>Cari</label><input id="fQ" placeholder="Kata kunci..."></div>
+  </div>
+  <div class="bar">
+    <button class="sec" onclick="resetF()">Reset</button>
+    <button onclick="exportTabel()">Export Tabel (Excel)</button>
+    <button onclick="exportFotoExcel()">Export Excel Foto Pembersihan Panel</button>
+    <button onclick="downloadFotoZip(filtered)">Download Foto (ZIP)</button>
+    <span id="msg">Memuat data...</span>
+  </div>
+</div>
+<div class="card tw">
+  <table><thead><tr><th class="c">No</th><th>Tanggal</th><th>Remote Station</th><th>Jenis Pemeliharaan</th><th class="c">Lihat Laporan</th></tr></thead>
+  <tbody id="tb"></tbody></table>
+</div>
 </main>
-<div id="modal"><div id="mb"></div></div>
+
+<div class="modal" id="md" onclick="if(event.target===this)closeM()"><div class="box" id="mb"></div></div>
+
 <script>
-const SID='1aw4pLkidxYOiwWpYZE47wBqjWBUnuZIRkvJIcQVEl-0';
-const SRC={scada:{gid:'1654147482',photo:/^foto pembersihan sekitar panel/i,col:9,name:'SCADA'},tel:{gid:'597556611',photo:/^foto instalasi/i,col:29,name:'Telekomunikasi'}};
-const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-const $=id=>document.getElementById(id);
-let cache={},rows=[],drive={};
-const st=m=>$('st').textContent=m;
-// pengaturan
-// ====== ISI DI SINI AGAR OTOMATIS ======
-const DEF={key:'',fs:'1vdFBNUYJgRlspEfalwOmnnyA5wE_bM0-',ft:'',proxy:'https://script.google.com/macros/s/AKfycbxm8ZFgJbZtgFTea0JklhNgp-kkoIB4w9u2QmEN4mCT6uWqPVs3xcAcWHvdZ8NYJurE/exec'}; // proxy = URL Web App Apps Script (/exec), kosongkan jika pakai API Key
-// =======================================
-['key','fs','ft'].forEach(k=>{if(DEF[k])$(k).value=DEF[k]});
-try{const c=JSON.parse(localStorage.getItem('cfg')||'{}');['key','fs','ft'].forEach(k=>{if(c[k]&&!DEF[k])$(k).value=c[k]})}catch(e){}
-if(DEF.key||DEF.proxy)$('cfg').hidden=true;
-function saveCfg(){try{localStorage.setItem('cfg',JSON.stringify({key:$('key').value,fs:$('fs').value,ft:$('ft').value}))}catch(e){}drive={};st('Pengaturan disimpan')}
-const y0=new Date().getFullYear();
-$('yr').innerHTML=[y0-2,y0-1,y0,y0+1].map(y=>`<option ${y==y0?'selected':''}>${y}</option>`).join('');
-$('mo').innerHTML='<option value="0">Semua</option>'+BLN.map((b,i)=>`<option value="${i+1}" ${i==new Date().getMonth()?'selected':''}>${b}</option>`).join('');
-// CSV parser
-function csv(t){const r=[];let a=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];
-if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
-else if(c=='"')q=true;else if(c==','){a.push(f);f=''}
-else if(c=='\n'){a.push(f);r.push(a);a=[];f=''}else if(c!='\r')f+=c}
-if(f||a.length){a.push(f);r.push(a)}return r}
-function pdate(v){v=String(v==null?'':v).trim();if(!v)return null;let m,d=null;
-if(m=v.match(/^Date\((\d+),(\d+),(\d+)/))d=new Date(+m[1],+m[2],+m[3]);
-else if(m=v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/)){let a=+m[1],b=+m[2];if(b>12&&a<=12){const t=a;a=b;b=t}d=new Date(+m[3],b-1,a)}
-else if(m=v.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/))d=new Date(+m[1],m[2]-1,+m[3]);
-else if(m=v.match(/^(\d{1,2})[\s\-]+([A-Za-z]+)[\s\-,]+(\d{4})/)){const k=m[2].toLowerCase().slice(0,3),i=['jan','feb','mar','apr','mei|may','jun','jul','agu|aug','sep','okt|oct','nov','des|dec'].findIndex(x=>x.split('|').includes(k));if(i>=0)d=new Date(+m[3],i,+m[1])}
-else if(/^\d{5}(\.\d+)?$/.test(v)){const n=+v;if(n>36500&&n<80000)d=new Date(Math.round((n-25569)*864e5)+(new Date().getTimezoneOffset()*6e4))}
-return d&&d.getFullYear()>2000&&d.getFullYear()<2100&&!isNaN(d)?d:null}
-const fmt=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-const fn=d=>String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear();
-async function load(k){
-if(cache[k])return cache[k];
-const u=`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&headers=1&gid=${SRC[k].gid}`;
-const r=await fetch(u);if(!r.ok)throw new Error('Gagal membaca spreadsheet (pastikan akses link publik)');
-const all=csv(await r.text());
-let h=all.findIndex(x=>x.some(c=>/tanggal|waktu pemeliharaan|remote station/i.test(c)));if(h<0)h=0;
-const hd=all[h].map((c,i)=>(c||'').trim()||('Kolom '+(i+1)));
-const find=re=>hd.findIndex(c=>re.test(c));
-const ix={d:find(/tanggal|waktu pemeliharaan/i),n:find(/remote station|repeater|radio|nama aset|nama asset|lokasi|nama/i),j:find(/jenis/i)};
-let dc=ix.d;if(dc<0)dc=4;
-const cnt=c=>all.slice(h+1,h+60).filter(r=>pdate(r[c])).length;
-if(!cnt(dc)){let b=-1,mx=0;hd.forEach((_,c)=>{const n=cnt(c);if(n>mx){mx=n;b=c}});if(b>=0)dc=b}
-ix.d=dc;
-let pc=hd.findIndex(c=>SRC[k].photo.test(c));if(pc<0)pc=SRC[k].col;
-const data=all.slice(h+1).map(r=>({r,date:pdate(r[ix.d])})).filter(o=>o.date).map(o=>({
-date:o.date,name:(o.r[ix.n]||'').trim(),jenis:(o.r[ix.j]||'').trim(),photo:(o.r[pc]||'').trim(),
-f:hd.map((c,i)=>[c,(o.r[i]||'').trim()]).filter(x=>x[1])}));
-return cache[k]={hd,data,pc,dh:hd[dc],sample:all.slice(h+1,h+4).map(r=>r[dc]).join(' | ')}}
-// Drive
-async function listDrive(id,key){
-if(DEF.proxy){const r=await fetch(`${DEF.proxy}?action=list&id=${id}`);if(!r.ok)throw new Error('Gagal menghubungi Apps Script');const j=await r.json();if(j.error)throw new Error(j.error);return j}
-const out=[];const q=[id];
-while(q.length){const p=q.shift();let tok='';
-do{const u=`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${p}' in parents and trashed=false`)}&fields=nextPageToken,files(id,name,mimeType)&pageSize=1000&key=${key}`+(tok?`&pageToken=${tok}`:'');
-const r=await fetch(u);if(!r.ok)throw new Error('Gagal membaca folder Drive (cek API Key & akses folder)');
-const j=await r.json();tok=j.nextPageToken||'';
-j.files.forEach(f=>f.mimeType=='application/vnd.google-apps.folder'?q.push(f.id):out.push(f))}while(tok)}
-return out}
-async function getDrive(k){
-const id=$(k=='scada'?'fs':'ft').value.trim(),key=$('key').value.trim();
-if(!id)throw new Error('ID folder foto '+SRC[k].name+' belum diisi (Pengaturan)');
-if(!key&&!DEF.proxy)throw new Error('Isi Google API Key di Pengaturan untuk mengakses foto');
-return drive[k]||(drive[k]=await listDrive(id,key))}
-const base=s=>s.toLowerCase().replace(/\.[a-z0-9]{2,4}$/,'').trim();
-const issign=s=>/sign|ttd|tanda.?tangan/i.test(s);
-function names(o){return o.photo.split(/[\n,;]+/).map(s=>s.trim().split('/').pop()).filter(Boolean)}
-function match(o,files,noSign=true){
-return names(o).filter(n=>!(noSign&&issign(n))).map(n=>({n,f:files.find(f=>f.name.toLowerCase()==n.toLowerCase())||files.find(f=>base(f.name)==base(n))}))}
-// tabel
-async function show(){
-try{st('Memuat data...');const k=$('job').value,L=await load(k),data=L.data;
-if(!data.length){$('tb').innerHTML='<tr><td colspan=5>Tidak ada</td></tr>';return st(`Tanggal tidak terbaca. Kolom dipakai: "${L.dh}", contoh isi: ${L.sample||'(kosong)'}`)}
-if(init!==k){init=k;const ys=[...new Set(data.map(o=>o.date.getFullYear()))].sort();
-if(ys.length){const ly=ys[ys.length-1];$('yr').innerHTML=ys.map(y=>`<option ${y==ly?'selected':''}>${y}</option>`).join('');
-const ms=data.filter(o=>o.date.getFullYear()==ly).map(o=>o.date.getMonth()+1);$('mo').value=String(Math.max(...ms))}}
-const y=+$('yr').value,m=+$('mo').value;
-rows=data.filter(o=>o.date.getFullYear()==y&&(!m||o.date.getMonth()+1==m)).sort((a,b)=>a.date-b.date);
-$('tb').innerHTML=rows.map((o,i)=>`<tr><td>${i+1}</td><td>${fmt(o.date)}</td><td>${esc(o.name)}</td><td>${esc(o.jenis)}</td><td><button onclick="detail(${i})" title="Lihat laporan">👁</button></td></tr>`).join('')||'<tr><td colspan=5>Tidak ada data</td></tr>';
-$('bx').disabled=$('bd').disabled=!rows.length;st(rows.length+' pekerjaan ditemukan')}
-catch(e){st('Error: '+e.message)}}
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let init=null;
-$('go').onclick=show;
-$('job').onchange=()=>{init=null;show()};
-// detail
-let cur=null;
-function detail(i){cur=rows[i];
-$('mb').innerHTML=`<h3 style="margin-top:0">Laporan ${esc(cur.name)} — ${fmt(cur.date)}</h3>
-<div class="tw"><table>${cur.f.map(x=>`<tr><th style="background:none;color:inherit;width:35%">${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join('')}</table></div>
-<div class="row" style="margin-top:10px"><button onclick="dx()">Export Excel</button><button onclick="dp()">Export PDF</button>
-<button onclick="dz()">Export Dokumentasi (non-sign)</button><button class="s" onclick="$('modal').style.display='none'">Tutup</button></div>`;
-$('modal').style.display='flex'}
-$('modal').onclick=e=>{if(e.target.id=='modal')e.target.style.display='none'};
-const safe=s=>s.replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,'_');
-function dx(){const ws=XLSX.utils.aoa_to_sheet([['Item','Isi'],...cur.f]);ws['!cols']=[{wch:40},{wch:60}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Laporan');XLSX.writeFile(wb,`Laporan_${fn(cur.date)}_${safe(cur.name)}.xlsx`)}
-function dp(){const d=new jspdf.jsPDF();d.setFontSize(13);d.text(`Laporan ${cur.name} - ${fmt(cur.date)}`,14,15);
-d.autoTable({startY:22,head:[['Item','Isi']],body:cur.f,styles:{fontSize:9},columnStyles:{0:{cellWidth:60}}});d.save(`Laporan_${fn(cur.date)}_${safe(cur.name)}.pdf`)}
-async function blob(f){
-if(DEF.proxy){const r=await fetch(`${DEF.proxy}?action=file&id=${f.id}`);const j=await r.json();if(j.error)throw new Error(j.error);const b=atob(j.data),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new Blob([u],{type:j.mime})}
-const r=await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${$('key').value.trim()}`);if(!r.ok)throw new Error('Unduh gagal: '+f.name);return r.blob()}
-const ext=n=>(n.match(/\.[a-z0-9]{2,4}$/i)||['.jpg'])[0];
-async function zip(list,fname){
-const k=$('job').value;const files=await getDrive(k);const z=new JSZip();let c=0,miss=0;
-for(const o of list){const ms=match(o,files);let n=0;
-for(const m of ms){if(!m.f){miss++;continue}n++;st(`Mengunduh ${++c}...`);
-z.file(`${fn(o.date)}_${safe(o.name)}${ms.length>1?'_'+n:''}${ext(m.f.name)}`,await blob(m.f))}}
-if(!c){st('Tidak ada foto yang cocok di Drive');return}
-const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
-st(`${c} foto diunduh${miss?`, ${miss} tidak ditemukan di Drive`:''}`)}
-async function dz(){try{await zip([cur],`Dokumentasi_${fn(cur.date)}_${safe(cur.name)}.zip`)}catch(e){st('Error: '+e.message)}}
-$('bd').onclick=async()=>{try{await zip(rows,`Foto_${SRC[$('job').value].name}_${$('yr').value}_${$('mo').value}.zip`)}catch(e){st('Error: '+e.message)}};
-$('bx').onclick=async()=>{try{const k=$('job').value;const files=await getDrive(k);const out=[['No','Tanggal','Remote Station','Jenis Pemeliharaan','Nama File di Sheet','Nama File di Drive','Status']];let n=0;
-rows.forEach(o=>match(o,files,false).forEach(m=>out.push([++n,fmt(o.date),o.name,o.jenis,m.n,m.f?m.f.name:'-',m.f?'Ditemukan':'Tidak ditemukan'])));
-const ws=XLSX.utils.aoa_to_sheet(out);ws['!cols']=[5,12,28,26,34,34,16].map(w=>({wch:w}));const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,k=='scada'?'Foto Pembersihan Panel':'Foto Instalasi');
-XLSX.writeFile(wb,`Tabel_Foto_${SRC[k].name}_${$('yr').value}_${$('mo').value}.xlsx`);st('Excel dibuat')}catch(e){st('Error: '+e.message)}};
-show();
-</script></body></html>
+/* ====== KONFIGURASI ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyShmVuHCsbo83mfewDQWPQvej7G7MqlLC1BY4FeaHHZZCX5x9f5Q9OmIWHgxjYC6f5/exec';
+const CFG = {
+  // Nama header kolom (regex). Ubah bila nama kolom di sheet berbeda.
+  tanggal: /tanggal|tgl/i,
+  remote: /remote station|repeater|nama aset|gardu|lokasi/i,
+  jenis: /jenis pemeliharaan|jenis/i,
+  fotoPanel: /pembersihan sekitar panel/i,
+  fotoPanelIdx: 9,           // fallback: kolom J (indeks 0)
+  excludeFoto: /sign|ttd|tanda tangan/i  // kolom foto yang tidak diexport
+};
+/* ========================= */
+let H = [], R = [], FILES = [], FMAP = {}, filtered = [], IDX = {}, CACHE = {};
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const msg = t => $('msg').textContent = t;
+
+function pDate(s){ s=String(s).trim(); let m;
+  if(m=s.match(/^(\d{4})-(\d{2})-(\d{2})/)) return m[1]+'-'+m[2]+'-'+m[3];
+  if(m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/)) return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  return ''; }
+const fD = iso => iso ? iso.split('-').reverse().join('/') : '-';
+const fDf = iso => iso ? iso.split('-').reverse().join('-') : 'tanpa-tanggal';
+const safe = s => String(s).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim();
+
+async function load(){
+  try{
+    if(API_URL.startsWith('PASTE')) throw new Error('API_URL belum diisi');
+    const j = await (await fetch(API_URL+'?action=data')).json();
+    if(j.error) throw new Error(j.error);
+    H=j.headers; FILES=j.files;
+    const find=re=>{const i=H.findIndex(h=>re.test(h));return i};
+    IDX={t:find(CFG.tanggal), r:find(CFG.remote), j:find(CFG.jenis)};
+    FILES.forEach(f=>{const k=f.name.toLowerCase(); FMAP[k]=f; FMAP[k.replace(/\.[a-z0-9]+$/,'')]=FMAP[k.replace(/\.[a-z0-9]+$/,'')]||f;});
+    R=j.rows.map((c,i)=>({i,c,d:pDate(c[IDX.t]||''),rs:String(c[IDX.r]||'').trim(),jn:String(c[IDX.j]||'').trim()}));
+    R.sort((a,b)=>(a.d||'9999').localeCompare(b.d||'9999')||a.i-b.i);
+    fill('fRs',R.map(x=>x.rs)); fill('fJenis',R.map(x=>x.jn));
+    ['fFrom','fTo','fRs','fJenis'].forEach(i=>$(i).onchange=apply); $('fQ').oninput=apply;
+    apply(); msg(R.length+' data dimuat, '+FILES.length+' foto di Drive');
+  }catch(e){ msg('Gagal memuat: '+e.message); }
+}
+function fill(id,arr){ [...new Set(arr.filter(Boolean))].sort().forEach(v=>$(id).insertAdjacentHTML('beforeend','<option>'+esc(v)+'</option>')); }
+function resetF(){ ['fFrom','fTo','fRs','fJenis','fQ'].forEach(i=>$(i).value=''); apply(); }
+function apply(){
+  const a=$('fFrom').value,b=$('fTo').value,rs=$('fRs').value,jn=$('fJenis').value,q=$('fQ').value.toLowerCase();
+  filtered=R.filter(x=>(!a||x.d>=a)&&(!b||x.d&&x.d<=b)&&(!rs||x.rs===rs)&&(!jn||x.jn===jn)&&(!q||x.c.join(' ').toLowerCase().includes(q)));
+  $('tb').innerHTML=filtered.map((x,n)=>`<tr><td class="c">${n+1}</td><td>${fD(x.d)}</td><td>${esc(x.rs)}</td><td>${esc(x.jn)}</td><td class="c"><button class="eye" title="Lihat laporan" onclick="openM(${x.i})">👁</button></td></tr>`).join('')||'<tr><td colspan="5" class="c">Tidak ada data</td></tr>';
+  msg(filtered.length+' pekerjaan sesuai filter');
+}
+
+/* ===== Pencocokan foto: nama file di sel tabel <-> nama file di folder Drive ===== */
+function photosOf(x){
+  if(x.ph) return x.ph; const out=[], seen=new Set();
+  x.c.forEach((cell,ci)=>{
+    String(cell).split(/[,;\n|]+/).forEach(t=>{
+      const base=t.trim().split(/[\\\/]/).pop().toLowerCase(); if(base.length<4) return;
+      const f=FMAP[base]||FMAP[base.replace(/\.[a-z0-9]+$/,'')];
+      if(f&&!seen.has(f.id)){seen.add(f.id); out.push({f,col:H[ci],ci,sign:CFG.excludeFoto.test(H[ci])});}
+    });
+  }); return x.ph=out;
+}
+const panelCol=()=>{const i=H.findIndex(h=>CFG.fotoPanel.test(h)); return i>=0?i:CFG.fotoPanelIdx;};
+const docPhotos = x => photosOf(x).filter(p=>!p.sign);
+const ext = f => (f.name.match(/\.[a-z0-9]+$/i)||['.jpg'])[0];
+
+async function getImg(id){
+  if(CACHE[id]) return CACHE[id];
+  const j=await (await fetch(API_URL+'?action=photo&id='+id)).json();
+  if(j.error) throw new Error(j.error);
+  return CACHE[id]={mime:j.mime,url:'data:'+j.mime+';base64,'+j.b64,b64:j.b64};
+}
+function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+
+/* ===== Modal detail ===== */
+let curX=null;
+async function openM(i){
+  const x=R.find(r=>r.i===i); curX=x; const ph=photosOf(x);
+  const photoCols=new Set(ph.map(p=>p.ci));
+  const rows=H.map((h,ci)=>photoCols.has(ci)?null:`<tr><td>${esc(h)}</td><td>${esc(x.c[ci]||'-')}</td></tr>`).filter(Boolean).join('');
+  const groups={}; ph.forEach(p=>(groups[p.col]=groups[p.col]||[]).push(p));
+  const gh=Object.keys(groups).map(k=>`<b>${esc(k)}${CFG.excludeFoto.test(k)?' (sign – tidak ikut export)':''}</b><div class="ph">${groups[k].map(p=>`<figure><img data-id="${p.f.id}" alt=""><figcaption>${esc(p.f.name)}</figcaption></figure>`).join('')}</div>`).join('');
+  $('mb').innerHTML=`<h2>Detail Laporan – ${esc(x.rs)} (${fD(x.d)})</h2>
+  <div class="bar" style="margin:0 0 10px"><button onclick="exportDetailXls()">Export Excel</button><button onclick="exportDetailPdf()">Export PDF</button><button onclick="downloadFotoZip([curX])">Download Dokumentasi</button><button class="sec" onclick="closeM()">Tutup</button> <span id="msg2" class="miss"></span></div>
+  <table class="kv">${rows}</table><h3>Dokumentasi</h3>${gh||'<p class="miss">Foto tidak ditemukan di folder Drive.</p>'}`;
+  $('md').classList.add('on');
+  document.querySelectorAll('#mb img[data-id]').forEach(async im=>{try{im.src=(await getImg(im.dataset.id)).url;}catch(e){}});
+}
+function closeM(){$('md').classList.remove('on');}
+
+/* ===== Export ===== */
+function exportTabel(){
+  const aoa=[['No','Tanggal','Remote Station','Jenis Pemeliharaan']].concat(filtered.map((x,n)=>[n+1,fD(x.d),x.rs,x.jn]));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'Pekerjaan SCADA');
+  XLSX.writeFile(wb,'Pekerjaan_SCADA.xlsx');
+}
+function exportFotoExcel(){
+  const pc=panelCol(); const aoa=[['No','Tanggal','Remote Station','Jenis Pemeliharaan','Nama File Foto (Drive)','Link Drive','Status']];
+  filtered.forEach((x,n)=>{
+    const p=photosOf(x).filter(p=>p.ci===pc);
+    aoa.push([n+1,fD(x.d),x.rs,x.jn,p.map(q=>q.f.name).join('\n'),p.map(q=>'https://drive.google.com/file/d/'+q.f.id+'/view').join('\n'),p.length?'Ditemukan':'Tidak ditemukan']);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:12},{wch:28},{wch:26},{wch:40},{wch:50},{wch:14}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Foto Pembersihan Panel');
+  XLSX.writeFile(wb,'Foto_Pembersihan_Sekitar_Panel_SCADA.xlsx');
+}
+function exportDetailXls(){
+  const x=curX; const aoa=[['Kolom','Isi']].concat(H.map((h,i)=>[h,x.c[i]]));
+  aoa.push([],['Dokumentasi (selain sign)','Nama File']); docPhotos(x).forEach(p=>aoa.push([p.col,p.f.name]));
+  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:38},{wch:60}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Detail');
+  XLSX.writeFile(wb,safe('Laporan_'+fDf(x.d)+'_'+x.rs)+'.xlsx');
+}
+async function exportDetailPdf(){
+  const x=curX, m2=$('msg2'); m2.textContent='Menyiapkan PDF...';
+  const doc=new jspdf.jsPDF({unit:'mm',format:'a4'}); doc.setFontSize(14);
+  doc.text('Laporan Pekerjaan SCADA',14,15); doc.setFontSize(10); doc.text(x.rs+' – '+fD(x.d),14,21);
+  const pcs=new Set(photosOf(x).map(p=>p.ci));
+  doc.autoTable({startY:26,head:[['Kolom','Isi']],body:H.map((h,i)=>pcs.has(i)?null:[h,x.c[i]||'-']).filter(Boolean),styles:{fontSize:8},columnStyles:{0:{cellWidth:55}}});
+  let y=doc.lastAutoTable.finalY+8, col=0; const ph=docPhotos(x);
+  if(ph.length){ doc.setFontSize(11); if(y>270){doc.addPage();y=15;} doc.text('Dokumentasi',14,y); y+=4; }
+  for(const p of ph){
+    try{ const im=await getImg(p.f.id); if(y+62>285){doc.addPage();y=15;col=0;}
+      doc.addImage(im.url,/png/.test(im.mime)?'PNG':'JPEG',14+col*92,y,86,52); doc.setFontSize(7); doc.text(p.col+' – '+p.f.name,14+col*92,y+56,{maxWidth:86});
+      if(col===1){col=0;y+=62;}else col=1; }catch(e){}
+  }
+  doc.save(safe('Laporan_'+fDf(x.d)+'_'+x.rs)+'.pdf'); m2.textContent='';
+}
+/* Download foto: nama = tanggal (dd-mm-yyyy) + Remote Station/Repeater/aset + nomor urut */
+async function downloadFotoZip(list){
+  const items=[]; list.forEach(x=>docPhotos(x).forEach(p=>items.push({x,p})));
+  if(!items.length){alert('Tidak ada foto yang cocok dengan folder Drive.');return;}
+  const zip=new JSZip(), cnt={}; let done=0, q=0;
+  const upd=()=>{msg('Mengunduh foto '+done+'/'+items.length+'...'); const m=$('msg2'); if(m)m.textContent=done+'/'+items.length;};
+  const jobs=items.map(({x,p})=>{const base=safe(fDf(x.d)+'_'+x.rs); cnt[base]=(cnt[base]||0)+1; return {p,name:base+'_'+cnt[base]+ext(p.f)};});
+  async function worker(){ while(q<jobs.length){ const j=jobs[q++]; try{ zip.file(j.name,(await getImg(j.p.f.id)).b64,{base64:true}); }catch(e){} done++; upd(); } }
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  msg('Menyusun ZIP...'); save(await zip.generateAsync({type:'blob'}),'Foto_Dokumentasi_SCADA.zip'); msg('Selesai: '+done+' foto');
+}
+load();
+</script>
+</body>
+</html>
